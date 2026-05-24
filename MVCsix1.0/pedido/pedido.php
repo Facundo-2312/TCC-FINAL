@@ -21,10 +21,9 @@ else if(!isset($Rol)){
 
 ?>
 
-
-
 <?php
-  include('../InterfazProducto.php');
+  require_once '../InterfazProducto.php';
+  $pedidoCssVersion = @filemtime(__DIR__ . '/style.css') ?: time();
   $products = ListarProductos();
 ?>
 
@@ -32,7 +31,9 @@ else if(!isset($Rol)){
 <html>
 <head>
   <title>Lista de Productos</title>
-  <link rel="stylesheet" type="text/css" href="style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="style.css?v=<?php echo $pedidoCssVersion; ?>">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
 <body>
@@ -46,7 +47,7 @@ if ($Rol== "Admin"){
 <a class="Atras" href="../../Principal.php">
 <i class="fas fa-arrow-circle-left" style="margin-left: 5px;"></i>
 </a> 
-<h1>Haga su pedido</h1> 
+<h1 class="titulo-pedido">Haga su pedido</h1> 
 
 <?php 
 
@@ -59,7 +60,7 @@ if ($Rol== "Admin"){
 if ($Rol== "Mozo"){
 
 ?>
- <h1 style="margin-left:45%">Haga su pedido</h1> 
+ <h1 class="titulo-pedido titulo-pedido-mozo">Haga su pedido</h1> 
 
 <?php 
 
@@ -93,15 +94,10 @@ if ($Rol== "Mozo"){
   </section>
 </body>
 </html>
-
-
-
-  <script>
+<script>
     const products = <?php echo $products; ?>;
     const cedula = <?php echo json_encode($_SESSION["CI"] ?? null); ?>;
     console.log(cedula);
 
-  </script>
-  <script src="script.js"></script>
-</body>
-</html>
+</script>
+<script src="script.js"></script>

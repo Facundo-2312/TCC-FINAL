@@ -1,6 +1,8 @@
 <?php
 
-session_start();
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
 
 if (!isset($_SESSION['Usuario']) || !isset($_SESSION['Rol'])) {
     header("Location: ../Login.php");
@@ -9,6 +11,67 @@ if (!isset($_SESSION['Usuario']) || !isset($_SESSION['Rol'])) {
 
 require_once "Producto.php";
 
+function resolverImagenProducto($nombreProducto, $rutaImagen)
+{
+    $ruta = trim((string) $rutaImagen);
+
+    if ($ruta !== '' && preg_match('/^(https?:)?\\/\\//i', $ruta)) {
+        return $ruta;
+    }
+
+    $nombre = mb_strtolower((string) $nombreProducto, 'UTF-8');
+
+    $defaultsPorCategoria = array(
+        'hamburguesa' => 'img/default_hamburguesa_hq.jpg',
+        'burger' => 'img/default_hamburguesa_hq.jpg',
+        'pizza' => 'img/default_pizza_hq.jpg',
+        'coca' => 'img/default_bebida_hq.jpg',
+        'cola' => 'img/default_bebida_hq.jpg',
+        'agua' => 'img/default_bebida_hq.jpg',
+        'jugo' => 'img/default_bebida_hq.jpg',
+        'gaseosa' => 'img/default_bebida_hq.jpg',
+        'refresco' => 'img/default_bebida_hq.jpg',
+        'helado' => 'img/default_postre_hq.jpg',
+        'postre' => 'img/default_postre_hq.jpg',
+        'torta' => 'img/default_postre_hq.jpg'
+    );
+
+    $categoriaDefault = 'img/default_comida_hq.jpg';
+    foreach ($defaultsPorCategoria as $keyword => $defaultPath) {
+        if (mb_strpos($nombre, $keyword) !== false) {
+            $categoriaDefault = $defaultPath;
+            break;
+        }
+    }
+
+    $normalizada = str_replace('\\\\', '/', $ruta);
+    $normalizada = ltrim($normalizada, '/');
+    $base = basename($normalizada);
+    $baseSinExt = pathinfo($base, PATHINFO_FILENAME);
+
+    $candidatas = array();
+
+    if ($normalizada !== '') {
+        $candidatas[] = $normalizada;
+        if ($baseSinExt !== '') {
+            $candidatas[] = 'img/' . $baseSinExt . '_hq.jpg';
+            $candidatas[] = 'files/' . $baseSinExt . '_hq.jpg';
+        }
+        $candidatas[] = 'img/' . $base;
+        $candidatas[] = 'files/' . $base;
+    }
+
+    $candidatas[] = $categoriaDefault;
+
+    foreach ($candidatas as $candidata) {
+        if ($candidata !== '' && is_file(__DIR__ . '/' . $candidata)) {
+            return $candidata;
+        }
+    }
+
+    return $categoriaDefault;
+}
+
 function ListarProductos()
 {
     $producto = new Producto();
@@ -16,13 +79,17 @@ function ListarProductos()
 
     $resultado = array();
     foreach ($lista as $fila) {
+        $imgOriginal = $fila['img'] ?? '';
+        $imgResuelta = resolverImagenProducto($fila['nombre'] ?? '', $imgOriginal);
+
         $resultado[] = array(
             'IDProducto' => (int) ($fila['id_producto'] ?? 0),
             'Nombre' => $fila['nombre'] ?? '',
             'Descripcion' => $fila['descripcion'] ?? '',
             'Precio' => (float) ($fila['precio'] ?? 0),
             'Stock' => (int) ($fila['stock'] ?? 0),
-            'Img' => $fila['img'] ?? ''
+            'Img' => $imgOriginal,
+            'ImgResolved' => $imgResuelta
         );
     }
 

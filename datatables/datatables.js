@@ -1,4 +1,4 @@
-/*
+﻿/*
  * This combined file was created by the DataTables downloader builder:
  *   https://datatables.net/download
  *
@@ -15151,7 +15151,7 @@ return jQuery;
 
 
 /*! DataTables 1.13.7
- * ©2008-2023 SpryMedia Ltd - datatables.net/license
+ * Â©2008-2023 SpryMedia Ltd - datatables.net/license
  */
 
 /**
@@ -15310,7 +15310,7 @@ return jQuery;
 		 *      var data = oTable._('tr:first');
 		 *
 		 *      // Do something useful with the data
-		 *      alert( "First cell is: "+data[0] );
+		 *      console.warn( "First cell is: "+data[0] );
 		 *    } );
 		 *
 		 *  @example
@@ -15322,7 +15322,7 @@ return jQuery;
 		 *      var data = oTable._('tr', {"search": "applied"});
 		 *
 		 *      // Do something with the data
-		 *      alert( data.length+" rows matched the search" );
+		 *      console.warn( data.length+" rows matched the search" );
 		 *    } );
 		 */
 		this._ = function ( sSelector, oOpts )
@@ -15644,7 +15644,7 @@ return jQuery;
 		 *
 		 *      oTable.$('td').click( function () {
 		 *        var sData = oTable.fnGetData( this );
-		 *        alert( 'The cell clicked on had the value of '+sData );
+		 *        console.warn( 'The cell clicked on had the value of '+sData );
 		 *      } );
 		 *    } );
 		 */
@@ -15875,7 +15875,7 @@ return jQuery;
 		 *      var oSettings = oTable.fnSettings();
 		 *
 		 *      // Show an example parameter from the settings
-		 *      alert( oSettings._iDisplayStart );
+		 *      console.warn( oSettings._iDisplayStart );
 		 *    } );
 		 */
 		this.fnSettings = function()
@@ -15985,7 +15985,7 @@ return jQuery;
 		 *  @example
 		 *    $(document).ready(function() {
 		 *      var oTable = $('#example').dataTable();
-		 *      alert( oTable.fnVersionCheck( '1.9.0' ) );
+		 *      console.warn( oTable.fnVersionCheck( '1.9.0' ) );
 		 *    } );
 		 */
 		this.fnVersionCheck = _ext.fnVersionCheck;
@@ -16506,10 +16506,10 @@ return jQuery;
 	// - fr - Swiss Franc
 	// - kr - Swedish krona, Norwegian krone and Danish krone
 	// - \u2009 is thin space and \u202F is narrow no-break space, both used in many
-	// - Ƀ - Bitcoin
-	// - Ξ - Ethereum
+	// - Éƒ - Bitcoin
+	// - Îž - Ethereum
 	//   standards as thousands separators.
-	var _re_formatted_numeric = /['\u00A0,$£€¥%\u2009\u202F\u20BD\u20a9\u20BArfkɃΞ]/gi;
+	var _re_formatted_numeric = /['\u00A0,$Â£â‚¬Â¥%\u2009\u202F\u20BD\u20a9\u20BArfkÉƒÎž]/gi;
 	
 	
 	var _empty = function ( d ) {
@@ -21817,7 +21817,7 @@ return jQuery;
 			}
 	
 			if ( type == 'alert' ) {
-				alert( msg );
+				console.warn( msg );
 			}
 			else if ( type == 'throw' ) {
 				throw new Error(msg);
@@ -24617,7 +24617,7 @@ return jQuery;
 	 *  @dtopt API-Static
 	 *
 	 *  @example
-	 *    alert( $.fn.dataTable.versionCheck( '1.9.0' ) );
+	 *    console.warn( $.fn.dataTable.versionCheck( '1.9.0' ) );
 	 */
 	DataTable.versionCheck = DataTable.fnVersionCheck = function( version )
 	{
@@ -26173,7 +26173,7 @@ return jQuery;
 		 *    $(document).ready( function() {
 		 *      $('#example').dataTable( {
 		 *        "drawCallback": function( settings ) {
-		 *          alert( 'DataTables has redrawn the table' );
+		 *          console.warn( 'DataTables has redrawn the table' );
 		 *        }
 		 *      } );
 		 *    } );
@@ -26320,7 +26320,7 @@ return jQuery;
 		 *    $(document).ready( function() {
 		 *      $('#example').dataTable( {
 		 *        "initComplete": function(settings, json) {
-		 *          alert( 'DataTables has finished its initialisation.' );
+		 *          console.warn( 'DataTables has finished its initialisation.' );
 		 *        }
 		 *      } );
 		 *    } )
@@ -26533,7 +26533,7 @@ return jQuery;
 		 *      $('#example').dataTable( {
 		 *        "stateSave": true,
 		 *        "stateLoaded": function (settings, data) {
-		 *          alert( 'Saved filter was: '+data.oSearch.sSearch );
+		 *          console.warn( 'Saved filter was: '+data.oSearch.sSearch );
 		 *        }
 		 *      } );
 		 *    } );
@@ -30468,7 +30468,7 @@ return jQuery;
 		}
 		else {
 			if (! __mlWarning) {
-				alert('DataTables warning: Formatted date without Moment.js or Luxon - https://datatables.net/tn/17');
+				console.warn('DataTables warning: Formatted date without Moment.js or Luxon - https://datatables.net/tn/17');
 			}
 	
 			__mlWarning = true;
@@ -30880,7 +30880,7 @@ return jQuery;
 
 
 /*! DataTables Bootstrap 4 integration
- * ©2011-2017 SpryMedia Ltd - datatables.net/license
+ * Â©2011-2017 SpryMedia Ltd - datatables.net/license
  */
 
 (function( factory ){
@@ -31081,5 +31081,6 @@ DataTable.ext.renderer.pageButton.bootstrap = function ( settings, host, idx, bu
 
 return DataTable;
 }));
+
 
 

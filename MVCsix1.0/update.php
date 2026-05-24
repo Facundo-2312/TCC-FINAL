@@ -17,6 +17,8 @@ require_once "Producto.php";
 $producto = new Producto();
 $datosProducto = $producto->BuscarProducto($IDProducto);
 
+$updateCssVersion = @filemtime(__DIR__ . '/../estilos/update.css') ?: time();
+
 if (!$datosProducto) {
     header("Location: index.php");
     exit();
@@ -26,6 +28,67 @@ function h($value)
 {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 }
+
+function resolverRutaImagen($ruta, $nombreProducto = '')
+{
+  $ruta = trim((string) $ruta);
+  if (preg_match('/^(https?:)?\\/\\//i', $ruta) || strpos($ruta, 'data:image/') === 0) {
+    return $ruta;
+  }
+
+  $nombre = mb_strtolower((string) $nombreProducto, 'UTF-8');
+  $defaultsPorCategoria = array(
+    'hamburguesa' => 'img/default_hamburguesa_hq.jpg',
+    'burger' => 'img/default_hamburguesa_hq.jpg',
+    'pizza' => 'img/default_pizza_hq.jpg',
+    'coca' => 'img/default_bebida_hq.jpg',
+    'cola' => 'img/default_bebida_hq.jpg',
+    'agua' => 'img/default_bebida_hq.jpg',
+    'jugo' => 'img/default_bebida_hq.jpg',
+    'gaseosa' => 'img/default_bebida_hq.jpg',
+    'refresco' => 'img/default_bebida_hq.jpg',
+    'helado' => 'img/default_postre_hq.jpg',
+    'postre' => 'img/default_postre_hq.jpg',
+    'torta' => 'img/default_postre_hq.jpg'
+  );
+
+  $defaultPath = 'img/default_comida_hq.jpg';
+  foreach ($defaultsPorCategoria as $keyword => $pathDefault) {
+    if (mb_strpos($nombre, $keyword) !== false) {
+      $defaultPath = $pathDefault;
+      break;
+    }
+  }
+
+  if ($ruta === '') {
+    return is_file(__DIR__ . '/' . $defaultPath) ? $defaultPath : null;
+  }
+
+  $normalizada = str_replace('\\\\', '/', $ruta);
+  $normalizada = ltrim($normalizada, '/');
+  $base = basename($normalizada);
+  $baseSinExt = pathinfo($base, PATHINFO_FILENAME);
+
+  $candidatas = array(
+    $normalizada,
+    $baseSinExt !== '' ? 'files/' . $baseSinExt . '_hq.jpg' : '',
+    $baseSinExt !== '' ? 'img/' . $baseSinExt . '_hq.jpg' : '',
+    'files/' . $base,
+    'img/' . $base,
+    '../img/' . $base,
+    $defaultPath
+  );
+
+  foreach ($candidatas as $candidata) {
+    if (is_file(__DIR__ . '/' . $candidata)) {
+      return $candidata;
+    }
+  }
+
+  return null;
+}
+
+$imgActualUrl = resolverRutaImagen($datosProducto['img'] ?? '', $datosProducto['nombre'] ?? '');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -34,7 +97,7 @@ function h($value)
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Actualizar Producto</title>
-<link rel="stylesheet" type="text/css" href="../estilos/update.css">
+<link rel="stylesheet" type="text/css" href="../estilos/update.css?v=<?php echo $updateCssVersion; ?>">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
@@ -68,10 +131,10 @@ function h($value)
     <input type="number" name="Stock" id="Stock" class="form-control" maxlength="100" required value="<?php echo h($datosProducto['stock']); ?>">
 
     <label>Imagen actual</label>
-    <?php if (!empty($datosProducto['img'])) { ?>
-      <img width="200" src="<?php echo h($datosProducto['img']); ?>" alt="<?php echo h($datosProducto['nombre']); ?>">
+    <?php if (!empty($imgActualUrl)) { ?>
+      <img class="preview-image" src="<?php echo h($imgActualUrl); ?>" alt="<?php echo h($datosProducto['nombre']); ?>">
     <?php } else { ?>
-      <p>No hay imagen cargada.</p>
+      <p class="preview-empty">No hay imagen cargada.</p>
     <?php } ?>
 
     <input type="hidden" name="Img" id="Img" class="form-control" maxlength="100" value="<?php echo h($datosProducto['img']); ?>">

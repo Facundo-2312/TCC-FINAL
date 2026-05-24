@@ -1,222 +1,194 @@
-﻿body{
+:root {
+  --bg-main: #0f1115;
+  --bg-soft: #171a21;
+  --panel-top: rgba(34, 37, 46, 0.95);
+  --panel-bottom: rgba(22, 24, 31, 0.95);
+  --accent: #ff0055;
+  --accent-soft: #ff4d8a;
+  --text: #f6f7fb;
+  --muted: #b8bfd1;
+  --line: rgba(255, 255, 255, 0.12);
+}
 
-    margin: 0 auto;
-    background:
-      radial-gradient(circle at top left, rgba(255,0,85,.15), transparent 28%),
-      radial-gradient(circle at bottom right, rgba(255,95,135,.08), transparent 20%),
-      #171717;
-  background-size: cover;
- 
-    
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--text);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background:
+    radial-gradient(55rem 38rem at -10% 10%, rgba(255, 0, 85, 0.22), transparent 65%),
+    radial-gradient(35rem 28rem at 110% 80%, rgba(255, 77, 138, 0.16), transparent 70%),
+    linear-gradient(160deg, var(--bg-main), var(--bg-soft));
 }
 
 header {
-  background-color: #ff0055;
-  color: #fff;
-  padding: 20px;
-  height: 40px;
+  min-height: 72px;
+  padding: 14px 20px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  text-align: center; 
-  font-weight: bold;
-  text-transform: uppercase;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid var(--line);
+  background: linear-gradient(90deg, #ff0055, #ff2e78 50%, #ff0055);
 }
 
 h1 {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  font-size: 30px;
-  text-align: center; 
-  margin-right: 630px;
-  font-weight: bold;
-  color: #ffffff;
+  margin: 0;
+  font-size: clamp(1.2rem, 2vw, 1.8rem);
+  letter-spacing: 0.7px;
   text-transform: uppercase;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.699); 
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 .Atras {
-  display: flex;
-  border-radius: 10px;
-  margin-left: 10px; 
-  margin: 0 5px;
-  margin-right: auto; 
+  min-height: 42px;
   display: inline-flex;
   align-items: center;
-  color: #ffffff;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  justify-content: center;
   padding: 8px 12px;
+  color: #fff;
   text-decoration: none;
-  cursor: pointer;
-  text-align: center;
-  transition: transform 0.3s ease-in-out;
-  margin-right: 0px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
 .Atras i {
-  margin-right: 10px; 
-  font-size: 32px;
+  font-size: 28px;
 }
-
 
 .Atras:hover {
-  transform: scale(1.2);
-  color:#ffffff
+  transform: scale(1.04);
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #fff;
 }
 
-  .contenido {
-  
-    width: 1000px;
-    height: 500px;
-   
-  }
-
-
- /* Estilos para el formulario */
- form {
-
-  width: 450px;
-  margin-top: 5%;
-  margin-left: 52%;
-  
-  box-shadow: 10px 7px 11px -7px rgba(0,0,0,0.75);
-   border-radius: 10px;
-   background-color: #ffffff91;
-   display: flex;
-   flex-direction: column;
-   align-items: center;
-   
-  }
-
-  /* Estilos para las palabras */
- 
-
-  form input[type="text"] {
-    width: calc(100% - 100px);
-    padding: 8px;
-    margin-bottom: 10px;
-    margin-top: 20px;
-    border: 1px solid #cccccc00;
-    border-radius: 20px;
-    background-color: #ffffffdb;
-    box-sizing: border-box; 
-    box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
-    transition: all 0.3s;
-    outline: none;
-    border-style: none;
-  
-  }
-
-
-  label {
-    font-size: 1.2em;
-    color: rgb(0, 0, 0);
-    margin-top: 12px;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+.contenido {
+  width: min(960px, 94%);
+  margin: 28px auto 36px;
 }
 
- 
-input[type="text"]:hover{
-  border: 2px solid #ff0048; 
-  box-shadow: 0 0 5px #ff0048; 
-  transform: scale(1.1);
+form {
+  width: min(620px, 100%);
+  margin: 0 auto;
+  padding: 26px 24px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, var(--panel-top), var(--panel-bottom));
+  box-shadow: 0 22px 44px rgba(0, 0, 0, 0.38);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+label {
+  margin-top: 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #dde2f0;
+  letter-spacing: 0.2px;
+}
+
+.form-control,
+input[type="file"] {
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(12, 14, 19, 0.55);
+  color: var(--text);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus,
+input[type="file"]:focus {
+  outline: none;
+  border-color: rgba(255, 77, 138, 0.95);
+  box-shadow: 0 0 0 3px rgba(255, 0, 85, 0.2);
+}
+
+input[type="file"] {
+  padding: 9px;
+}
+
+.preview-image {
+  width: min(240px, 100%);
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3);
+}
+
+.preview-empty {
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px dashed rgba(255, 255, 255, 0.24);
+  border-radius: 10px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+hr {
+  width: 100%;
+  margin: 12px 0 4px;
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .boton {
-  display: inline-block;
-  padding: 15px 25px;
-  text-align: center;
-  text-decoration: none;
+  min-height: 46px;
+  padding: 12px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 12px;
   color: #fff;
-  background-color: #ff0055;
-  border: 1px solid #ff0055;
-  border-radius: 5px;
-  font-size: 17px;
-  text-decoration: none;
-  transition: background-color 0.3s ease, transform 0.3s ease;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  margin: 0 auto; 
+  font-size: 1rem;
   cursor: pointer;
+  background: linear-gradient(180deg, rgba(255, 0, 85, 0.95), rgba(214, 10, 88, 0.95));
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s ease, filter 0.2s ease;
 }
 
 .boton:hover {
-  background-color: #FF4B75;
-  transform: scale(1.1);
+  transform: translateY(-1px);
+  filter: brightness(1.06);
 }
 
-
-  input[type="file"] {
-
-   margin-top:50px ;
-
+@media (max-width: 768px) {
+  header {
+    flex-wrap: wrap;
+    justify-content: center;
   }
 
-  @media (max-width: 1024px) {
-    header {
-      height: auto;
-      padding: 14px;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    h1 {
-      margin-right: 0;
-      font-size: 24px;
-    }
-
-    .contenido {
-      width: 100%;
-      height: auto;
-      padding: 0 16px;
-      box-sizing: border-box;
-    }
-
-    form {
-      width: min(92vw, 520px);
-      margin: 24px auto;
-      position: static;
-    }
+  h1 {
+    width: 100%;
+    text-align: center;
   }
 
-  @media (max-width: 768px) {
-    h1 {
-      font-size: 20px;
-    }
-
-    .Atras {
-      width: 100%;
-      justify-content: flex-start;
-    }
-
-    form input[type="text"] {
-      width: calc(100% - 48px);
-    }
+  .Atras {
+    align-self: flex-start;
   }
 
-  @media (max-width: 768px) {
-    body {
-      line-height: 1.45;
-    }
-
-    form {
-      padding: 16px;
-      box-sizing: border-box;
-    }
-
-    form input[type="text"],
-    .boton,
-    .Atras {
-      min-height: 44px;
-    }
+  form {
+    padding: 18px 16px;
   }
 
-  @media (hover: none) {
-    input[type="text"]:hover,
-    .boton:hover,
-    .Atras:hover {
-      transform: none;
-    }
+  .form-control,
+  input[type="file"],
+  .boton,
+  .Atras {
+    min-height: 44px;
   }
+}
 
-
- 
-
+@media (hover: none) {
+  .boton:hover,
+  .Atras:hover {
+    transform: none;
+    filter: none;
+  }
+}

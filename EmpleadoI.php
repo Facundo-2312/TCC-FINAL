@@ -161,7 +161,7 @@ th{color:#ff6e99;font-size:.92rem}
                         <td><?php echo h($fila['Usuario'] ?? ''); ?></td>
                         <td class="actions">
                             <a class="edit" href="/proj/Actualizar.php?ID=<?php echo (int) ($fila['CI'] ?? 0); ?>"><i class="fas fa-pen"></i></a>
-                            <a class="delete" href="/proj/Eliminar.php?ID=<?php echo (int) ($fila['CI'] ?? 0); ?>" onclick="return confirm('¿Eliminar funcionario?');"><i class="fas fa-trash"></i></a>
+                            <a class="delete" href="/proj/Eliminar.php?ID=<?php echo (int) ($fila['CI'] ?? 0); ?>"><i class="fas fa-trash"></i></a>
                         </td>
                     </tr>
                 <?php } ?>

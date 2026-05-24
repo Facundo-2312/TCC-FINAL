@@ -1,5 +1,5 @@
-/*! DataTables 1.13.7
- * ©2008-2023 SpryMedia Ltd - datatables.net/license
+﻿/*! DataTables 1.13.7
+ * Â©2008-2023 SpryMedia Ltd - datatables.net/license
  */
 
 /**
@@ -158,7 +158,7 @@
 		 *      var data = oTable._('tr:first');
 		 *
 		 *      // Do something useful with the data
-		 *      alert( "First cell is: "+data[0] );
+		 *      console.warn( "First cell is: "+data[0] );
 		 *    } );
 		 *
 		 *  @example
@@ -170,7 +170,7 @@
 		 *      var data = oTable._('tr', {"search": "applied"});
 		 *
 		 *      // Do something with the data
-		 *      alert( data.length+" rows matched the search" );
+		 *      console.warn( data.length+" rows matched the search" );
 		 *    } );
 		 */
 		this._ = function ( sSelector, oOpts )
@@ -492,7 +492,7 @@
 		 *
 		 *      oTable.$('td').click( function () {
 		 *        var sData = oTable.fnGetData( this );
-		 *        alert( 'The cell clicked on had the value of '+sData );
+		 *        console.warn( 'The cell clicked on had the value of '+sData );
 		 *      } );
 		 *    } );
 		 */
@@ -723,7 +723,7 @@
 		 *      var oSettings = oTable.fnSettings();
 		 *
 		 *      // Show an example parameter from the settings
-		 *      alert( oSettings._iDisplayStart );
+		 *      console.warn( oSettings._iDisplayStart );
 		 *    } );
 		 */
 		this.fnSettings = function()
@@ -833,7 +833,7 @@
 		 *  @example
 		 *    $(document).ready(function() {
 		 *      var oTable = $('#example').dataTable();
-		 *      alert( oTable.fnVersionCheck( '1.9.0' ) );
+		 *      console.warn( oTable.fnVersionCheck( '1.9.0' ) );
 		 *    } );
 		 */
 		this.fnVersionCheck = _ext.fnVersionCheck;
@@ -1354,10 +1354,10 @@
 	// - fr - Swiss Franc
 	// - kr - Swedish krona, Norwegian krone and Danish krone
 	// - \u2009 is thin space and \u202F is narrow no-break space, both used in many
-	// - Ƀ - Bitcoin
-	// - Ξ - Ethereum
+	// - Éƒ - Bitcoin
+	// - Îž - Ethereum
 	//   standards as thousands separators.
-	var _re_formatted_numeric = /['\u00A0,$£€¥%\u2009\u202F\u20BD\u20a9\u20BArfkɃΞ]/gi;
+	var _re_formatted_numeric = /['\u00A0,$Â£â‚¬Â¥%\u2009\u202F\u20BD\u20a9\u20BArfkÉƒÎž]/gi;
 	
 	
 	var _empty = function ( d ) {
@@ -6665,7 +6665,7 @@
 			}
 	
 			if ( type == 'alert' ) {
-				alert( msg );
+				console.warn( msg );
 			}
 			else if ( type == 'throw' ) {
 				throw new Error(msg);
@@ -9465,7 +9465,7 @@
 	 *  @dtopt API-Static
 	 *
 	 *  @example
-	 *    alert( $.fn.dataTable.versionCheck( '1.9.0' ) );
+	 *    console.warn( $.fn.dataTable.versionCheck( '1.9.0' ) );
 	 */
 	DataTable.versionCheck = DataTable.fnVersionCheck = function( version )
 	{
@@ -11021,7 +11021,7 @@
 		 *    $(document).ready( function() {
 		 *      $('#example').dataTable( {
 		 *        "drawCallback": function( settings ) {
-		 *          alert( 'DataTables has redrawn the table' );
+		 *          console.warn( 'DataTables has redrawn the table' );
 		 *        }
 		 *      } );
 		 *    } );
@@ -11168,7 +11168,7 @@
 		 *    $(document).ready( function() {
 		 *      $('#example').dataTable( {
 		 *        "initComplete": function(settings, json) {
-		 *          alert( 'DataTables has finished its initialisation.' );
+		 *          console.warn( 'DataTables has finished its initialisation.' );
 		 *        }
 		 *      } );
 		 *    } )
@@ -11381,7 +11381,7 @@
 		 *      $('#example').dataTable( {
 		 *        "stateSave": true,
 		 *        "stateLoaded": function (settings, data) {
-		 *          alert( 'Saved filter was: '+data.oSearch.sSearch );
+		 *          console.warn( 'Saved filter was: '+data.oSearch.sSearch );
 		 *        }
 		 *      } );
 		 *    } );
@@ -15316,7 +15316,7 @@
 		}
 		else {
 			if (! __mlWarning) {
-				alert('DataTables warning: Formatted date without Moment.js or Luxon - https://datatables.net/tn/17');
+				console.warn('DataTables warning: Formatted date without Moment.js or Luxon - https://datatables.net/tn/17');
 			}
 	
 			__mlWarning = true;
@@ -15725,3 +15725,4 @@
 
 	return DataTable;
 }));
+

@@ -16,6 +16,65 @@ function h($value)
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 }
 
+function resolverRutaImagen($ruta, $nombreProducto = '')
+{
+  $ruta = trim((string) $ruta);
+  if (preg_match('/^(https?:)?\\/\\//i', $ruta) || strpos($ruta, 'data:image/') === 0) {
+    return $ruta;
+  }
+
+  $nombre = mb_strtolower((string) $nombreProducto, 'UTF-8');
+  $defaultsPorCategoria = array(
+    'hamburguesa' => 'img/default_hamburguesa_hq.jpg',
+    'burger' => 'img/default_hamburguesa_hq.jpg',
+    'pizza' => 'img/default_pizza_hq.jpg',
+    'coca' => 'img/default_bebida_hq.jpg',
+    'cola' => 'img/default_bebida_hq.jpg',
+    'agua' => 'img/default_bebida_hq.jpg',
+    'jugo' => 'img/default_bebida_hq.jpg',
+    'gaseosa' => 'img/default_bebida_hq.jpg',
+    'refresco' => 'img/default_bebida_hq.jpg',
+    'helado' => 'img/default_postre_hq.jpg',
+    'postre' => 'img/default_postre_hq.jpg',
+    'torta' => 'img/default_postre_hq.jpg'
+  );
+
+  $defaultPath = 'img/default_comida_hq.jpg';
+  foreach ($defaultsPorCategoria as $keyword => $pathDefault) {
+    if (mb_strpos($nombre, $keyword) !== false) {
+      $defaultPath = $pathDefault;
+      break;
+    }
+  }
+
+  if ($ruta === '') {
+    return is_file(__DIR__ . '/' . $defaultPath) ? $defaultPath : null;
+  }
+
+  $normalizada = str_replace('\\\\', '/', $ruta);
+  $normalizada = ltrim($normalizada, '/');
+  $base = basename($normalizada);
+  $baseSinExt = pathinfo($base, PATHINFO_FILENAME);
+
+  $candidatas = array(
+    $normalizada,
+    $baseSinExt !== '' ? 'files/' . $baseSinExt . '_hq.jpg' : '',
+    $baseSinExt !== '' ? 'img/' . $baseSinExt . '_hq.jpg' : '',
+    'files/' . $base,
+    'img/' . $base,
+    '../img/' . $base,
+    $defaultPath
+  );
+
+  foreach ($candidatas as $candidata) {
+    if (is_file(__DIR__ . '/' . $candidata)) {
+      return $candidata;
+    }
+  }
+
+  return null;
+}
+
 $producto = new Producto();
 $productos = $producto->ListarProductos();
 
@@ -69,6 +128,7 @@ $productos = $producto->ListarProductos();
       <tbody>
       <?php if (!empty($productos)) { ?>
         <?php foreach ($productos as $fila) { ?>
+        <?php $imgUrl = resolverRutaImagen($fila['img'] ?? '', $fila['nombre'] ?? ''); ?>
         <tr>
           <td><?php echo h($fila['id_producto']); ?></td>
           <td><?php echo h($fila['nombre']); ?></td>
@@ -76,15 +136,15 @@ $productos = $producto->ListarProductos();
           <td><?php echo number_format((float) $fila['precio'], 2, ',', '.'); ?></td>
           <td><?php echo h($fila['stock']); ?></td>
           <td>
-            <?php if (!empty($fila['img'])) { ?>
-              <img src="<?php echo h($fila['img']); ?>" alt="<?php echo h($fila['nombre']); ?>" style="max-width:80px;max-height:80px;object-fit:cover;">
+            <?php if (!empty($imgUrl)) { ?>
+              <img class="product-thumb" src="<?php echo h($imgUrl); ?>" alt="<?php echo h($fila['nombre']); ?>">
             <?php } else { ?>
-              Sin imagen
+              <span class="no-image">Sin imagen</span>
             <?php } ?>
           </td>
           <td>
             <a href="update.php?ID=<?php echo h($fila['id_producto']); ?>" class="edit" title="Editar"><i class="fas fa-pencil-alt"></i></a>
-            <a href="delete.php?ID=<?php echo h($fila['id_producto']); ?>" class="delete" title="Eliminar" onclick="return confirm('¿Eliminar este producto?');"><i class="fas fa-trash"></i></a>
+            <a href="delete.php?ID=<?php echo h($fila['id_producto']); ?>" class="delete" title="Eliminar"><i class="fas fa-trash"></i></a>
           </td>
         </tr>
         <?php } ?>

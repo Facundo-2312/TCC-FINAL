@@ -300,10 +300,6 @@ ul{padding-left:18px;margin:8px 0 0;flex:1;overflow:auto}
 
             var cardForm = button.closest('.js-touch-form');
             if (!cardForm) return;
-            var orderId = cardForm.getAttribute('data-order-id');
-
-            var ok = window.confirm('Está seguro que quiere eliminar ese pedido.');
-            if (!ok) return;
 
             var deleteForm = cardForm.nextElementSibling;
             if (deleteForm && deleteForm.classList.contains('js-delete-form')) {
