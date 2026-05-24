@@ -1,0 +1,284 @@
+﻿
+body{
+    margin: 0 auto;
+}
+
+header {
+  background-color: #ff0055;
+  color: #fff;
+  padding: 20px;
+  height: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center; 
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+h1 {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 30px;
+  text-align: center; 
+  margin-right: 555px;
+  font-weight: bold;
+  color: #ffffff;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.699); 
+}
+
+.Atras {
+  display: flex;
+  border-radius: 10px;
+  margin-left: 10px; 
+  margin: 0 5px;
+  margin-right: auto; 
+  display: inline-flex;
+  align-items: center;
+  color: #ffffff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding: 8px 12px;
+  text-decoration: none;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.3s ease-in-out;
+  margin-right: 0px;
+}
+
+.Atras i {
+  margin-right: 10px; 
+  font-size: 32px;
+}
+
+
+.Atras:hover {
+  transform: scale(1.2);
+  color:#ffffff
+}
+
+
+a{
+
+  text-decoration: none;
+  color: white;
+ 
+}
+
+.botones-container {
+  display: flex;
+  justify-content: center; 
+  align-items: center; 
+  margin-bottom: 20px;
+  margin-top: 60px;
+}
+
+.bot {
+ 
+  text-align: center;
+  padding: 15px 25px;
+  background-color: #ff0055;
+  color: #fff;
+  border: 1px solid #ff0055;
+  border-radius: 5px;
+  text-decoration: none;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0 auto; 
+}
+
+.bot:hover {
+  background-color: #FF4B75;
+  transform: scale(1.1);
+}
+
+  
+  /* Estilos para los botones */
+  .botones-container {
+    display: flex;
+    justify-content: flex-end;
+    padding: 20px;
+  }
+  
+  .boton {
+    background-color: #ff0055;
+    color: white;
+    padding: 10px 20px;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-decoration: none;
+    border-radius: 5px;
+  }
+  
+  
+/* Estilos para la tabla */
+.tabla-decent {
+  width: 80%;
+  background-color: #ffffffc1;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-collapse: collapse;
+  border-radius: 30px;
+  margin: 0 auto; 
+  margin-top: 90px;
+  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Estilos para los encabezados */
+.tabla-decent th {
+  text-align: center;
+  padding: 10px;
+  color: #ffffff;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.329);
+  background-color: #000000;
+}
+
+/* Estilos para los elementos de la tabla */
+.tabla-decent td {
+  text-align: center;
+  padding: 10px;
+  color: #000000;
+  border-collapse: collapse; 
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.308);
+}
+
+/* Estilos para los botones en la tabla */
+.tabla-decent a.edit,
+.tabla-decent a.delete {
+  display: inline-block;
+  padding: 5px 10px;
+  text-decoration: none;
+  border-radius: 5px;
+  margin: 0 10px;
+  transition: transform 0.3s;
+}
+
+.tabla-decent a.edit {
+  color: #000000;
+}
+
+.tabla-decent a.delete {
+  color: #a70808;
+}
+
+.tabla-decent a.edit:hover {
+  transform: scale(1.1);
+}
+
+.tabla-decent a.delete:hover {
+  transform: scale(1.1);
+}
+
+  /* Estilos para el contenido */
+  .contenido {
+   
+    padding: 10px;
+    height: 700px;
+  }
+
+/* Theme overrides: align with EmpleadoI visual language */
+:root{
+  --bg:#171717;
+  --panel:#242424;
+  --panel-soft:#2c2c2c;
+  --accent:#ff0055;
+  --text:#f3f3f3;
+  --line:rgba(255,255,255,.1);
+}
+
+body{
+  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(circle at top left, rgba(255,0,85,.15), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(255,95,135,.08), transparent 20%),
+    var(--bg);
+}
+
+header{ background-color:var(--accent); }
+
+.bot, .boton{
+  background-color:var(--accent);
+  border-color:var(--accent);
+}
+
+.tabla-decent{
+  background:linear-gradient(180deg,var(--panel),var(--panel-soft));
+  border:1px solid var(--line);
+  box-shadow:0 18px 40px rgba(0,0,0,.35);
+}
+
+.tabla-decent th{
+  background:#111;
+  color:var(--text);
+}
+
+.tabla-decent td{
+  color:#e5e5e5;
+}
+
+@media (max-width: 1024px) {
+  header {
+    height: auto;
+    padding: 14px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  h1 {
+    margin-right: 0;
+    font-size: 24px;
+  }
+
+  .botones-container {
+    justify-content: center;
+    margin-top: 24px;
+  }
+
+  .tabla-decent {
+    width: 95%;
+    border-radius: 16px;
+    margin-top: 40px;
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 768px) {
+  h1 {
+    font-size: 20px;
+  }
+
+  .bot,
+  .boton {
+    width: 100%;
+    max-width: 320px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    line-height: 1.45;
+  }
+
+  .bot,
+  .boton,
+  .Atras {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+@media (hover: none) {
+  .bot:hover,
+  .Atras:hover,
+  .tabla-decent a.edit:hover,
+  .tabla-decent a.delete:hover {
+    transform: none;
+  }
+}
+  
+
+
+

@@ -1,0 +1,30 @@
+<?php
+
+$conexion = mysqli_connect("localhost","root","","ProyectoMagnus");
+
+$id = $_GET['id'];
+
+
+// =====================================
+// ELIMINAR DETALLE
+// =====================================
+
+$sqlDetalle = "DELETE FROM detalle_pedido
+WHERE id_pedido='$id'";
+
+mysqli_query($conexion,$sqlDetalle);
+
+
+// =====================================
+// ELIMINAR PEDIDO
+// =====================================
+
+$sqlPedido = "DELETE FROM pedidos
+WHERE id_pedido='$id'";
+
+mysqli_query($conexion,$sqlPedido);
+
+
+header("Location: Cocina2.php");
+
+?>
