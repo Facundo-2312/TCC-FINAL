@@ -11,6 +11,7 @@ $loginCssVersion = @filemtime(__DIR__ . '/estilos/login.css') ?: time();
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Login PHP</title>
+    <link rel="icon" type="image/jpeg" href="<?php echo htmlspecialchars(app_url('img/logonuevo.jpeg'), ENT_QUOTES, 'UTF-8'); ?>">
     <link rel="stylesheet" type="text/css" href="estilos/login.css?v=<?php echo $loginCssVersion; ?>">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
   <script src="<?php echo htmlspecialchars(app_url('no-popups.js'), ENT_QUOTES, 'UTF-8'); ?>"></script>
