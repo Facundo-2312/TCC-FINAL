@@ -22,6 +22,30 @@ function resolverRutaImagen($ruta, $nombreProducto = '')
   }
 
   $nombre = mb_strtolower((string) $nombreProducto, 'UTF-8');
+
+  $imagenesEspecificas = array(
+    'hamburguesa' => 'img/hamburguesa_hq.jpg',
+    'burger' => 'img/hamburguesa_hq.jpg',
+    'pizza' => 'img/pizza_hq.jpg',
+    'coca' => 'img/coca-orig.jpeg',
+    'cola' => 'img/coca-orig.jpeg',
+    'agua' => 'img/agua_hq.jpg'
+  );
+
+  foreach ($imagenesEspecificas as $keyword => $rutaEspecifica) {
+    if (mb_strpos($nombre, $keyword) === false) {
+      continue;
+    }
+
+    if (preg_match('/^(https?:)?\/\//i', $rutaEspecifica)) {
+      return $rutaEspecifica;
+    }
+
+    if (is_file(__DIR__ . '/' . $rutaEspecifica)) {
+      return $rutaEspecifica;
+    }
+  }
+
   $defaultsPorCategoria = array(
     'hamburguesa' => 'img/default_hamburguesa_hq.jpg',
     'burger' => 'img/default_hamburguesa_hq.jpg',

@@ -31,9 +31,9 @@ function resolverImagenProducto($nombreProducto, $rutaImagen)
     );
 
     $imagenesEspecificas = array(
-        'hamburguesa' => 'https://storage.googleapis.com/fitia_recipe_images/US-R-V-00000001%2Fv3%2Frect.jpeg',
-        'burger' => 'https://storage.googleapis.com/fitia_recipe_images/US-R-V-00000001%2Fv3%2Frect.jpeg',
-        'pizza' => 'https://images.ctfassets.net/j8tkpy1gjhi5/5OvVmigx6VIUsyoKz1EHUs/b8173b7dcfbd6da341ce11bcebfa86ea/Salami-pizza-hero.jpg',
+        'hamburguesa' => 'img/hamburguesa_hq.jpg',
+        'burger' => 'img/hamburguesa_hq.jpg',
+        'pizza' => 'img/pizza_hq.jpg',
         'coca' => 'img/coca-orig.jpeg',
         'cola' => 'img/coca-orig.jpeg',
         'agua' => 'img/agua_hq.jpg'
