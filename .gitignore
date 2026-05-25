@@ -1,3 +1,5 @@
 desktop/build/
 desktop/run/
+desktop/**/build/
+desktop/**/run/
 cmd-probe.txt

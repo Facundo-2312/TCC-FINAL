@@ -1,0 +1,10 @@
+{
+  "files.exclude": {
+    "desktop/build": true,
+    "desktop/run": true
+  },
+  "search.exclude": {
+    "desktop/build": true,
+    "desktop/run": true
+  }
+}
