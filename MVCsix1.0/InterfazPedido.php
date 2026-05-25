@@ -44,10 +44,29 @@ function filtrarPedidos($fechaDesde, $fechaHasta, $mozo, $mesa) {
 
 
 
-function GuardarPedido($Observaciones, $Consumo,$cedula, $Mesa){
+function GuardarPedido($Observaciones, $Consumo, $cedula, $Mesa, $Moneda = 'UYU', $Cotizacion = 1){
 	
 	$Pedido= new Pedido();				
 	$Pepc = new Pepc();
+
+	$Moneda = strtoupper(trim((string) $Moneda));
+	if ($Moneda !== 'BRL') {
+		$Moneda = 'UYU';
+	}
+
+	$Cotizacion = (float) $Cotizacion;
+	if ($Cotizacion <= 0) {
+		$Cotizacion = ($Moneda === 'BRL') ? 9 : 1;
+	}
+
+	$Observaciones = trim((string) $Observaciones);
+	$metadataMoneda = '[Moneda: ' . $Moneda . ' | Tasa: 1 BRL = ' . rtrim(rtrim(number_format($Cotizacion, 2, '.', ''), '0'), '.') . ' UYU]';
+
+	if ($Observaciones === '') {
+		$Observaciones = $metadataMoneda;
+	} else {
+		$Observaciones .= ' ' . $metadataMoneda;
+	}
 	
 	try {
 	   

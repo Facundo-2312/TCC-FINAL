@@ -180,6 +180,17 @@ header {
   font-weight: 600;
 }
 
+.product-name {
+  font-size: 0.95rem;
+}
+
+.product-price {
+  display: block;
+  color: #ffd6e5;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
 #pedidoSection {
   width: min(980px, 95%);
   margin: 28px auto 34px;
@@ -213,6 +224,68 @@ ul {
   margin-bottom: 24px;
 }
 
+#orderSummary {
+  width: min(820px, 100%);
+  margin: 0 auto 16px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+#orderItemsCount {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+#orderTotalValue {
+  color: #ffe3ee;
+  font-size: 1.1rem;
+}
+
+#currencyRow {
+  width: min(820px, 100%);
+  margin: 0 auto 14px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+}
+
+#currencyRow label {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+#currencyRow select {
+  min-width: 230px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(12, 14, 19, 0.7);
+  color: var(--text);
+}
+
+#exchangeRateHint {
+  width: min(820px, 100%);
+  margin: 0 auto 12px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-align: right;
+}
+
+.pedido-empty {
+  padding: 12px;
+  text-align: center;
+  border-radius: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.22);
+  color: var(--muted);
+}
+
 .pedido {
   width: 100%;
   display: flex;
@@ -241,6 +314,24 @@ ul {
   text-transform: uppercase;
 }
 
+.pedido-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pedido-name {
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.pedido-unit-price {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
 .pedido input[type="number"] {
   width: 74px;
   padding: 7px;
@@ -248,6 +339,12 @@ ul {
   border: 1px solid rgba(255, 255, 255, 0.2);
   background: rgba(12, 14, 19, 0.55);
   color: var(--text);
+}
+
+.pedido-subtotal {
+  min-width: 92px;
+  text-align: right;
+  color: #ffe3ee;
 }
 
 .mesa,
@@ -316,6 +413,28 @@ textarea {
   .titulo-pedido-mozo {
     width: 100%;
     margin-left: 0;
+  }
+
+  .pedido {
+    flex-wrap: wrap;
+  }
+
+  #currencyRow {
+    justify-content: flex-start;
+  }
+
+  #currencyRow select {
+    min-width: 180px;
+  }
+
+  #exchangeRateHint {
+    text-align: left;
+  }
+
+  .pedido-subtotal {
+    width: 100%;
+    text-align: left;
+    margin-left: 44px;
   }
 }
 

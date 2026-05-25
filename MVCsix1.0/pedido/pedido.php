@@ -87,6 +87,18 @@ if ($Rol== "Mozo"){
   <h2><i class="fas fa-shopping-cart" style="margin-right: 5px;"></i>PEDIDO</h2>
     <div id="pedidoContainer">
       <ul id="orderList"></ul>
+      <div id="orderSummary" aria-live="polite">
+        <span id="orderItemsCount">0 productos</span>
+        <strong id="orderTotalValue">$ 0</strong>
+      </div>
+      <div id="currencyRow">
+        <label for="currencySelect">Moneda</label>
+        <select id="currencySelect" name="currency">
+          <option value="UYU" selected>Pesos uruguayos (UYU)</option>
+          <option value="BRL">Reales brasileños (BRL)</option>
+        </select>
+      </div>
+      <p id="exchangeRateHint">Cotizacion fija: 1 BRL = 9 UYU</p>
       <input class="mesa" type="text" id="Mesa" name="Mesa" placeholder="Numero de Mesa">
       <textarea placeholder="Ingrese una observación aquí" name="" id="observaciones" cols="30" rows="9"></textarea>
     </div>

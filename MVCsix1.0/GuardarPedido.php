@@ -17,12 +17,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
        $Consumo = $pedido['items'];
        $Observaciones = $pedido['obs'];
        $cedula = $pedido['CI'];
-       $Mesa = $pedido['Mesa']; 
+         $Mesa = $pedido['Mesa'];
+         $Moneda = strtoupper(trim((string) ($pedido['moneda'] ?? 'UYU')));
+         $Cotizacion = (float) ($pedido['cotizacion'] ?? 1);
+
+         if ($Moneda !== 'BRL') {
+            $Moneda = 'UYU';
+         }
+
+         if ($Cotizacion <= 0) {
+            $Cotizacion = ($Moneda === 'BRL') ? 9 : 1;
+         }
       
       
 
        // LA FUNCION DE LA MAGIA
-      GuardarPedido($Observaciones, $Consumo, $cedula, $Mesa);
+        GuardarPedido($Observaciones, $Consumo, $cedula, $Mesa, $Moneda, $Cotizacion);
 
    } else {
        // Si no se recibieron los datos esperados, enviar un mensaje de error

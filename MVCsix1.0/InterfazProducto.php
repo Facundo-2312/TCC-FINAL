@@ -30,11 +30,26 @@ function resolverImagenProducto($nombreProducto, $rutaImagen)
         'torta' => 'img/default_postre_hq.jpg'
     );
 
+    $imagenesEspecificas = array(
+        'hamburguesa' => 'img/hamburguesa_hq.jpg',
+        'burger' => 'img/hamburguesa_hq.jpg',
+        'pizza' => 'img/pizza_hq.jpg',
+        'coca' => 'img/coca_hq.jpg',
+        'cola' => 'img/coca_hq.jpg',
+        'agua' => 'img/agua_hq.jpg'
+    );
+
     $categoriaDefault = 'img/default_comida_hq.jpg';
     foreach ($defaultsPorCategoria as $keyword => $defaultPath) {
         if (mb_strpos($nombre, $keyword) !== false) {
             $categoriaDefault = $defaultPath;
             break;
+        }
+    }
+
+    foreach ($imagenesEspecificas as $keyword => $rutaEspecifica) {
+        if (mb_strpos($nombre, $keyword) !== false && is_file(__DIR__ . '/' . $rutaEspecifica)) {
+            return $rutaEspecifica;
         }
     }
 

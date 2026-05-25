@@ -1,7 +1,66 @@
 const searchInput = document.getElementById('searchInput');
 const productsContainer = document.getElementById('productsContainer');
 const orderList = document.getElementById('orderList');
+const orderItemsCount = document.getElementById('orderItemsCount');
+const orderTotalValue = document.getElementById('orderTotalValue');
+const currencySelect = document.getElementById('currencySelect');
+const exchangeRateHint = document.getElementById('exchangeRateHint');
 var orderArray = [];
+
+const currencyLocales = {
+  UYU: 'es-UY',
+  BRL: 'pt-BR'
+};
+
+const UYU_PER_BRL = 9;
+
+function getCurrentExchangeRate() {
+  return currentCurrency === 'BRL' ? UYU_PER_BRL : 1;
+}
+
+let currentCurrency = currencySelect ? currencySelect.value : 'UYU';
+
+function getCurrencyFormatter() {
+  return new Intl.NumberFormat(currencyLocales[currentCurrency] || 'es-UY', {
+    style: 'currency',
+    currency: currentCurrency,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
+  });
+}
+
+function parseProductPrice(product) {
+  const parsed = Number(product && product.Precio);
+  if (Number.isNaN(parsed)) {
+    return 0;
+  }
+  return parsed;
+}
+
+function convertFromUyu(valueUyu) {
+  const amount = Number(valueUyu) || 0;
+  if (currentCurrency === 'BRL') {
+    return amount / UYU_PER_BRL;
+  }
+  return amount;
+}
+
+function formatPrice(value) {
+  return getCurrencyFormatter().format(convertFromUyu(value));
+}
+
+function updateExchangeRateHint() {
+  if (!exchangeRateHint) {
+    return;
+  }
+
+  if (currentCurrency === 'BRL') {
+    exchangeRateHint.textContent = 'Mostrando conversion con tasa fija: 1 BRL = 9 UYU';
+    return;
+  }
+
+  exchangeRateHint.textContent = 'Moneda base del sistema: UYU. Tasa de referencia: 1 BRL = 9 UYU';
+}
 
 function buildImageCandidates(rawPath) {
   const raw = String(rawPath || '').trim();
@@ -63,51 +122,32 @@ function createProductCard(product) {
   productDiv.classList.add('product');
 
   const nameElement = document.createElement('div');
+  nameElement.classList.add('product-name');
   nameElement.textContent = product.Nombre;
+
+  const priceElement = document.createElement('small');
+  priceElement.classList.add('product-price');
+  priceElement.textContent = formatPrice(parseProductPrice(product));
 
   const imgElement = document.createElement('img');
   imgElement.alt = product.Nombre;
   applyImageWithFallback(imgElement, getPreferredImagePath(product));
 
   productDiv.appendChild(nameElement);
+  productDiv.appendChild(priceElement);
   productDiv.appendChild(imgElement);
 
   productDiv.addEventListener('click', () => {
-    const orderItem = document.createElement('li');
-    orderItem.classList.add('pedido');
-
-    const productName = document.createElement('span');
-    productName.textContent = product.Nombre;
-
-    const removeButton = document.createElement('button');
-    removeButton.textContent = 'x';
-    removeButton.addEventListener('click', () => {
-      orderItem.remove();
-      const index = orderArray.findIndex(item => item.Nombre === product.Nombre);
-      if (index !== -1) {
-        orderArray.splice(index, 1);
-      }
-      showOrder(orderArray);
-    });
-
-    const quantityInput = document.createElement('input');
-    quantityInput.type = 'number';
-    quantityInput.value = 1;
-    quantityInput.addEventListener('change', () => {
-      const quantity = parseInt(quantityInput.value);
-      const index = orderArray.findIndex(item => item.Nombre === product.Nombre);
-      if (index !== -1) {
-        orderArray[index].quantity = quantity;
-      }
-      showOrder(orderArray);
-    });
-
-    orderItem.appendChild(removeButton);
-    orderItem.appendChild(productName);
-    orderItem.appendChild(quantityInput);
-
-    orderList.appendChild(orderItem);
-    orderArray.push({ ...product, quantity: 1 });
+    const index = orderArray.findIndex(item => Number(item.IDProducto) === Number(product.IDProducto));
+    if (index !== -1) {
+      orderArray[index].quantity += 1;
+    } else {
+      orderArray.push({
+        ...product,
+        Precio: parseProductPrice(product),
+        quantity: 1
+      });
+    }
     showOrder(orderArray);
   });
 
@@ -121,6 +161,15 @@ function displayAllProducts() {
   products.forEach(product => {
     productsContainer.appendChild(createProductCard(product));
   });
+}
+
+function refreshProductsGrid() {
+  const hasSearch = searchInput.value.trim() !== '';
+  if (hasSearch) {
+    filterProducts();
+    return;
+  }
+  displayAllProducts();
 }
 
 // Función para filtrar los productos según el término de búsqueda
@@ -137,22 +186,129 @@ function filterProducts() {
 
 
 function showOrder(a){
-  console.log(a);
+  orderList.innerHTML = '';
+
+  if (!Array.isArray(a) || a.length === 0) {
+    const emptyItem = document.createElement('li');
+    emptyItem.classList.add('pedido-empty');
+    emptyItem.textContent = 'No hay productos seleccionados';
+    orderList.appendChild(emptyItem);
+    orderItemsCount.textContent = '0 productos';
+    orderTotalValue.textContent = formatPrice(0);
+    return;
+  }
+
+  let total = 0;
+  let quantitySum = 0;
+
+  a.forEach((item) => {
+    const orderItem = document.createElement('li');
+    orderItem.classList.add('pedido');
+
+    const removeButton = document.createElement('button');
+    removeButton.type = 'button';
+    removeButton.textContent = 'x';
+    removeButton.addEventListener('click', () => {
+      orderArray = orderArray.filter(order => Number(order.IDProducto) !== Number(item.IDProducto));
+      showOrder(orderArray);
+    });
+
+    const productInfo = document.createElement('div');
+    productInfo.classList.add('pedido-info');
+
+    const productName = document.createElement('span');
+    productName.classList.add('pedido-name');
+    productName.textContent = item.Nombre;
+
+    const productUnitPrice = document.createElement('small');
+    productUnitPrice.classList.add('pedido-unit-price');
+    productUnitPrice.textContent = 'Unitario: ' + formatPrice(item.Precio);
+
+    productInfo.appendChild(productName);
+    productInfo.appendChild(productUnitPrice);
+
+    const quantityInput = document.createElement('input');
+    quantityInput.type = 'number';
+    quantityInput.min = '1';
+    quantityInput.step = '1';
+    quantityInput.value = item.quantity;
+    quantityInput.addEventListener('change', () => {
+      const quantity = Math.max(1, parseInt(quantityInput.value, 10) || 1);
+      quantityInput.value = String(quantity);
+      const index = orderArray.findIndex(order => Number(order.IDProducto) === Number(item.IDProducto));
+      if (index !== -1) {
+        orderArray[index].quantity = quantity;
+      }
+      showOrder(orderArray);
+    });
+
+    const subtotal = Number(item.Precio) * Number(item.quantity);
+    total += subtotal;
+    quantitySum += Number(item.quantity);
+
+    const subtotalElement = document.createElement('strong');
+    subtotalElement.classList.add('pedido-subtotal');
+    subtotalElement.textContent = formatPrice(subtotal);
+
+    orderItem.appendChild(removeButton);
+    orderItem.appendChild(productInfo);
+    orderItem.appendChild(quantityInput);
+    orderItem.appendChild(subtotalElement);
+
+    orderList.appendChild(orderItem);
+  });
+
+  orderItemsCount.textContent = quantitySum + ' productos';
+  orderTotalValue.textContent = formatPrice(total);
 }
 
 searchInput.addEventListener('keyup', filterProducts);
 
+if (currencySelect) {
+  currencySelect.addEventListener('change', () => {
+    currentCurrency = currencySelect.value;
+    updateExchangeRateHint();
+    refreshProductsGrid();
+    showOrder(orderArray);
+  });
+}
+
 // Mostrar todos los productos al cargar la página
 displayAllProducts();
+updateExchangeRateHint();
+showOrder(orderArray);
 
 function enviar(){
+  if (orderArray.length === 0) {
+    const respuesta = document.getElementById('res');
+    respuesta.innerHTML = 'Debes seleccionar al menos un producto.';
+    respuesta.style.display = 'block';
+    setTimeout(function() {
+      respuesta.style.display = 'none';
+    }, 3000);
+    return;
+  }
+
   let valueObs = document.getElementById("observaciones").value;
   let Mesa = document.getElementById("Mesa").value;
+
+  if (!Mesa.trim()) {
+    const respuesta = document.getElementById('res');
+    respuesta.innerHTML = 'Ingresa un numero de mesa.';
+    respuesta.style.display = 'block';
+    setTimeout(function() {
+      respuesta.style.display = 'none';
+    }, 3000);
+    return;
+  }
+
   pedido = {
     items : orderArray,
     obs : valueObs,
     CI: cedula,
-    Mesa: Mesa
+    Mesa: Mesa,
+    moneda: currentCurrency,
+    cotizacion: getCurrentExchangeRate()
    
   } 
 
