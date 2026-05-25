@@ -98,7 +98,7 @@ if ($Rol== "Mozo"){
           <option value="BRL">Reales brasileños (BRL)</option>
         </select>
       </div>
-      <p id="exchangeRateHint">Cotizacion fija: 1 BRL = 9 UYU</p>
+      <p id="exchangeRateHint">Cotización</p>
       <input class="mesa" type="text" id="Mesa" name="Mesa" placeholder="Numero de Mesa">
       <textarea placeholder="Ingrese una observación aquí" name="" id="observaciones" cols="30" rows="9"></textarea>
     </div>

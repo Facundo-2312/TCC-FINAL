@@ -53,13 +53,7 @@ function updateExchangeRateHint() {
   if (!exchangeRateHint) {
     return;
   }
-
-  if (currentCurrency === 'BRL') {
-    exchangeRateHint.textContent = 'Mostrando conversion con tasa fija: 1 BRL = 9 UYU';
-    return;
-  }
-
-  exchangeRateHint.textContent = 'Moneda base del sistema: UYU. Tasa de referencia: 1 BRL = 9 UYU';
+  exchangeRateHint.textContent = 'Cotización';
 }
 
 function buildImageCandidates(rawPath) {

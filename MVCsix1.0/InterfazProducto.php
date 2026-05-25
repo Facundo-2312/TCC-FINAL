@@ -31,11 +31,11 @@ function resolverImagenProducto($nombreProducto, $rutaImagen)
     );
 
     $imagenesEspecificas = array(
-        'hamburguesa' => 'img/hamburguesa_hq.jpg',
-        'burger' => 'img/hamburguesa_hq.jpg',
-        'pizza' => 'img/pizza_hq.jpg',
-        'coca' => 'img/coca_hq.jpg',
-        'cola' => 'img/coca_hq.jpg',
+        'hamburguesa' => 'https://storage.googleapis.com/fitia_recipe_images/US-R-V-00000001%2Fv3%2Frect.jpeg',
+        'burger' => 'https://storage.googleapis.com/fitia_recipe_images/US-R-V-00000001%2Fv3%2Frect.jpeg',
+        'pizza' => 'https://images.ctfassets.net/j8tkpy1gjhi5/5OvVmigx6VIUsyoKz1EHUs/b8173b7dcfbd6da341ce11bcebfa86ea/Salami-pizza-hero.jpg',
+        'coca' => 'img/coca-orig.jpeg',
+        'cola' => 'img/coca-orig.jpeg',
         'agua' => 'img/agua_hq.jpg'
     );
 
@@ -48,7 +48,15 @@ function resolverImagenProducto($nombreProducto, $rutaImagen)
     }
 
     foreach ($imagenesEspecificas as $keyword => $rutaEspecifica) {
-        if (mb_strpos($nombre, $keyword) !== false && is_file(__DIR__ . '/' . $rutaEspecifica)) {
+        if (mb_strpos($nombre, $keyword) === false) {
+            continue;
+        }
+
+        if (preg_match('/^(https?:)?\/\//i', $rutaEspecifica)) {
+            return $rutaEspecifica;
+        }
+
+        if (is_file(__DIR__ . '/' . $rutaEspecifica)) {
             return $rutaEspecifica;
         }
     }
