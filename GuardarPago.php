@@ -18,6 +18,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $tipoPago = $pedido['TipoPago'];
         $id_pedido = (int) $pedido['id_pedido'];
         $total = (float) $pedido['total'];
+        $propina = isset($pedido['propina']) ? (float) $pedido['propina'] : 0.0;
+        if ($propina < 0) {
+            $propina = 0.0;
+        }
 
         // 🔥 CONEXIÓN
         $con = mysqli_connect("localhost", "root", "", "ProyectoMagnus");
@@ -40,8 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         try {
             // ✅ 1. GUARDAR PAGO
-            $stmtPago = mysqli_prepare($con, 'INSERT INTO pagos (id_pedido, metodo_pago, monto) VALUES (?, ?, ?)');
-            mysqli_stmt_bind_param($stmtPago, 'isd', $id_pedido, $tipoPago, $total);
+            $stmtPago = mysqli_prepare($con, 'INSERT INTO pagos (id_pedido, metodo_pago, monto, propina) VALUES (?, ?, ?, ?)');
+            mysqli_stmt_bind_param($stmtPago, 'isdd', $id_pedido, $tipoPago, $total, $propina);
             mysqli_stmt_execute($stmtPago);
             mysqli_stmt_close($stmtPago);
 

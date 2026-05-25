@@ -21,6 +21,10 @@ function h($value)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['facturar'])) {
     $idPedido = (int) ($_POST['id_pedido'] ?? 0);
     $metodo = trim($_POST['metodo_pago'] ?? '');
+    $propina = isset($_POST['propina']) ? (float) $_POST['propina'] : 0.0;
+    if ($propina < 0) {
+        $propina = 0.0;
+    }
     $metodosPermitidos = ['Efectivo', 'Tarjeta', 'Transferencia'];
 
     if ($idPedido > 0 && in_array($metodo, $metodosPermitidos, true)) {
@@ -44,8 +48,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['facturar'])) {
 
                 if (!$pagoExistente) {
                     $monto = (float) $pedido['total'];
-                    $stmtPago = mysqli_prepare($conexion, 'INSERT INTO pagos (id_pedido, metodo_pago, monto) VALUES (?, ?, ?)');
-                    mysqli_stmt_bind_param($stmtPago, 'isd', $idPedido, $metodo, $monto);
+                    $stmtPago = mysqli_prepare($conexion, 'INSERT INTO pagos (id_pedido, metodo_pago, monto, propina) VALUES (?, ?, ?, ?)');
+                    mysqli_stmt_bind_param($stmtPago, 'isdd', $idPedido, $metodo, $monto, $propina);
                     mysqli_stmt_execute($stmtPago);
                     mysqli_stmt_close($stmtPago);
                 }
@@ -71,12 +75,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['facturar'])) {
 $sqlResumenCaja = "
     SELECT
         COALESCE(SUM(monto), 0) AS recaudadoHoy,
+        COALESCE(SUM(propina), 0) AS propinaHoy,
         COUNT(*) AS pagosHoy
     FROM pagos
     WHERE DATE(fecha) = CURDATE()
 ";
 $resResumen = mysqli_query($conexion, $sqlResumenCaja);
-$resumen = $resResumen ? mysqli_fetch_assoc($resResumen) : ['recaudadoHoy' => 0, 'pagosHoy' => 0];
+$resumen = $resResumen ? mysqli_fetch_assoc($resResumen) : ['recaudadoHoy' => 0, 'propinaHoy' => 0, 'pagosHoy' => 0];
 
 $pedidosPendientes = [];
 $stmtPendientes = mysqli_prepare(
@@ -134,7 +139,7 @@ body{margin:0;padding:20px;background:radial-gradient(circle at top left, rgba(2
 .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;text-decoration:none;font-weight:700;border:0;cursor:pointer}
 .back{background:#3a3a3a;color:#fff}.logout{background:var(--accent);color:#fff}
 h1{text-align:center;color:var(--accent);margin:14px 0 20px;font-size:clamp(1.8rem,3vw,2.6rem)}
-.summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:16px}
+.summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:16px}
 .card{background:linear-gradient(180deg,var(--panel),var(--panel-soft));border:1px solid var(--line);border-radius:14px;padding:14px}
 .label{color:var(--muted);font-size:.9rem}.value{font-size:1.7rem;font-weight:800;margin-top:6px}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
@@ -157,6 +162,7 @@ select,button{padding:10px;border-radius:8px;border:1px solid #ccc}
 
 <div class="summary">
     <div class="card"><div class="label">Recaudado hoy</div><div class="value">$<?php echo number_format((float) ($resumen['recaudadoHoy'] ?? 0), 2, ',', '.'); ?></div></div>
+    <div class="card"><div class="label">Propina hoy</div><div class="value">$<?php echo number_format((float) ($resumen['propinaHoy'] ?? 0), 2, ',', '.'); ?></div></div>
     <div class="card"><div class="label">Pagos registrados hoy</div><div class="value"><?php echo (int) ($resumen['pagosHoy'] ?? 0); ?></div></div>
 </div>
 
@@ -188,6 +194,7 @@ select,button{padding:10px;border-radius:8px;border:1px solid #ccc}
                     <option value="Tarjeta">Tarjeta</option>
                     <option value="Transferencia">Transferencia</option>
                 </select>
+                <input type="number" name="propina" min="0" step="0.01" value="0" placeholder="Propina">
                 <button class="facturar" type="submit" name="facturar">Facturar</button>
             </form>
         </div>

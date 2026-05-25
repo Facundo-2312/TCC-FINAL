@@ -3,6 +3,7 @@
 session_start();
 
 $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
+$chatbotJsVersion = @filemtime(__DIR__ . '/chatbot.js') ?: time();
 
 $Usuario = $_SESSION['Usuario'];
 
@@ -116,6 +117,28 @@ if(!isset($Usuario)){
 </div>
 
 </footer>
+
+<button id="chatbot-toggle" class="chatbot-toggle" type="button" aria-label="Abrir asistente">
+    <i class="fas fa-comments" aria-hidden="true"></i>
+    <span>Asistente</span>
+</button>
+
+<section id="chatbot-panel" class="chatbot-panel" aria-label="Asistente del sistema">
+    <header class="chatbot-header">
+        <h3>Asistente</h3>
+        <button id="chatbot-close" class="chatbot-close" type="button" aria-label="Cerrar asistente">x</button>
+    </header>
+
+    <div id="chatbot-messages" class="chatbot-messages"></div>
+    <div id="chatbot-quick" class="chatbot-quick"></div>
+
+    <form id="chatbot-form" class="chatbot-form" autocomplete="off">
+        <input id="chatbot-input" type="text" maxlength="280" placeholder="Escribe tu pregunta..." required>
+        <button type="submit">Enviar</button>
+    </form>
+</section>
+
+<script src="/proj/chatbot.js?v=<?php echo $chatbotJsVersion; ?>"></script>
 
 </body>
 </html>

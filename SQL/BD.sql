@@ -145,6 +145,7 @@ CREATE TABLE pagos (
     id_pedido INT,
     metodo_pago ENUM('Efectivo','Tarjeta','Transferencia'),
     monto DECIMAL(10,2),
+    propina DECIMAL(10,2) DEFAULT 0,
     fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_pedido) REFERENCES pedidos(id_pedido)
 );

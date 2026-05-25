@@ -1,0 +1,4 @@
+USE ProyectoMagnus;
+
+ALTER TABLE pagos
+ADD COLUMN propina DECIMAL(10,2) NOT NULL DEFAULT 0 AFTER monto;
