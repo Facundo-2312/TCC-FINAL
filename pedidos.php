@@ -1,18 +1,12 @@
 <?php
+require_once __DIR__ . '/app_bootstrap.php';
 
-session_start();
-
-if (!isset($_SESSION['Usuario'])) {
-    header('Location: /proj/Login.php');
-    exit();
-}
+app_require_login('Login.php');
 
 $rol = (int) ($_SESSION['Rol'] ?? 0);
 
 if ($rol === 3) {
-    header('Location: /proj/MVCsix1.0/pedido/pedido.php');
-    exit();
+    app_redirect('MVCsix1.0/pedido/pedido.php');
 }
 
-header('Location: /proj/InterfazObtenerPedidos.php');
-exit();
+app_redirect('InterfazObtenerPedidos.php');

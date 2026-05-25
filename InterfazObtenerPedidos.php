@@ -1,17 +1,12 @@
 <?php
+require_once __DIR__ . '/app_bootstrap.php';
 
-session_start();
+app_require_login('Login.php');
 
-if (!isset($_SESSION['Usuario'])) {
-    header('Location: /proj/Login.php');
-    exit();
-}
-
-$conexion = mysqli_connect('localhost', 'root', '', 'ProyectoMagnus');
+$conexion = app_db_connect();
 if (!$conexion) {
     die('Error de conexión: ' . mysqli_connect_error());
 }
-mysqli_set_charset($conexion, 'utf8mb4');
 
 function h($value)
 {
@@ -99,8 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear'])) {
         mysqli_stmt_close($stmtDetalle);
 
         mysqli_commit($conexion);
-        header('Location: /proj/InterfazObtenerPedidos.php');
-        exit();
+        app_redirect('InterfazObtenerPedidos.php');
     } catch (Throwable $e) {
         mysqli_rollback($conexion);
         die('No se pudo crear el pedido.');
@@ -148,7 +142,7 @@ foreach ($pedidos as $pedido) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pedidos</title>
-<script src="/proj/no-popups.js"></script>
+<script src="<?php echo htmlspecialchars(app_url('no-popups.js'), ENT_QUOTES, 'UTF-8'); ?>"></script>
 <style>
 :root{--bg:#171717;--panel:#242424;--panel-soft:#2c2c2c;--accent:#ff0055;--text:#f4f4f4;--muted:#bdbdbd;--line:rgba(255,255,255,.08)}
 *{box-sizing:border-box}
@@ -177,7 +171,7 @@ input{width:100%;padding:11px 12px;border-radius:10px;border:1px solid #444;back
 <body>
 
 <div class="top">
-    <a class="btn back" href="/proj/Principal.php">← Volver</a>
+    <a class="btn back" href="<?php echo htmlspecialchars(app_url('Principal.php'), ENT_QUOTES, 'UTF-8'); ?>">← Volver</a>
     <span style="color:#ff8fb3;font-weight:700">Gestión de Pedidos</span>
 </div>
 

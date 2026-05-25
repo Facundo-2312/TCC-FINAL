@@ -1,23 +1,17 @@
 <?php
+require_once __DIR__ . '/../app_bootstrap.php';
 
-session_start();
-
-if (!isset($_SESSION['Usuario'])) {
-    header('Location: /proj/Login.php');
-    exit();
-}
+app_require_login('Login.php');
 
 function h($value)
 {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 }
 
-$conexion = mysqli_connect('localhost', 'root', '', 'ProyectoMagnus');
+$conexion = app_db_connect();
 if (!$conexion) {
     die('Error de conexión: ' . mysqli_connect_error());
 }
-
-mysqli_set_charset($conexion, 'utf8mb4');
 
 $desde = $_GET['desde'] ?? date('Y-m-d');
 $hasta = $_GET['hasta'] ?? date('Y-m-d');
@@ -183,7 +177,7 @@ foreach ($topProductos as $productoTop) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Informes</title>
-<script src="/proj/no-popups.js"></script>
+<script src="<?php echo htmlspecialchars(app_url('no-popups.js'), ENT_QUOTES, 'UTF-8'); ?>"></script>
 <style>
 :root{
     --bg: #171717;
@@ -432,7 +426,7 @@ th{
 </head>
 <body>
 
-<a href="/proj/Principal.php" class="back-link">← Volver</a>
+<a href="<?php echo htmlspecialchars(app_url('Principal.php'), ENT_QUOTES, 'UTF-8'); ?>" class="back-link">← Volver</a>
 
 <div class="header">
     <h1>INFORMES DE VENTAS</h1>

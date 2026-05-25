@@ -1,15 +1,9 @@
 <?php
 
+require_once __DIR__ . '/app_bootstrap.php';
 require_once "Empleado.php";
 
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
-
-if (!isset($_SESSION['Usuario'])) {
-    header("Location: /proj/Login.php");
-    exit();
-}
+app_require_login('Login.php');
 
 $empleado = new Empleado();
 
@@ -38,8 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crud'])) {
         $res = $empleado->create($CI, $Nombre, $Apellido, $Direccion, $Rol, $Usuario, $Pass);
 
         if ($res) {
-            header("Location: EmpleadoI.php");
-            exit();
+            app_redirect('EmpleadoI.php');
         }
 
         die("Error al insertar.");
@@ -61,13 +54,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crud'])) {
         $res = $empleado->update($Nombre, $Apellido, $Direccion, $Rol, $Usuario, $Pass, $CI);
 
         if ($res) {
-            header("Location: EmpleadoI.php");
-            exit();
+            app_redirect('EmpleadoI.php');
         }
 
         die("Error al actualizar.");
     }
 
-    header("Location: EmpleadoI.php");
-    exit();
+    app_redirect('EmpleadoI.php');
 }

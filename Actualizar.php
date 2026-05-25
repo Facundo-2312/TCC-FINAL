@@ -1,17 +1,7 @@
 <?php
+require_once __DIR__ . '/app_bootstrap.php';
 
-session_start();
-
-$Usuario = $_SESSION['Usuario'] ?? null;
-
-if(!isset($Usuario)){
-	header("location: /proj/Login.php");
-	exit();
-
-}
-    else{
-    
-}
+app_require_login('Login.php');
 
 if (isset($_GET['ID'])){
 	$CI=intval($_GET['ID']);
@@ -31,7 +21,7 @@ if (isset($_GET['ID'])){
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-<script src="/proj/no-popups.js"></script>
+<script src="<?php echo htmlspecialchars(app_url('no-popups.js'), ENT_QUOTES, 'UTF-8'); ?>"></script>
 
 </head> 
 <body>

@@ -1,17 +1,9 @@
 <?php
-
-session_start();
+require_once __DIR__ . '/app_bootstrap.php';
+app_require_login('Login.php');
 
 $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
 $chatbotJsVersion = @filemtime(__DIR__ . '/chatbot.js') ?: time();
-
-$Usuario = $_SESSION['Usuario'];
-
-if(!isset($Usuario)){
-    header("location: /proj/Login.php");
-    session_destroy();
-    exit();
-}
 
 ?>
 
@@ -21,14 +13,14 @@ if(!isset($Usuario)){
     <title>Inicio</title>
     <link rel="stylesheet" type="text/css" href="estilos/Principal.css?v=<?php echo $principalCssVersion; ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <script src="/proj/no-popups.js"></script>
+    <script src="<?php echo htmlspecialchars(app_url('no-popups.js'), ENT_QUOTES, 'UTF-8'); ?>"></script>
 </head>
 
 <body>
 
 <header>
     <h1>RESTAURANTE-UY</h1> 
-    <a class="salir" href='/proj/Salir.php'>
+    <a class="salir" href="<?php echo htmlspecialchars(app_url('Salir.php'), ENT_QUOTES, 'UTF-8'); ?>">
         <b>Salir</b> 
         <i class="fas fa-sign-out-alt" style="margin-left: 5px;"></i>
     </a>
@@ -43,43 +35,43 @@ if(!isset($Usuario)){
     <div class="botones">
 
         <div class="Links"> 
-            <a href="/proj/EmpleadoI.php">
+            <a href="<?php echo htmlspecialchars(app_url('EmpleadoI.php'), ENT_QUOTES, 'UTF-8'); ?>">
                 <i class="fas fa-user" style="margin-right: 5px;"></i>Funcionarios
             </a> 
         </div>
 
         <div class="Links"> 
-            <a href="/proj/productos.php">
+            <a href="<?php echo htmlspecialchars(app_url('productos.php'), ENT_QUOTES, 'UTF-8'); ?>">
                 <i class="fas fa-plus" style="margin-right: 5px;"></i>Productos
             </a> 
         </div>
 
         <div class="Links"> 
-            <a href="/proj/informes.php">
+            <a href="<?php echo htmlspecialchars(app_url('informes.php'), ENT_QUOTES, 'UTF-8'); ?>">
                 <i class="fas fa-chart-bar" style="margin-right: 5px;"></i>Informes
             </a> 
         </div>
 
         <div class="Links"> 
-            <a href="/proj/pedidos.php">
+            <a href="<?php echo htmlspecialchars(app_url('pedidos.php'), ENT_QUOTES, 'UTF-8'); ?>">
                 <i class="fas fa-shopping-cart" style="margin-right: 5px;"></i>Pedidos
             </a> 
         </div>
 
         <div class="Links"> 
-            <a href="/proj/cocina.php">
+            <a href="<?php echo htmlspecialchars(app_url('cocina.php'), ENT_QUOTES, 'UTF-8'); ?>">
                 <i class="fas fa-utensils" style="margin-right: 5px;"></i>Cocina
             </a> 
         </div>
 
         <div class="Links"> 
-            <a href="/proj/caja.php">
+            <a href="<?php echo htmlspecialchars(app_url('caja.php'), ENT_QUOTES, 'UTF-8'); ?>">
                 <i class="fas fa-coins" style="margin-right: 5px;"></i>Caja
             </a> 
         </div>
 
         <div class="Links"> 
-            <a href="/proj/mesas.php">
+            <a href="<?php echo htmlspecialchars(app_url('mesas.php'), ENT_QUOTES, 'UTF-8'); ?>">
                 <i class="fas fa-chair" style="margin-right: 5px;"></i>Mesas
             </a> 
         </div>
@@ -138,7 +130,7 @@ if(!isset($Usuario)){
     </form>
 </section>
 
-<script src="/proj/chatbot.js?v=<?php echo $chatbotJsVersion; ?>"></script>
+<script src="<?php echo htmlspecialchars(app_url('chatbot.js'), ENT_QUOTES, 'UTF-8'); ?>?v=<?php echo $chatbotJsVersion; ?>"></script>
 
 </body>
 </html>

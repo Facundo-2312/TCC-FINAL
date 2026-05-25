@@ -1,7 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../app_bootstrap.php';
-app_require_login('../Login.php');
+app_require_login('Login.php');
 
 $flash = app_get_flash();
 
@@ -114,7 +114,7 @@ $productos = $producto->ListarProductos();
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
-<script src="/proj/no-popups.js"></script>
+<script src="<?php echo htmlspecialchars(app_url('no-popups.js'), ENT_QUOTES, 'UTF-8'); ?>"></script>
 
 </head>
 <body>

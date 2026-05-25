@@ -1,11 +1,5 @@
 <?php
+require_once __DIR__ . '/app_bootstrap.php';
 
-session_start();
-
-if (!isset($_SESSION['Usuario'])) {
-    header('Location: /proj/Login.php');
-    exit();
-}
-
-header('Location: /proj/Cocina2.php');
-exit();
+app_require_login('Login.php');
+app_redirect('Cocina2.php');

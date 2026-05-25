@@ -1,12 +1,7 @@
-<?php 
 <?php
+require_once __DIR__ . '/app_bootstrap.php';
 
-session_start();
-
-if(!isset($_SESSION['Usuario'])){
-    header("Location: /proj/Login.php");
-    exit();
-}
+app_require_login('Login.php');
 
 if (isset($_GET['ID'])) {
     include('Empleado.php');

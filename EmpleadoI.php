@@ -1,11 +1,7 @@
 <?php
+require_once __DIR__ . '/app_bootstrap.php';
 
-session_start();
-
-if (!isset($_SESSION['Usuario'])) {
-    header('Location: /proj/Login.php');
-    exit();
-}
+app_require_login('Login.php');
 
 require_once 'InterfazE.php';
 
@@ -34,7 +30,7 @@ foreach ($empleados as $fila) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Funcionarios</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-<script src="/proj/no-popups.js"></script>
+<script src="<?php echo htmlspecialchars(app_url('no-popups.js'), ENT_QUOTES, 'UTF-8'); ?>"></script>
 <style>
 :root{
     --bg:#171717;
@@ -115,8 +111,8 @@ th{color:#ff6e99;font-size:.92rem}
 <body>
 
 <div class="topbar">
-    <a href="/proj/Principal.php" class="back"><i class="fas fa-arrow-left"></i> Volver</a>
-    <a href="/proj/Crear.php" class="add-btn"><i class="fas fa-user-plus"></i> Agregar Funcionario</a>
+    <a href="<?php echo htmlspecialchars(app_url('Principal.php'), ENT_QUOTES, 'UTF-8'); ?>" class="back"><i class="fas fa-arrow-left"></i> Volver</a>
+    <a href="<?php echo htmlspecialchars(app_url('crear.php'), ENT_QUOTES, 'UTF-8'); ?>" class="add-btn"><i class="fas fa-user-plus"></i> Agregar Funcionario</a>
 </div>
 
 <h1 class="title">Gestión de Funcionarios</h1>
@@ -161,8 +157,8 @@ th{color:#ff6e99;font-size:.92rem}
                         <td><span class="badge"><?php echo h($fila['Rol'] ?? ''); ?></span></td>
                         <td><?php echo h($fila['Usuario'] ?? ''); ?></td>
                         <td class="actions">
-                            <a class="edit" href="/proj/Actualizar.php?ID=<?php echo (int) ($fila['CI'] ?? 0); ?>"><i class="fas fa-pen"></i></a>
-                            <a class="delete" href="/proj/Eliminar.php?ID=<?php echo (int) ($fila['CI'] ?? 0); ?>"><i class="fas fa-trash"></i></a>
+                            <a class="edit" href="<?php echo htmlspecialchars(app_url('Actualizar.php'), ENT_QUOTES, 'UTF-8'); ?>?ID=<?php echo (int) ($fila['CI'] ?? 0); ?>"><i class="fas fa-pen"></i></a>
+                            <a class="delete" href="<?php echo htmlspecialchars(app_url('Eliminar.php'), ENT_QUOTES, 'UTF-8'); ?>?ID=<?php echo (int) ($fila['CI'] ?? 0); ?>"><i class="fas fa-trash"></i></a>
                         </td>
                     </tr>
                 <?php } ?>

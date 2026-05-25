@@ -13,7 +13,7 @@ $loginCssVersion = @filemtime(__DIR__ . '/estilos/login.css') ?: time();
     <title>Login PHP</title>
     <link rel="stylesheet" type="text/css" href="estilos/login.css?v=<?php echo $loginCssVersion; ?>">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-  <script src="/proj/no-popups.js"></script>
+  <script src="<?php echo htmlspecialchars(app_url('no-popups.js'), ENT_QUOTES, 'UTF-8'); ?>"></script>
   </head>
   <body>
 

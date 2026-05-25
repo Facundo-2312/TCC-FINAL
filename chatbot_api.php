@@ -44,12 +44,11 @@ function chatbot_normalize_text($text)
 
 function chatbot_connect()
 {
-    $con = mysqli_connect('localhost', 'root', '', 'ProyectoMagnus');
+    $con = app_db_connect();
     if (!$con) {
         return null;
     }
 
-    mysqli_set_charset($con, 'utf8mb4');
     return $con;
 }
 

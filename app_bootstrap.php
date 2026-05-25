@@ -71,8 +71,107 @@ if (!function_exists('app_get_flash')) {
 if (!function_exists('app_redirect')) {
     function app_redirect($path)
     {
-        header('Location: ' . $path);
+        header('Location: ' . app_url($path));
         exit();
+    }
+}
+
+if (!function_exists('app_base_path')) {
+    function app_base_path()
+    {
+        static $basePath = null;
+
+        if ($basePath !== null) {
+            return $basePath;
+        }
+
+        $configuredPath = getenv('APP_BASE_PATH');
+        if (is_string($configuredPath) && $configuredPath !== '') {
+            $trimmedPath = trim(str_replace('\\', '/', $configuredPath));
+            $basePath = $trimmedPath === '/' ? '' : '/' . trim($trimmedPath, '/');
+            return $basePath;
+        }
+
+        $documentRoot = isset($_SERVER['DOCUMENT_ROOT']) ? realpath((string) $_SERVER['DOCUMENT_ROOT']) : false;
+        $appRoot = realpath(__DIR__);
+
+        if ($documentRoot && $appRoot) {
+            $documentRoot = str_replace('\\', '/', $documentRoot);
+            $appRoot = str_replace('\\', '/', $appRoot);
+
+            if (strpos($appRoot, $documentRoot) === 0) {
+                $relativePath = trim(substr($appRoot, strlen($documentRoot)), '/');
+                $basePath = $relativePath === '' ? '' : '/' . $relativePath;
+                return $basePath;
+            }
+        }
+
+        $basePath = '';
+        return $basePath;
+    }
+}
+
+if (!function_exists('app_url')) {
+    function app_url($path = '')
+    {
+        $path = (string) $path;
+
+        if ($path === '') {
+            return app_base_path() !== '' ? app_base_path() : '/';
+        }
+
+        if (preg_match('#^(?:[a-z][a-z0-9+.-]*:)?//#i', $path) === 1) {
+            return $path;
+        }
+
+        if ($path[0] === '/') {
+            return $path;
+        }
+
+        $basePath = app_base_path();
+        return ($basePath !== '' ? $basePath : '') . '/' . ltrim($path, '/');
+    }
+}
+
+if (!function_exists('app_db_config')) {
+    function app_db_config($overrides = array())
+    {
+        $config = array(
+            'host' => getenv('APP_DB_HOST') ?: 'localhost',
+            'user' => getenv('APP_DB_USER') ?: 'root',
+            'password' => getenv('APP_DB_PASSWORD') ?: '',
+            'database' => getenv('APP_DB_NAME') ?: 'ProyectoMagnus',
+            'charset' => getenv('APP_DB_CHARSET') ?: 'utf8mb4',
+        );
+
+        foreach ((array) $overrides as $key => $value) {
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            $config[$key] = $value;
+        }
+
+        return $config;
+    }
+}
+
+if (!function_exists('app_db_connect')) {
+    function app_db_connect($overrides = array())
+    {
+        $config = app_db_config($overrides);
+        $connection = mysqli_connect(
+            (string) $config['host'],
+            (string) $config['user'],
+            (string) $config['password'],
+            (string) $config['database']
+        );
+
+        if ($connection && !empty($config['charset'])) {
+            mysqli_set_charset($connection, (string) $config['charset']);
+        }
+
+        return $connection;
     }
 }
 

@@ -1,17 +1,12 @@
 <?php
+require_once __DIR__ . '/app_bootstrap.php';
 
-session_start();
+app_require_login('Login.php');
 
-if (!isset($_SESSION['Usuario'])) {
-    header('Location: /proj/Login.php');
-    exit();
-}
-
-$conexion = mysqli_connect('localhost', 'root', '', 'ProyectoMagnus');
+$conexion = app_db_connect();
 if (!$conexion) {
     die('Error de conexión: ' . mysqli_connect_error());
 }
-mysqli_set_charset($conexion, 'utf8mb4');
 
 $toastMessage = '';
 $toastKind = '';
@@ -50,8 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion_estado'])) {
         mysqli_stmt_close($stmtUpdate);
     }
 
-    header('Location: /proj/Cocina2.php');
-    exit();
+    app_redirect('Cocina2.php');
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion_eliminar'])) {
@@ -64,12 +58,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion_eliminar'])) {
         mysqli_stmt_execute($stmtHide);
         mysqli_stmt_close($stmtHide);
 
-        header('Location: /proj/Cocina2.php?msg=hidden');
-        exit();
+        app_redirect('Cocina2.php?msg=hidden');
     }
 
-    header('Location: /proj/Cocina2.php');
-    exit();
+    app_redirect('Cocina2.php');
 }
 
 $pedidos = [];
@@ -127,7 +119,7 @@ foreach ($pedidos as $pedido) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cocina</title>
-<script src="/proj/no-popups.js"></script>
+<script src="<?php echo htmlspecialchars(app_url('no-popups.js'), ENT_QUOTES, 'UTF-8'); ?>"></script>
 <style>
 :root{--bg:#171717;--panel:#242424;--panel-soft:#2c2c2c;--accent:#ff0055;--text:#f4f4f4;--muted:#bdbdbd;--line:rgba(255,255,255,.08)}
 *{box-sizing:border-box}
@@ -163,8 +155,8 @@ ul{padding-left:18px;margin:8px 0 0;flex:1;overflow:auto}
 <body>
 
 <div class="top">
-    <a class="btn back" href="/proj/Principal.php">← Volver</a>
-    <a class="btn salir" href="/proj/Salir.php">Salir</a>
+    <a class="btn back" href="<?php echo htmlspecialchars(app_url('Principal.php'), ENT_QUOTES, 'UTF-8'); ?>">← Volver</a>
+    <a class="btn salir" href="<?php echo htmlspecialchars(app_url('Salir.php'), ENT_QUOTES, 'UTF-8'); ?>">Salir</a>
 </div>
 
 <h1>Panel de Cocina</h1>

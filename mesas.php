@@ -1,17 +1,12 @@
 <?php
+require_once __DIR__ . '/app_bootstrap.php';
 
-session_start();
+app_require_login('Login.php');
 
-if (!isset($_SESSION['Usuario'])) {
-    header('Location: /proj/Login.php');
-    exit();
-}
-
-$conexion = mysqli_connect('localhost', 'root', '', 'ProyectoMagnus');
+$conexion = app_db_connect();
 if (!$conexion) {
     die('Error de conexión: ' . mysqli_connect_error());
 }
-mysqli_set_charset($conexion, 'utf8mb4');
 
 function h($value)
 {
@@ -96,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion_mesa'])) {
             mysqli_stmt_close($stmt);
 
             if ($filas === 0) {
-                header('Location: /proj/mesas.php?msg=occupied');
+                app_redirect('mesas.php?msg=occupied');
                 exit();
             }
 
@@ -111,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion_mesa'])) {
         }
     }
 
-    header('Location: /proj/mesas.php');
+    app_redirect('mesas.php');
     exit();
 }
 
@@ -156,13 +151,13 @@ $cssVersion = @filemtime(__DIR__ . '/estilos/mesas.css') ?: time();
 <title>Mesas en Tiempo Real</title>
 <link rel="stylesheet" type="text/css" href="estilos/mesas.css?v=<?php echo $cssVersion; ?>">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-<script src="/proj/no-popups.js"></script>
+<script src="<?php echo htmlspecialchars(app_url('no-popups.js'), ENT_QUOTES, 'UTF-8'); ?>"></script>
 </head>
 <body>
 
 <div class="top">
-    <a class="btn back" href="/proj/Principal.php">← Volver</a>
-    <a class="btn logout" href="/proj/Salir.php">Salir</a>
+    <a class="btn back" href="<?php echo htmlspecialchars(app_url('Principal.php'), ENT_QUOTES, 'UTF-8'); ?>">← Volver</a>
+    <a class="btn logout" href="<?php echo htmlspecialchars(app_url('Salir.php'), ENT_QUOTES, 'UTF-8'); ?>">Salir</a>
 </div>
 
 <h1>Mesas en Tiempo Real</h1>
@@ -336,12 +331,12 @@ $cssVersion = @filemtime(__DIR__ . '/estilos/mesas.css') ?: time();
     }
 
     function poll() {
-        fetch('/proj/mesas_estado.php', { cache: 'no-store' })
+        fetch('<?php echo htmlspecialchars(app_url('mesas_estado.php'), ENT_QUOTES, 'UTF-8'); ?>', { cache: 'no-store' })
             .then(function (res) { return res.json(); })
             .then(syncMesas)
             .catch(function () {});
 
-        fetch('/proj/mesas_historial.php', { cache: 'no-store' })
+        fetch('<?php echo htmlspecialchars(app_url('mesas_historial.php'), ENT_QUOTES, 'UTF-8'); ?>', { cache: 'no-store' })
             .then(function (res) { return res.json(); })
             .then(function (data) {
                 if (!historialList || !data || !Array.isArray(data.historial)) return;

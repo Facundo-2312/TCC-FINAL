@@ -1,13 +1,7 @@
 <?php
+require_once __DIR__ . '/app_bootstrap.php';
 
-session_start();
-
-$Usuario = $_SESSION['Usuario'] ?? null;
-
-if (!isset($Usuario)) {
-    header('Location: /proj/Login.php');
-    exit();
-}
+app_require_login('Login.php');
 
 ?>
 <!DOCTYPE html>
@@ -18,7 +12,7 @@ if (!isset($Usuario)) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Agregar Empleado</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-<script src="/proj/no-popups.js"></script>
+<script src="<?php echo htmlspecialchars(app_url('no-popups.js'), ENT_QUOTES, 'UTF-8'); ?>"></script>
 <style>
 :root{
     --bg:#171717;

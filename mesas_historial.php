@@ -1,6 +1,7 @@
 <?php
+require_once __DIR__ . '/app_bootstrap.php';
 
-session_start();
+app_start_session();
 
 if (!isset($_SESSION['Usuario'])) {
     http_response_code(401);
@@ -9,15 +10,13 @@ if (!isset($_SESSION['Usuario'])) {
     exit();
 }
 
-$conexion = mysqli_connect('localhost', 'root', '', 'ProyectoMagnus');
+$conexion = app_db_connect();
 if (!$conexion) {
     http_response_code(500);
     header('Content-Type: application/json; charset=utf-8');
     echo json_encode(['error' => 'Error de conexión']);
     exit();
 }
-
-mysqli_set_charset($conexion, 'utf8mb4');
 
 $historial = [];
 $sql = "

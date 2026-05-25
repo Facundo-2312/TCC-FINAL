@@ -1,13 +1,12 @@
 <?php
-// Conexión a la base de datos 
-$servername = "localhost";
-$username = "root";
-$password = "1234";
-$dbname = "pro";
+require_once __DIR__ . '/app_bootstrap.php';
 
-$conn = new mysqli($servername, $username, $password, $dbname);
-if ($conn->connect_error) {
-    die("Conexión fallida: " . $conn->connect_error);
+$conn = app_db_connect(array(
+    'password' => '1234',
+    'database' => 'pro',
+));
+if (!$conn) {
+    die('Conexión fallida: ' . mysqli_connect_error());
 }
 
 // Obtener el valor 'desde' de la URL

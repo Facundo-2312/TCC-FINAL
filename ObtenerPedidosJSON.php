@@ -1,6 +1,7 @@
 <?php
+require_once __DIR__ . '/app_bootstrap.php';
 
-$conexion = mysqli_connect("localhost","root","","ProyectoMagnus");
+$conexion = app_db_connect();
 
 $sql = "SELECT *
 FROM pedidos
