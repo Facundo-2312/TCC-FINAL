@@ -1,11 +1,9 @@
 <?php
 
-session_start();
+require_once __DIR__ . '/../app_bootstrap.php';
+app_require_login('../Login.php');
 
-if (!isset($_SESSION['Usuario']) || !isset($_SESSION['Rol'])) {
-    header("Location: ../Login.php");
-    exit();
-}
+$flash = app_get_flash();
 
 $IDProducto = filter_input(INPUT_GET, 'ID', FILTER_VALIDATE_INT);
 if (!$IDProducto) {
@@ -101,6 +99,7 @@ $imgActualUrl = resolverRutaImagen($datosProducto['img'] ?? '', $datosProducto['
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<script src="/proj/no-popups.js"></script>
 
 </head>
 <body>
@@ -115,6 +114,9 @@ $imgActualUrl = resolverRutaImagen($datosProducto['img'] ?? '', $datosProducto['
 </header>
 
 <div class="contenido">
+  <?php if (!empty($flash) && !empty($flash['message'])) { ?>
+    <div class="flash flash-<?php echo h($flash['type'] ?? 'info'); ?>"><?php echo h($flash['message']); ?></div>
+  <?php } ?>
   <form method="post" action="InterfazProducto.php" enctype="multipart/form-data">
 
     <label>Nombre</label>

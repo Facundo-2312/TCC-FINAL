@@ -1,11 +1,9 @@
 <?php
 
-session_start();
+require_once __DIR__ . '/../app_bootstrap.php';
+app_require_login('../Login.php');
 
-if (!isset($_SESSION['Usuario']) || !isset($_SESSION['Rol'])) {
-    header("Location: ../Login.php");
-    exit();
-}
+$flash = app_get_flash();
 
 require_once "Producto.php";
 
@@ -92,6 +90,7 @@ $productos = $producto->ListarProductos();
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+<script src="/proj/no-popups.js"></script>
 
 </head>
 <body>
@@ -112,6 +111,9 @@ $productos = $producto->ListarProductos();
 </div>
 
 <div class="contenido">
+  <?php if (!empty($flash) && !empty($flash['message'])) { ?>
+    <div class="flash flash-<?php echo h($flash['type'] ?? 'info'); ?>"><?php echo h($flash['message']); ?></div>
+  <?php } ?>
   <div class="lista-centrada">
     <table class="tabla-decent">
       <thead>

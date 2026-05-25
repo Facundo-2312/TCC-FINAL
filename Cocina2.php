@@ -127,6 +127,7 @@ foreach ($pedidos as $pedido) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cocina</title>
+<script src="/proj/no-popups.js"></script>
 <style>
 :root{--bg:#171717;--panel:#242424;--panel-soft:#2c2c2c;--accent:#ff0055;--text:#f4f4f4;--muted:#bdbdbd;--line:rgba(255,255,255,.08)}
 *{box-sizing:border-box}

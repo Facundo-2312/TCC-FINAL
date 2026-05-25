@@ -1,4 +1,8 @@
 <?php
+require_once __DIR__ . '/app_bootstrap.php';
+app_start_session();
+
+$flash = app_get_flash();
 $loginCssVersion = @filemtime(__DIR__ . '/estilos/login.css') ?: time();
 ?>
 <!doctype html>
@@ -9,6 +13,7 @@ $loginCssVersion = @filemtime(__DIR__ . '/estilos/login.css') ?: time();
     <title>Login PHP</title>
     <link rel="stylesheet" type="text/css" href="estilos/login.css?v=<?php echo $loginCssVersion; ?>">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <script src="/proj/no-popups.js"></script>
   </head>
   <body>
 
@@ -21,6 +26,11 @@ $loginCssVersion = @filemtime(__DIR__ . '/estilos/login.css') ?: time();
  <div class="conteiner">
 
   <div class="login-container">
+  <?php if (!empty($flash) && !empty($flash['message'])) { ?>
+    <div class="flash flash-<?php echo htmlspecialchars((string) ($flash['type'] ?? 'info'), ENT_QUOTES, 'UTF-8'); ?>">
+      <?php echo htmlspecialchars((string) $flash['message'], ENT_QUOTES, 'UTF-8'); ?>
+    </div>
+  <?php } ?>
   <img src="img/logonuevo.jpeg" style="height: 95px; width: 95px; border-radius: 100px;">
             <h2>INICIAR SESION</h2>
       

@@ -1,20 +1,26 @@
 <?php
 
 // INCLUIMOS LA CLASE
-include ("Empleado.php");
+require_once __DIR__ . '/app_bootstrap.php';
+require_once "Empleado.php";
 
-session_start(); 
+app_start_session();
 
 $F = new Empleado();
 
 // Validar que llegan datos
 if (!isset($_POST['Usuario']) || !isset($_POST['Pass'])) {
-    header("Location: Login.php");
-    exit();
+    app_set_flash('error', 'Completa usuario y contrasena para ingresar.');
+    app_redirect('Login.php');
 }
 
 $Usuario = trim($_POST['Usuario']);
 $Pass = (string) $_POST['Pass'];
+
+if ($Usuario === '' || $Pass === '') {
+    app_set_flash('error', 'Completa usuario y contrasena para ingresar.');
+    app_redirect('Login.php');
+}
 
 // LOGIN
 $res = $F->Login($Usuario, $Pass);
@@ -32,21 +38,20 @@ if ($res !== null) {
 
     // 🔀 REDIRECCIÓN SEGÚN ROL
     if ($Rol == 1) {
-        header("Location: Principal.php"); // Admin
+        app_redirect("Principal.php"); // Admin
     } elseif ($Rol == 2) {
-        header("Location: caja.php"); // Caja
+        app_redirect("caja.php"); // Caja
     } elseif ($Rol == 3) {
-        header("Location: pedidos.php"); // Mozo
+        app_redirect("pedidos.php"); // Mozo
     } elseif ($Rol == 4) {
-        header("Location: cocina.php"); // Cocina
+        app_redirect("cocina.php"); // Cocina
     } else {
-        header("Location: Login.php");
+        app_set_flash('warning', 'Tu usuario no tiene un rol valido.');
+        app_redirect("Login.php");
     }
-
-    exit();
 
 } else {
     // ❌ LOGIN INCORRECTO
-    header("Location: Login.php");
-    exit();
+    app_set_flash('error', 'Usuario o contrasena incorrectos.');
+    app_redirect("Login.php");
 }

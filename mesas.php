@@ -156,6 +156,7 @@ $cssVersion = @filemtime(__DIR__ . '/estilos/mesas.css') ?: time();
 <title>Mesas en Tiempo Real</title>
 <link rel="stylesheet" type="text/css" href="estilos/mesas.css?v=<?php echo $cssVersion; ?>">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<script src="/proj/no-popups.js"></script>
 </head>
 <body>
 

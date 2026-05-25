@@ -35,6 +35,7 @@ else if(!isset($Rol)){
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" type="text/css" href="style.css?v=<?php echo $pedidoCssVersion; ?>">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <script src="/proj/no-popups.js"></script>
 </head>
 <body>
   

@@ -1,9 +1,5 @@
 <?php
-
-    session_start();
-    session_destroy();
-
-    header("location: Login.php");
-    exit();
+require_once __DIR__ . '/app_bootstrap.php';
+app_logout('Login.php');
 
 ?>

@@ -1,0 +1,18 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "commit-clean-working-tree",
+			"type": "shell",
+			"command": "git add -A; git commit -m \"Limpieza final de cambios y supresion de alertas\"; git status --short --branch; git log -1 --oneline",
+			"args": [],
+			"isBackground": false
+		},
+		{
+			"label": "commit-clean-working-tree-2",
+			"type": "shell",
+			"command": "git add -A; git commit -m cleanup_alertas; git status --short --branch; git log -1 --oneline",
+			"isBackground": false
+		}
+	]
+}

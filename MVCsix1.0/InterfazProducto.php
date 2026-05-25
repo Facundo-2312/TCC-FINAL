@@ -1,13 +1,7 @@
 <?php
 
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
-
-if (!isset($_SESSION['Usuario']) || !isset($_SESSION['Rol'])) {
-    header("Location: ../Login.php");
-    exit();
-}
+require_once __DIR__ . '/../app_bootstrap.php';
+app_require_login('../Login.php');
 
 require_once "Producto.php";
 
@@ -153,8 +147,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crud'])) {
             }
 
             $producto->create($nombre, $descripcion, $precio, $stock, $imagen);
-            header('Location: index.php');
-            exit();
+            app_set_flash('success', 'Producto creado correctamente.');
+            app_redirect('index.php');
         }
 
         if ($crud === 2) {
@@ -171,13 +165,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crud'])) {
             }
 
             $producto->update($idProducto, $nombre, $descripcion, $precio, $stock, $imagen);
-            header('Location: index.php');
-            exit();
+            app_set_flash('success', 'Producto actualizado correctamente.');
+            app_redirect('index.php');
         }
 
-        header('Location: index.php');
-        exit();
+        app_set_flash('warning', 'Operacion no valida.');
+        app_redirect('index.php');
     } catch (RuntimeException $e) {
-        die($e->getMessage());
+        app_set_flash('error', $e->getMessage());
+
+        if ($crud === 1) {
+            app_redirect('create.php');
+        }
+
+        if ($crud === 2) {
+            $idProducto = (int) ($_POST['IDProducto'] ?? 0);
+            if ($idProducto > 0) {
+                app_redirect('update.php?ID=' . $idProducto);
+            }
+        }
+
+        app_redirect('index.php');
     }
 }

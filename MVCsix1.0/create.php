@@ -1,11 +1,9 @@
 <?php
 
-session_start();
+require_once __DIR__ . '/../app_bootstrap.php';
+app_require_login('../Login.php');
 
-if (!isset($_SESSION['Usuario']) || !isset($_SESSION['Rol'])) {
-    header("Location: ../Login.php");
-    exit();
-}
+$flash = app_get_flash();
 
 ?>
 <!DOCTYPE html>
@@ -20,6 +18,7 @@ if (!isset($_SESSION['Usuario']) || !isset($_SESSION['Rol'])) {
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<script src="/proj/no-popups.js"></script>
 
 </head>
 <body>
@@ -34,6 +33,12 @@ if (!isset($_SESSION['Usuario']) || !isset($_SESSION['Rol'])) {
 </header>
 
 <div class="contenido">
+
+<?php if (!empty($flash) && !empty($flash['message'])) { ?>
+  <div class="flash flash-<?php echo htmlspecialchars((string) ($flash['type'] ?? 'info'), ENT_QUOTES, 'UTF-8'); ?>">
+    <?php echo htmlspecialchars((string) $flash['message'], ENT_QUOTES, 'UTF-8'); ?>
+  </div>
+<?php } ?>
 
 <form method="post" action="InterfazProducto.php" enctype="multipart/form-data">
 
