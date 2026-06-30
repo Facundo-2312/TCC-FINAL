@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/app_bootstrap.php';
-app_require_login('Login.php');
+app_require_login ('Login.php');
 
 $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
 $chatbotJsVersion = @filemtime(__DIR__ . '/chatbot.js') ?: time();
