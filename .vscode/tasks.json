@@ -13,6 +13,66 @@
 			"type": "shell",
 			"command": "git add -A; git commit -m cleanup_alertas; git status --short --branch; git log -1 --oneline",
 			"isBackground": false
+		},
+		{
+			"label": "diag-pedidos-db",
+			"type": "shell",
+			"command": "C:\\xampp\\php\\php.exe -r \"require 'app_bootstrap.php'; $c=app_db_connect(); if(!$c){echo 'DB_FAIL\\n'; exit(1);} $q1=mysqli_query($c,'SELECT COUNT(*) c FROM pedidos'); if(!$q1){echo 'ERR_PEDIDOS '.mysqli_error($c).'\\n';} else {$r=mysqli_fetch_assoc($q1); echo 'PEDIDOS='.$r['c'].'\\n';} $q2=mysqli_query($c,'SELECT COUNT(*) c FROM usuarios'); if($q2){$r=mysqli_fetch_assoc($q2); echo 'USUARIOS='.$r['c'].'\\n';} $q3=mysqli_query($c,'SELECT COUNT(*) c FROM mesas'); if($q3){$r=mysqli_fetch_assoc($q3); echo 'MESAS='.$r['c'].'\\n';} $q4=mysqli_query($c,'SELECT id_usuario,usuario FROM usuarios LIMIT 5'); if($q4){while($x=mysqli_fetch_assoc($q4)){echo 'U:'.$x['id_usuario'].':'.$x['usuario'].'\\n';}}\"",
+			"isBackground": false
+		},
+		{
+			"label": "run-diag-pedidos",
+			"type": "shell",
+			"command": "C:\\xampp\\php\\php.exe tmp_diag_pedidos.php",
+			"isBackground": false
+		},
+		{
+			"label": "run-create-test-pedido",
+			"type": "shell",
+			"command": "C:\\xampp\\php\\php.exe tmp_test_create_pedido.php",
+			"isBackground": false
+		},
+		{
+			"label": "run-diag-caja",
+			"type": "shell",
+			"command": "C:\\xampp\\php\\php.exe tmp_diag_caja.php",
+			"isBackground": false
+		},
+		{
+			"label": "run-cleanup-testflow",
+			"type": "shell",
+			"command": "C:\\xampp\\php\\php.exe tmp_cleanup_testflow.php",
+			"isBackground": false
+		},
+		{
+			"label": "remove-temp-diagnostics",
+			"type": "shell",
+			"command": "Remove-Item -Force tmp_diag_pedidos.php,tmp_test_create_pedido.php,tmp_diag_caja.php,tmp_cleanup_testflow.php",
+			"isBackground": false
+		},
+		{
+			"label": "status-before-push-now",
+			"type": "shell",
+			"command": "git status --short --branch; git diff -- InterfazObtenerPedidos.php | head -n 40",
+			"isBackground": false
+		},
+		{
+			"label": "commit-and-push-pedidos-fix",
+			"type": "shell",
+			"command": "git add InterfazObtenerPedidos.php; git commit -m \"Corrige alta rapida de pedidos y enlace con detalle\"; git push origin main; git status --short --branch; git log -1 --oneline",
+			"isBackground": false
+		},
+		{
+			"label": "commit-push-pedidos-fix-2",
+			"type": "shell",
+			"command": "git commit -m 'Corrige alta rapida de pedidos y enlace con detalle'; git push origin main; git status --short --branch; git log -1 --oneline",
+			"isBackground": false
+		},
+		{
+			"label": "push-remaining-change",
+			"type": "shell",
+			"command": "git status --short --branch; git add .vscode/tasks.json; git commit -m 'Actualiza tareas locales de VS Code'; git push origin main; git status --short --branch; git log -1 --oneline",
+			"isBackground": false
 		}
 	]
 }
