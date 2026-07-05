@@ -35,6 +35,31 @@ function resolverRutaImagen($ruta, $nombreProducto = '')
   }
 
   $nombre = mb_strtolower((string) $nombreProducto, 'UTF-8');
+
+  $imagenesEspecificas = array(
+    'hamburguesa bacon' => 'files/ham2.png',
+    'cheeseburger' => 'files/ham5.png',
+    'hamburguesa' => 'img/default_hamburguesa_hq.jpg',
+    'pizza' => 'img/default_pizza_hq.jpg',
+    'coca cola' => 'img/coca-orig.jpeg',
+    'coca' => 'img/coca-orig.jpeg',
+    'cola' => 'img/coca-orig.jpeg',
+    'agua' => 'img/agua_hq.jpg',
+    'papas fritas' => 'files/papas.png',
+    'papas' => 'files/papas.png',
+    'helado vainilla' => 'files/Helado.jpg',
+    'helado' => 'files/Helado.jpg',
+    'nuggets' => 'img/nuggets_pollo_real.jpg',
+    'jugo de naranja' => 'img/jugo_naranja_real.jpg',
+    'jugo' => 'img/jugo_naranja_real.jpg'
+  );
+
+  foreach ($imagenesEspecificas as $keyword => $rutaEspecifica) {
+    if (mb_strpos($nombre, $keyword) !== false && is_file(__DIR__ . '/' . $rutaEspecifica)) {
+      return $rutaEspecifica;
+    }
+  }
+
   $defaultsPorCategoria = array(
     'hamburguesa' => 'img/default_hamburguesa_hq.jpg',
     'burger' => 'img/default_hamburguesa_hq.jpg',

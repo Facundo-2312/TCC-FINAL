@@ -1,7 +1,43 @@
 <?php
 
+require_once __DIR__ . '/../app_bootstrap.php';
+app_start_session();
+
 include "Pedido.php";
 include "Pepc.php";
+
+function resolverCedulaMozo($cedulaRecibida)
+{
+	$cedula = (int) $cedulaRecibida;
+	if ($cedula > 0) {
+		return $cedula;
+	}
+
+	$usuario = trim((string) ($_SESSION['Usuario'] ?? ''));
+	if ($usuario === '') {
+		return 0;
+	}
+
+	$con = app_db_connect();
+	if (!$con) {
+		return 0;
+	}
+
+	$stmt = mysqli_prepare($con, "SELECT CI FROM empleado WHERE Usuario = ? LIMIT 1");
+	if (!$stmt) {
+		mysqli_close($con);
+		return 0;
+	}
+
+	mysqli_stmt_bind_param($stmt, 's', $usuario);
+	mysqli_stmt_execute($stmt);
+	$res = mysqli_stmt_get_result($stmt);
+	$row = $res ? mysqli_fetch_assoc($res) : null;
+	mysqli_stmt_close($stmt);
+	mysqli_close($con);
+
+	return (int) ($row['CI'] ?? 0);
+}
 
 
 	//CREAMOS LA INSTANCIA DATOS O SUPERCLASE
@@ -48,6 +84,18 @@ function GuardarPedido($Observaciones, $Consumo, $cedula, $Mesa, $Moneda = 'UYU'
 	
 	$Pedido= new Pedido();				
 	$Pepc = new Pepc();
+	$Mesa = (int) $Mesa;
+	$cedula = resolverCedulaMozo($cedula);
+
+	if ($Mesa <= 0) {
+		echo json_encode('La mesa es obligatoria y debe ser mayor a 0.');
+		return;
+	}
+
+	if ($cedula <= 0) {
+		echo json_encode('No se pudo identificar el mozo. Cierra sesion e inicia nuevamente.');
+		return;
+	}
 
 	$Moneda = strtoupper(trim((string) $Moneda));
 	if ($Moneda !== 'BRL') {
@@ -94,7 +142,8 @@ function GuardarPedido($Observaciones, $Consumo, $cedula, $Mesa, $Moneda = 'UYU'
 				echo json_encode("Se guardó el pedido");
 				
 			}else{
-				echo json_encode("No se pudieron insertar los datos");
+				$detalle = trim((string) $Pedido->getLastError());
+				echo json_encode($detalle !== '' ? $detalle : "No se pudieron insertar los datos");
 				
 			}
 	   

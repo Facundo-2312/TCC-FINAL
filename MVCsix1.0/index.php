@@ -5,7 +5,7 @@ app_require_login('Login.php');
 
 $flash = app_get_flash();
 
-require_once "Producto.php";
+require_once "InterfazProducto.php";
 
 $indexCssVersion = @filemtime(__DIR__ . '/../estilos/index.css') ?: time();
 
@@ -24,12 +24,22 @@ function resolverRutaImagen($ruta, $nombreProducto = '')
   $nombre = mb_strtolower((string) $nombreProducto, 'UTF-8');
 
   $imagenesEspecificas = array(
-    'hamburguesa' => 'img/hamburguesa_hq.jpg',
-    'burger' => 'img/hamburguesa_hq.jpg',
-    'pizza' => 'img/pizza_hq.jpg',
+    'hamburguesa bacon' => 'files/ham2.png',
+    'cheeseburger' => 'files/ham5.png',
+    'hamburguesa' => 'img/default_hamburguesa_hq.jpg',
+    'burger' => 'img/default_hamburguesa_hq.jpg',
+    'pizza' => 'img/default_pizza_hq.jpg',
+    'coca cola' => 'img/coca-orig.jpeg',
     'coca' => 'img/coca-orig.jpeg',
     'cola' => 'img/coca-orig.jpeg',
-    'agua' => 'img/agua_hq.jpg'
+    'agua' => 'img/agua_hq.jpg',
+    'nuggets' => 'img/nuggets_pollo_real.jpg',
+    'jugo de naranja' => 'img/jugo_naranja_real.jpg',
+    'jugo' => 'img/jugo_naranja_real.jpg',
+    'papas fritas' => 'files/papas.png',
+    'papas' => 'files/papas.png',
+    'helado vainilla' => 'files/Helado.jpg',
+    'helado' => 'files/Helado.jpg'
   );
 
   foreach ($imagenesEspecificas as $keyword => $rutaEspecifica) {
@@ -97,8 +107,10 @@ function resolverRutaImagen($ruta, $nombreProducto = '')
   return null;
 }
 
-$producto = new Producto();
-$productos = $producto->ListarProductos();
+$productos = json_decode(ListarProductos(), true);
+if (!is_array($productos)) {
+  $productos = array();
+}
 
 ?>
 
@@ -154,23 +166,30 @@ $productos = $producto->ListarProductos();
       <tbody>
       <?php if (!empty($productos)) { ?>
         <?php foreach ($productos as $fila) { ?>
-        <?php $imgUrl = resolverRutaImagen($fila['img'] ?? '', $fila['nombre'] ?? ''); ?>
+        <?php
+          $id = (int) ($fila['IDProducto'] ?? $fila['id_producto'] ?? 0);
+          $nombre = $fila['Nombre'] ?? $fila['nombre'] ?? '';
+          $descripcion = $fila['Descripcion'] ?? $fila['descripcion'] ?? '';
+          $precio = (float) ($fila['Precio'] ?? $fila['precio'] ?? 0);
+          $stock = (int) ($fila['Stock'] ?? $fila['stock'] ?? 0);
+          $imgUrl = $fila['ImgResolved'] ?? resolverRutaImagen($fila['Img'] ?? $fila['img'] ?? '', $nombre);
+        ?>
         <tr>
-          <td><?php echo h($fila['id_producto']); ?></td>
-          <td><?php echo h($fila['nombre']); ?></td>
-          <td><?php echo h($fila['descripcion']); ?></td>
-          <td><?php echo number_format((float) $fila['precio'], 2, ',', '.'); ?></td>
-          <td><?php echo h($fila['stock']); ?></td>
+          <td><?php echo h($id); ?></td>
+          <td><?php echo h($nombre); ?></td>
+          <td><?php echo h($descripcion); ?></td>
+          <td><?php echo number_format($precio, 2, ',', '.'); ?></td>
+          <td><?php echo h($stock); ?></td>
           <td>
             <?php if (!empty($imgUrl)) { ?>
-              <img class="product-thumb" src="<?php echo h($imgUrl); ?>" alt="<?php echo h($fila['nombre']); ?>">
+              <img class="product-thumb" src="<?php echo h($imgUrl); ?>" alt="<?php echo h($nombre); ?>">
             <?php } else { ?>
               <span class="no-image">Sin imagen</span>
             <?php } ?>
           </td>
           <td>
-            <a href="update.php?ID=<?php echo h($fila['id_producto']); ?>" class="edit" title="Editar"><i class="fas fa-pencil-alt"></i></a>
-            <a href="delete.php?ID=<?php echo h($fila['id_producto']); ?>" class="delete" title="Eliminar"><i class="fas fa-trash"></i></a>
+            <a href="update.php?ID=<?php echo h($id); ?>" class="edit" title="Editar"><i class="fas fa-pencil-alt"></i></a>
+            <a href="delete.php?ID=<?php echo h($id); ?>" class="delete" title="Eliminar"><i class="fas fa-trash"></i></a>
           </td>
         </tr>
         <?php } ?>

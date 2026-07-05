@@ -398,12 +398,18 @@ h2 {
 }
 
 .product-thumb {
+  display: block;
+  margin: 0 auto;
   width: 80px;
   height: 80px;
   border-radius: 10px;
   object-fit: cover;
   border: 1px solid rgba(255, 255, 255, 0.16);
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
+}
+
+.tabla-decent td:nth-child(6) {
+  vertical-align: middle;
 }
 
 .no-image {

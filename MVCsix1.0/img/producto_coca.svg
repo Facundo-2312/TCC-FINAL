@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 320 320" role="img" aria-label="Coca Cola">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2a0a10"/>
+      <stop offset="100%" stop-color="#12060a"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="320" rx="28" fill="url(#bg)"/>
+  <rect x="98" y="48" width="124" height="224" rx="40" fill="#1a1a1a"/>
+  <rect x="130" y="36" width="60" height="24" rx="8" fill="#292929"/>
+  <rect x="98" y="128" width="124" height="62" fill="#c11f2a"/>
+  <text x="160" y="166" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="#ffffff" font-weight="700">Coca</text>
+  <text x="160" y="248" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#f3f3f3" font-weight="700">Cola</text>
+</svg>
