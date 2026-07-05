@@ -18,15 +18,48 @@ class Pepc {
         if(mysqli_connect_error()) {
             die("Conexión a la base de datos falló: " . mysqli_connect_error());
         }
+
+        $this->asegurarColumnasPersonalizacion();
+    }
+
+    private function existeColumna($tabla, $columna) {
+        $tabla = mysqli_real_escape_string($this->con, (string) $tabla);
+        $columna = mysqli_real_escape_string($this->con, (string) $columna);
+        $sql = "SHOW COLUMNS FROM `" . $tabla . "` LIKE '" . $columna . "'";
+        $res = mysqli_query($this->con, $sql);
+        if (!$res) {
+            return false;
+        }
+        return mysqli_num_rows($res) > 0;
+    }
+
+    private function asegurarColumnasPersonalizacion() {
+        if (!$this->existeColumna('Pepc', 'SinIngredientes')) {
+            mysqli_query($this->con, "ALTER TABLE Pepc ADD COLUMN SinIngredientes VARCHAR(255) NULL");
+        }
+
+        if (!$this->existeColumna('Pepc', 'ExtraIngredientes')) {
+            mysqli_query($this->con, "ALTER TABLE Pepc ADD COLUMN ExtraIngredientes VARCHAR(255) NULL");
+        }
     }
 
     // ✅ GUARDAR PRODUCTOS DEL PEDIDO
-    public function create($IDPedido, $IDProducto, $Cantidad) {
+    public function create($IDPedido, $IDProducto, $Cantidad, $SinIngredientes = '', $ExtraIngredientes = '') {
+        $stmt = mysqli_prepare(
+            $this->con,
+            "INSERT INTO Pepc (IDPedido, IDProducto, Cantidad, SinIngredientes, ExtraIngredientes)
+             VALUES (?, ?, ?, ?, ?)"
+        );
 
-        $sql = "INSERT INTO Pepc (IDPedido, IDProducto, Cantidad)
-                VALUES ('$IDPedido', '$IDProducto', '$Cantidad')";
+        if (!$stmt) {
+            die("Error en Pepc: " . mysqli_error($this->con));
+        }
 
-        $res = mysqli_query($this->con, $sql);
+        $sin = trim((string) $SinIngredientes);
+        $extra = trim((string) $ExtraIngredientes);
+        mysqli_stmt_bind_param($stmt, 'iiiss', $IDPedido, $IDProducto, $Cantidad, $sin, $extra);
+        $res = mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
 
         if(!$res){
             die("Error en Pepc: " . mysqli_error($this->con));
@@ -54,9 +87,9 @@ class Pepc {
             $IDPedido = $pedido['IDPedido'];
 
             // Traer productos de ese pedido
-            $sqlProd = "SELECT pr.Nombre, pe.Cantidad
+            $sqlProd = "SELECT pr.Nombre, pe.Cantidad, pe.SinIngredientes, pe.ExtraIngredientes
                         FROM Pepc pe
-                        JOIN Producto pr ON pe.IDProducto = pr.IDProducto
+                        JOIN productos pr ON pe.IDProducto = pr.id_producto
                         WHERE pe.IDPedido = $IDPedido";
 
             $resProd = mysqli_query($this->con, $sqlProd);

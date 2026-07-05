@@ -139,7 +139,9 @@ function createProductCard(product) {
       orderArray.push({
         ...product,
         Precio: parseProductPrice(product),
-        quantity: 1
+        quantity: 1,
+        sinIngredientes: '',
+        extraIngredientes: ''
       });
     }
     showOrder(orderArray);
@@ -240,6 +242,34 @@ function showOrder(a){
     total += subtotal;
     quantitySum += Number(item.quantity);
 
+    const customBlock = document.createElement('div');
+    customBlock.classList.add('pedido-custom');
+
+    const inputSin = document.createElement('input');
+    inputSin.type = 'text';
+    inputSin.placeholder = 'Quitar ingredientes (ej: cebolla, pepino)';
+    inputSin.value = item.sinIngredientes || '';
+    inputSin.addEventListener('input', () => {
+      const index = orderArray.findIndex(order => Number(order.IDProducto) === Number(item.IDProducto));
+      if (index !== -1) {
+        orderArray[index].sinIngredientes = inputSin.value.trim();
+      }
+    });
+
+    const inputExtra = document.createElement('input');
+    inputExtra.type = 'text';
+    inputExtra.placeholder = 'Agregar ingredientes (ej: doble queso, bacon)';
+    inputExtra.value = item.extraIngredientes || '';
+    inputExtra.addEventListener('input', () => {
+      const index = orderArray.findIndex(order => Number(order.IDProducto) === Number(item.IDProducto));
+      if (index !== -1) {
+        orderArray[index].extraIngredientes = inputExtra.value.trim();
+      }
+    });
+
+    customBlock.appendChild(inputSin);
+    customBlock.appendChild(inputExtra);
+
     const subtotalElement = document.createElement('strong');
     subtotalElement.classList.add('pedido-subtotal');
     subtotalElement.textContent = formatPrice(subtotal);
@@ -248,6 +278,7 @@ function showOrder(a){
     orderItem.appendChild(productInfo);
     orderItem.appendChild(quantityInput);
     orderItem.appendChild(subtotalElement);
+    orderItem.appendChild(customBlock);
 
     orderList.appendChild(orderItem);
   });

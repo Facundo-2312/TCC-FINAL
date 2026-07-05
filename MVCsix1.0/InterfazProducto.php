@@ -5,6 +5,42 @@ app_require_login('../Login.php');
 
 require_once "Producto.php";
 
+function asegurarCatalogoMinimo(Producto $producto, $minimo = 8)
+{
+    $plantillas = array(
+        array('nombre' => 'Hamburguesa Clasica', 'descripcion' => 'Carne, queso y vegetales frescos', 'precio' => 350, 'stock' => 50, 'img' => 'img/hamburguesa_hq.jpg'),
+        array('nombre' => 'Pizza Muzzarella', 'descripcion' => 'Pizza tradicional con muzzarella', 'precio' => 400, 'stock' => 40, 'img' => 'img/pizza_hq.jpg'),
+        array('nombre' => 'Coca Cola 500ml', 'descripcion' => 'Bebida cola bien fria', 'precio' => 150, 'stock' => 100, 'img' => 'img/coca-orig.jpeg'),
+        array('nombre' => 'Agua Mineral 500ml', 'descripcion' => 'Agua sin gas', 'precio' => 120, 'stock' => 80, 'img' => 'img/agua_hq.jpg'),
+        array('nombre' => 'Papas Fritas', 'descripcion' => 'Porcion de papas crocantes', 'precio' => 220, 'stock' => 60, 'img' => 'files/papas.png'),
+        array('nombre' => 'Helado Vainilla', 'descripcion' => 'Copa de helado', 'precio' => 190, 'stock' => 35, 'img' => 'files/Helado.jpg'),
+        array('nombre' => 'Cheeseburger Doble', 'descripcion' => 'Doble carne y doble queso', 'precio' => 430, 'stock' => 45, 'img' => 'files/ham3.png'),
+        array('nombre' => 'Hamburguesa Bacon', 'descripcion' => 'Con bacon crocante y cheddar', 'precio' => 460, 'stock' => 40, 'img' => 'files/ham5.png')
+    );
+
+    $total = $producto->countAll();
+
+    foreach ($plantillas as $template) {
+        if ($total >= (int) $minimo) {
+            break;
+        }
+
+        if ($producto->existsByName($template['nombre'])) {
+            continue;
+        }
+
+        $producto->create(
+            $template['nombre'],
+            $template['descripcion'],
+            (float) $template['precio'],
+            (int) $template['stock'],
+            $template['img']
+        );
+
+        $total++;
+    }
+}
+
 function resolverImagenProducto($nombreProducto, $rutaImagen)
 {
     $ruta = trim((string) $rutaImagen);
@@ -30,34 +66,11 @@ function resolverImagenProducto($nombreProducto, $rutaImagen)
         'torta' => 'img/default_postre_hq.jpg'
     );
 
-    $imagenesEspecificas = array(
-        'hamburguesa' => 'img/hamburguesa_hq.jpg',
-        'burger' => 'img/hamburguesa_hq.jpg',
-        'pizza' => 'img/pizza_hq.jpg',
-        'coca' => 'img/coca-orig.jpeg',
-        'cola' => 'img/coca-orig.jpeg',
-        'agua' => 'img/agua_hq.jpg'
-    );
-
     $categoriaDefault = 'img/default_comida_hq.jpg';
     foreach ($defaultsPorCategoria as $keyword => $defaultPath) {
         if (mb_strpos($nombre, $keyword) !== false) {
             $categoriaDefault = $defaultPath;
             break;
-        }
-    }
-
-    foreach ($imagenesEspecificas as $keyword => $rutaEspecifica) {
-        if (mb_strpos($nombre, $keyword) === false) {
-            continue;
-        }
-
-        if (preg_match('/^(https?:)?\/\//i', $rutaEspecifica)) {
-            return $rutaEspecifica;
-        }
-
-        if (is_file(__DIR__ . '/' . $rutaEspecifica)) {
-            return $rutaEspecifica;
         }
     }
 
@@ -92,6 +105,7 @@ function resolverImagenProducto($nombreProducto, $rutaImagen)
 function ListarProductos()
 {
     $producto = new Producto();
+    asegurarCatalogoMinimo($producto, 8);
     $lista = $producto->ListarProductos();
 
     $resultado = array();

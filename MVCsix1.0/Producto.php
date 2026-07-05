@@ -49,6 +49,39 @@ class Producto
         return mysqli_fetch_all($res, MYSQLI_ASSOC);
     }
 
+    public function existsByName($nombre)
+    {
+        $stmt = mysqli_prepare(
+            $this->con,
+            "SELECT id_producto FROM productos WHERE LOWER(nombre) = LOWER(?) LIMIT 1"
+        );
+
+        if (!$stmt) {
+            die("Error SQL: " . mysqli_error($this->con));
+        }
+
+        mysqli_stmt_bind_param($stmt, 's', $nombre);
+        mysqli_stmt_execute($stmt);
+        $res = mysqli_stmt_get_result($stmt);
+        $row = $res ? mysqli_fetch_assoc($res) : null;
+        mysqli_stmt_close($stmt);
+
+        return $row !== null;
+    }
+
+    public function countAll()
+    {
+        $sql = "SELECT COUNT(*) AS total FROM productos";
+        $res = mysqli_query($this->con, $sql);
+
+        if (!$res) {
+            die("Error SQL: " . mysqli_error($this->con));
+        }
+
+        $row = mysqli_fetch_assoc($res);
+        return (int) ($row['total'] ?? 0);
+    }
+
     public function BuscarProducto($idProducto)
     {
         return $this->find((int) $idProducto);

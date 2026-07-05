@@ -86,8 +86,10 @@ function GuardarPedido($Observaciones, $Consumo, $cedula, $Mesa, $Moneda = 'UYU'
 									
 					$IDProducto	= $datos['IDProducto'];
 					$Cantidad =$datos['quantity'];
+					$sinIngredientes = trim((string) ($datos['sinIngredientes'] ?? ''));
+					$extraIngredientes = trim((string) ($datos['extraIngredientes'] ?? ''));
 					
-					$ResuTotal = $Pepc->create($IDPedido, $IDProducto,$Cantidad);
+					$ResuTotal = $Pepc->create($IDPedido, $IDProducto, $Cantidad, $sinIngredientes, $extraIngredientes);
 				}
 				echo json_encode("Se guardó el pedido");
 				
