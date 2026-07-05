@@ -123,6 +123,7 @@ if (!is_array($productos)) {
 <title>Listado de productos</title>
 <link rel="stylesheet" type="text/css" href="../estilos/index.css?v=<?php echo $indexCssVersion; ?>">
 
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
