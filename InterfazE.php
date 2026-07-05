@@ -35,7 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crud'])) {
             app_redirect('EmpleadoI.php');
         }
 
-        die("Error al insertar.");
+        $detalle = trim((string) $empleado->getLastError());
+        die($detalle !== '' ? $detalle : "Error al insertar.");
     }
 
     if ($crud === 2) {
@@ -57,7 +58,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crud'])) {
             app_redirect('EmpleadoI.php');
         }
 
-        die("Error al actualizar.");
+        $detalle = trim((string) $empleado->getLastError());
+        die($detalle !== '' ? $detalle : "Error al actualizar.");
     }
 
     app_redirect('EmpleadoI.php');
