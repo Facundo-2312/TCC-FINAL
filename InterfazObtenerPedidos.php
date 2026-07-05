@@ -78,15 +78,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear'])) {
         $stmtPedido = mysqli_prepare($conexion, 'INSERT INTO pedidos (id_mesa, id_usuario, total, estado) VALUES (?, ?, ?, ?)');
         mysqli_stmt_bind_param($stmtPedido, 'iids', $mesa, $idUsuario, $subtotal, $estadoPedido);
         mysqli_stmt_execute($stmtPedido);
+        $idPedido = (int) mysqli_insert_id($conexion);
         mysqli_stmt_close($stmtPedido);
+
+        if ($idPedido <= 0) {
+            throw new RuntimeException('No se pudo obtener el id del pedido creado.');
+        }
 
         $estadoMesa = 'Ocupada';
         $stmtMesa = mysqli_prepare($conexion, 'UPDATE mesas SET estado = ? WHERE id_mesa = ?');
         mysqli_stmt_bind_param($stmtMesa, 'si', $estadoMesa, $mesa);
         mysqli_stmt_execute($stmtMesa);
         mysqli_stmt_close($stmtMesa);
-
-        $idPedido = mysqli_insert_id($conexion);
 
         $stmtDetalle = mysqli_prepare($conexion, 'INSERT INTO detalle_pedido (id_pedido, id_producto, cantidad, precio, subtotal) VALUES (?, ?, ?, ?, ?)');
         mysqli_stmt_bind_param($stmtDetalle, 'iiidd', $idPedido, $idProducto, $cantidad, $precio, $subtotal);
