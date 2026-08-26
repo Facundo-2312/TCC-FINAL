@@ -266,6 +266,7 @@ function guardarImagenProducto($campo, $imagenActual = null)
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crud'])) {
+    app_require_login('../Login.php', ['1']);
     $producto = new Producto();
     $crud = (int) $_POST['crud'];
 

@@ -2,10 +2,8 @@
 
 session_start();
 
-if (!isset($_SESSION['Usuario']) || !isset($_SESSION['Rol'])) {
-    header("Location: ../Login.php");
-    exit();
-}
+require_once __DIR__ . '/../app_bootstrap.php';
+app_require_login('../Login.php', ['1']);
 
 require_once "Producto.php";
 

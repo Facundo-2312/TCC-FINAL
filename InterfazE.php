@@ -3,7 +3,7 @@
 require_once __DIR__ . '/app_bootstrap.php';
 require_once "Empleado.php";
 
-app_require_login('Login.php');
+app_require_login('Login.php', ['1']);
 
 $empleado = new Empleado();
 

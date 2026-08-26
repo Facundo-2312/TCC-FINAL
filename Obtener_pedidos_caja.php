@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/app_bootstrap.php';
 
+app_require_login('Login.php', ['1', '2']);
+
 $conn = app_db_connect(array(
     'password' => '1234',
     'database' => 'pro',
