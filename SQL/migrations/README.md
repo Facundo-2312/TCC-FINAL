@@ -8,6 +8,22 @@ destructivas. Ninguna migración elimina tablas, columnas ni datos existentes.
 
 ## Cómo aplicarlas
 
+### Método recomendado: runner versionado
+
+El runner registra cada archivo aplicado en la tabla `schema_migrations`; por eso
+puede ejecutarse repetidamente sin volver a aplicar versiones ya registradas:
+
+```powershell
+C:\xampp\php\php.exe database\migrate.php --status
+C:\xampp\php\php.exe database\migrate.php --dry-run
+C:\xampp\php\php.exe database\migrate.php
+```
+
+El archivo `SQL/install.sql` sigue siendo exclusivamente para una instalación
+nueva y limpia. Para actualizar una base de datos existente, usar este runner.
+
+### Método manual
+
 Ejecutar en orden (0 primero) contra una base de datos existente:
 
 ```powershell

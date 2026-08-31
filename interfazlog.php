@@ -2,14 +2,13 @@
 
 // INCLUIMOS LA CLASE
 require_once __DIR__ . '/app_bootstrap.php';
-require_once "Empleado.php";
 
 use App\Support\LoginThrottle;
 use App\Support\SecurityLog;
 
 app_start_session();
 
-$F = new Empleado();
+$authService = new App\Services\AuthService();
 
 // Validar que llegan datos
 if (!isset($_POST['Usuario']) || !isset($_POST['Pass'])) {
@@ -36,7 +35,7 @@ if ($segundosBloqueado > 0) {
 }
 
 // LOGIN
-$res = $F->Login($Usuario, $Pass);
+$res = $authService->autenticar($Usuario, $Pass);
 
 if ($res !== null) {
 
