@@ -20,7 +20,7 @@ if (Test-Path $OutputRoot) {
 
 New-Item -ItemType Directory -Path $OutputRoot | Out-Null
 
-$excludedTopLevel = @('.git', '.vscode', 'desktop')
+$excludedTopLevel = @('.git', '.vscode', 'desktop', '.env')
 $topLevelItems = Get-ChildItem -Path $ProjectRoot -Force
 foreach ($item in $topLevelItems) {
     if ($excludedTopLevel -contains $item.Name) {
@@ -43,6 +43,11 @@ foreach ($desktopItem in $desktopItems) {
 
     $desktopItemDestination = Join-Path $desktopDestination $desktopItem.Name
     Copy-Item -Path $desktopItem.FullName -Destination $desktopItemDestination -Recurse -Force
+}
+
+$stageLogDir = Join-Path $OutputRoot 'storage\logs'
+if (Test-Path $stageLogDir) {
+    Get-ChildItem -Path $stageLogDir -Filter '*.log' -File | Remove-Item -Force
 }
 
 $StageRunDir = Join-Path $OutputRoot 'desktop\run'
