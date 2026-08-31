@@ -5,7 +5,7 @@ app_require_login('Login.php', ['1', '3']);
 
 $conexion = app_db_connect();
 if (!$conexion) {
-    die('Error de conexión: ' . mysqli_connect_error());
+    App\Support\Db::fail('No se pudo conectar con la base de datos.', 'InterfazObtenerPedidos.php: ' . mysqli_connect_error());
 }
 
 function h($value)
@@ -22,23 +22,11 @@ function estadoClass($estado)
     return 'pendiente';
 }
 
-function obtenerIdUsuario($conexion, $usuario)
-{
-    $stmt = mysqli_prepare($conexion, 'SELECT id_usuario FROM usuarios WHERE usuario = ? LIMIT 1');
-    if (!$stmt) {
-        return 1;
-    }
-
-    mysqli_stmt_bind_param($stmt, 's', $usuario);
-    mysqli_stmt_execute($stmt);
-    $res = mysqli_stmt_get_result($stmt);
-    $row = $res ? mysqli_fetch_assoc($res) : null;
-    mysqli_stmt_close($stmt);
-
-    return (int) ($row['id_usuario'] ?? 1);
-}
+$pedidoController = new App\Controllers\PedidoController();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear'])) {
+    csrf_verify_or_die('InterfazObtenerPedidos.php');
+
     $mesa = (int) ($_POST['mesa'] ?? 0);
     $productoManual = trim($_POST['producto_manual'] ?? '');
     $precio = (float) ($_POST['precio'] ?? 0);
@@ -48,95 +36,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear'])) {
         die('Datos inválidos para crear el pedido.');
     }
 
-    $idUsuario = obtenerIdUsuario($conexion, $_SESSION['Usuario']);
-    mysqli_begin_transaction($conexion);
-
-    try {
-        $stmtBuscar = mysqli_prepare($conexion, 'SELECT id_producto FROM productos WHERE nombre = ? LIMIT 1');
-        mysqli_stmt_bind_param($stmtBuscar, 's', $productoManual);
-        mysqli_stmt_execute($stmtBuscar);
-        $resBuscar = mysqli_stmt_get_result($stmtBuscar);
-        $filaProd = $resBuscar ? mysqli_fetch_assoc($resBuscar) : null;
-        mysqli_stmt_close($stmtBuscar);
-
-        if ($filaProd) {
-            $idProducto = (int) $filaProd['id_producto'];
-        } else {
-            $descripcion = 'Producto agregado manualmente';
-            $stock = 100;
-            $estadoProducto = 'Activo';
-            $stmtNuevoProducto = mysqli_prepare($conexion, 'INSERT INTO productos (nombre, descripcion, precio, stock, estado) VALUES (?, ?, ?, ?, ?)');
-            mysqli_stmt_bind_param($stmtNuevoProducto, 'ssdis', $productoManual, $descripcion, $precio, $stock, $estadoProducto);
-            mysqli_stmt_execute($stmtNuevoProducto);
-            mysqli_stmt_close($stmtNuevoProducto);
-            $idProducto = mysqli_insert_id($conexion);
-        }
-
-        $subtotal = $precio * $cantidad;
-        $estadoPedido = 'Pendiente';
-
-        $stmtPedido = mysqli_prepare($conexion, 'INSERT INTO pedidos (id_mesa, id_usuario, total, estado) VALUES (?, ?, ?, ?)');
-        mysqli_stmt_bind_param($stmtPedido, 'iids', $mesa, $idUsuario, $subtotal, $estadoPedido);
-        mysqli_stmt_execute($stmtPedido);
-        $idPedido = (int) mysqli_insert_id($conexion);
-        mysqli_stmt_close($stmtPedido);
-
-        if ($idPedido <= 0) {
-            throw new RuntimeException('No se pudo obtener el id del pedido creado.');
-        }
-
-        $estadoMesa = 'Ocupada';
-        $stmtMesa = mysqli_prepare($conexion, 'UPDATE mesas SET estado = ? WHERE id_mesa = ?');
-        mysqli_stmt_bind_param($stmtMesa, 'si', $estadoMesa, $mesa);
-        mysqli_stmt_execute($stmtMesa);
-        mysqli_stmt_close($stmtMesa);
-
-        $stmtDetalle = mysqli_prepare($conexion, 'INSERT INTO detalle_pedido (id_pedido, id_producto, cantidad, precio, subtotal) VALUES (?, ?, ?, ?, ?)');
-        mysqli_stmt_bind_param($stmtDetalle, 'iiidd', $idPedido, $idProducto, $cantidad, $precio, $subtotal);
-        mysqli_stmt_execute($stmtDetalle);
-        mysqli_stmt_close($stmtDetalle);
-
-        mysqli_commit($conexion);
+    if ($pedidoController->crearPedidoRapido($mesa, $productoManual, $precio, $cantidad, $_SESSION['Usuario'])) {
         app_redirect('InterfazObtenerPedidos.php');
-    } catch (Throwable $e) {
-        mysqli_rollback($conexion);
-        die('No se pudo crear el pedido.');
-    }
-}
-
-$pedidos = [];
-$stmtPedidos = mysqli_prepare($conexion, 'SELECT id_pedido, id_mesa, fecha, estado, total FROM pedidos ORDER BY fecha DESC LIMIT 30');
-mysqli_stmt_execute($stmtPedidos);
-$resPedidos = mysqli_stmt_get_result($stmtPedidos);
-while ($fila = mysqli_fetch_assoc($resPedidos)) {
-    $pedidos[] = $fila;
-}
-mysqli_stmt_close($stmtPedidos);
-
-$pedidosConDetalle = [];
-foreach ($pedidos as $pedido) {
-    $idPedido = (int) $pedido['id_pedido'];
-    $stmtDetalle = mysqli_prepare(
-        $conexion,
-        'SELECT dp.cantidad, dp.precio, dp.subtotal, pr.nombre
-         FROM detalle_pedido dp
-         INNER JOIN productos pr ON pr.id_producto = dp.id_producto
-         WHERE dp.id_pedido = ?
-         ORDER BY pr.nombre ASC'
-    );
-    mysqli_stmt_bind_param($stmtDetalle, 'i', $idPedido);
-    mysqli_stmt_execute($stmtDetalle);
-    $resDetalle = mysqli_stmt_get_result($stmtDetalle);
-
-    $productos = [];
-    while ($row = mysqli_fetch_assoc($resDetalle)) {
-        $productos[] = $row;
     }
 
-    mysqli_stmt_close($stmtDetalle);
-    $pedido['productos'] = $productos;
-    $pedidosConDetalle[] = $pedido;
+    die('No se pudo crear el pedido.');
 }
+
+$pedidosConDetalle = $pedidoController->listarRecientes(30);
 
 ?>
 <!DOCTYPE html>
@@ -184,6 +91,7 @@ input{width:100%;padding:11px 12px;border-radius:10px;border:1px solid #444;back
     <div class="panel">
         <h3 style="margin-top:0">Crear pedido rápido</h3>
         <form method="post">
+            <?php echo csrf_field(); ?>
             <label for="mesa">Mesa</label>
             <input type="number" id="mesa" name="mesa" min="1" required>
 

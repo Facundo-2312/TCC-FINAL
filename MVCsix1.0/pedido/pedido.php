@@ -101,3 +101,5 @@ if ($Rol== "Mozo"){
 
 </script>
 <script src="script.js"></script>
+
+  const csrfToken = <?php echo json_encode(App\Support\Csrf::token()); ?>;

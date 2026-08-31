@@ -5,8 +5,9 @@ app_require_login('Login.php', ['1', '4']);
 
 $conexion = app_db_connect();
 if (!$conexion) {
-    die('Error de conexión: ' . mysqli_connect_error());
+    App\Support\Db::fail('No se pudo conectar con la base de datos.', 'Cocina2.php: ' . mysqli_connect_error());
 }
+$pedidoController = new App\Controllers\PedidoController();
 
 $toastMessage = '';
 $toastKind = '';
@@ -34,83 +35,32 @@ function estadoClass($estado)
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion_estado'])) {
+    csrf_verify_or_die('Cocina2.php');
+
     $idPedido = (int) ($_POST['id_pedido'] ?? 0);
     $nuevoEstado = trim($_POST['estado'] ?? '');
-    $permitidos = ['Pendiente', 'Preparando', 'Entregado', 'Cancelado'];
-
-    if ($idPedido > 0 && in_array($nuevoEstado, $permitidos, true)) {
-        $stmtUpdate = mysqli_prepare($conexion, 'UPDATE pedidos SET estado = ? WHERE id_pedido = ?');
-        mysqli_stmt_bind_param($stmtUpdate, 'si', $nuevoEstado, $idPedido);
-        mysqli_stmt_execute($stmtUpdate);
-        mysqli_stmt_close($stmtUpdate);
-    }
+    $pedidoController->cambiarEstado($idPedido, $nuevoEstado);
 
     app_redirect('Cocina2.php');
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion_eliminar'])) {
+    csrf_verify_or_die('Cocina2.php');
+
     $idPedidoEliminar = (int) ($_POST['id_pedido'] ?? 0);
 
-    if ($idPedidoEliminar > 0) {
-        $estadoOculto = 'ArchivadoCocina';
-        $stmtHide = mysqli_prepare($conexion, 'UPDATE pedidos SET estado = ? WHERE id_pedido = ?');
-        mysqli_stmt_bind_param($stmtHide, 'si', $estadoOculto, $idPedidoEliminar);
-        mysqli_stmt_execute($stmtHide);
-        mysqli_stmt_close($stmtHide);
-
+    if ($idPedidoEliminar > 0 && $pedidoController->ocultarDeCocina($idPedidoEliminar)) {
         app_redirect('Cocina2.php?msg=hidden');
     }
 
     app_redirect('Cocina2.php');
 }
 
-$pedidos = [];
-$stmtPedidos = mysqli_prepare(
-    $conexion,
-    "SELECT id_pedido, id_mesa, fecha, estado, total
-     FROM pedidos
-     WHERE estado IN ('Pendiente','Preparando','Entregado')
-     ORDER BY FIELD(estado,'Pendiente','Preparando','Entregado'), fecha ASC"
-);
-mysqli_stmt_execute($stmtPedidos);
-$resPedidos = mysqli_stmt_get_result($stmtPedidos);
-while ($fila = mysqli_fetch_assoc($resPedidos)) {
-    $pedidos[] = $fila;
-}
-mysqli_stmt_close($stmtPedidos);
-
-$pendientes = 0;
-$preparando = 0;
-$entregados = 0;
-$pedidosConDetalle = [];
-
-foreach ($pedidos as $pedido) {
-    if ($pedido['estado'] === 'Pendiente') $pendientes++;
-    if ($pedido['estado'] === 'Preparando') $preparando++;
-    if ($pedido['estado'] === 'Entregado') $entregados++;
-
-    $idPedido = (int) $pedido['id_pedido'];
-    $stmtDetalle = mysqli_prepare(
-        $conexion,
-        'SELECT dp.cantidad, pr.nombre
-         FROM detalle_pedido dp
-         INNER JOIN productos pr ON pr.id_producto = dp.id_producto
-         WHERE dp.id_pedido = ?
-         ORDER BY pr.nombre ASC'
-    );
-    mysqli_stmt_bind_param($stmtDetalle, 'i', $idPedido);
-    mysqli_stmt_execute($stmtDetalle);
-    $resDetalle = mysqli_stmt_get_result($stmtDetalle);
-
-    $productos = [];
-    while ($prod = mysqli_fetch_assoc($resDetalle)) {
-        $productos[] = $prod;
-    }
-    mysqli_stmt_close($stmtDetalle);
-
-    $pedido['productos'] = $productos;
-    $pedidosConDetalle[] = $pedido;
-}
+$vistaCocina = $pedidoController->listarCocina();
+$pedidosConDetalle = $vistaCocina['pedidos'];
+$pendientes = $vistaCocina['resumen']['Pendiente'];
+$preparando = $vistaCocina['resumen']['Preparando'];
+$entregados = $vistaCocina['resumen']['Entregado'];
 
 ?>
 <!DOCTYPE html>
@@ -171,6 +121,7 @@ ul{padding-left:18px;margin:8px 0 0;flex:1;overflow:auto}
 <?php if (!empty($pedidosConDetalle)) { ?>
     <?php foreach ($pedidosConDetalle as $pedido) { ?>
         <form method="post" class="order js-touch-form" data-order-id="<?php echo (int) $pedido['id_pedido']; ?>" data-current="<?php echo h($pedido['estado']); ?>" tabindex="0" role="button" aria-label="Cambiar estado del pedido <?php echo (int) $pedido['id_pedido']; ?>">
+            <?php echo csrf_field(); ?>
             <input type="hidden" name="id_pedido" value="<?php echo (int) $pedido['id_pedido']; ?>">
             <input type="hidden" name="accion_estado" value="1">
             <input type="hidden" name="estado" class="js-next-state" value="<?php echo h($pedido['estado']); ?>">
@@ -204,6 +155,7 @@ ul{padding-left:18px;margin:8px 0 0;flex:1;overflow:auto}
         </form>
 
         <form method="post" class="js-delete-form" style="display:none">
+            <?php echo csrf_field(); ?>
             <input type="hidden" name="id_pedido" value="<?php echo (int) $pedido['id_pedido']; ?>">
             <input type="hidden" name="accion_eliminar" value="1">
         </form>

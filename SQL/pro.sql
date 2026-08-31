@@ -1,7 +1,4 @@
-
-
 use pro;
-
 drop table Pepc;
 
 create table Pepc(
@@ -26,9 +23,10 @@ Fecha datetime not null,
 total double 
 );
 
+use pro;
+drop table Producto;
 
 create table Producto(
-
 IDProducto int primary key not null,
 Nombre varchar(100) not null,
 Descripcion varchar(100) not null,

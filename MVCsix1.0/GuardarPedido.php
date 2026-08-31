@@ -1,55 +1,55 @@
 <?php
 
 require_once __DIR__ . '/../app_bootstrap.php';
+
 app_require_login('../Login.php', ['1', '3']);
+header('Content-Type: application/json; charset=utf-8');
 
-include "InterfazPedido.php";
-
-//ARMO EL CONSUMO
-
- // Verificar si se recibieron datos mediante el método POST
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-   // Obtener el contenido enviado desde JavaScript
-   $jsonObject = file_get_contents("php://input");
-   // Decodificar el JSON y convertirlo a un array asociativo de PHP
-   $pedido = json_decode($jsonObject, true);
-   
-   // Verificar si se recibieron los datos esperados
-   if (isset($pedido['items']) && isset($pedido['obs'])) {
-       // Acceder a los datos recibidos
-       $Consumo = $pedido['items'];
-       $Observaciones = $pedido['obs'];
-       $cedula = $pedido['CI'];
-         $Mesa = $pedido['Mesa'];
-         $Moneda = strtoupper(trim((string) ($pedido['moneda'] ?? 'UYU')));
-         $Cotizacion = (float) ($pedido['cotizacion'] ?? 1);
-
-         if ($Moneda !== 'BRL') {
-            $Moneda = 'UYU';
-         }
-
-         if ($Cotizacion <= 0) {
-            $Cotizacion = ($Moneda === 'BRL') ? 9 : 1;
-         }
-      
-      
-
-       // LA FUNCION DE LA MAGIA
-        GuardarPedido($Observaciones, $Consumo, $cedula, $Mesa, $Moneda, $Cotizacion);
-
-   } else {
-       // Si no se recibieron los datos esperados, enviar un mensaje de error
-       http_response_code(400); // Código de error 400 Bad Request
-       $response = "Error: Datos incompletos o incorrectos.";
-       echo json_encode($response);
-   }
-} else {
-   // Si no se recibió una solicitud POST, enviar un mensaje de error
-   http_response_code(405); // Código de error 405 Method Not Allowed
-   $response = "Error: Método no permitido.";
-   echo json_encode($response);
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode('Error: Método no permitido.');
+    exit;
 }
 
-?>
+$pedido = json_decode(file_get_contents('php://input'), true);
+if (!is_array($pedido) || !App\Support\Csrf::verify($pedido['_csrf'] ?? '')) {
+    App\Support\SecurityLog::log('csrf_rechazado', array('uri' => $_SERVER['REQUEST_URI'] ?? ''));
+    http_response_code(403);
+    echo json_encode('Error: Solicitud inválida.');
+    exit;
+}
 
+if (!isset($pedido['items'], $pedido['Mesa']) || !is_array($pedido['items'])) {
+    http_response_code(400);
+    echo json_encode('Error: Datos incompletos o incorrectos.');
+    exit;
+}
 
+$moneda = strtoupper(trim((string) ($pedido['moneda'] ?? 'UYU')));
+if ($moneda !== 'BRL') {
+    $moneda = 'UYU';
+}
+
+$cotizacion = (float) ($pedido['cotizacion'] ?? 1);
+if ($cotizacion <= 0) {
+    $cotizacion = $moneda === 'BRL' ? 9 : 1;
+}
+
+$metadata = '[Moneda: ' . $moneda . ' | Tasa: 1 BRL = ' . rtrim(rtrim(number_format($cotizacion, 2, '.', ''), '0'), '.') . ' UYU]';
+$observaciones = trim((string) ($pedido['obs'] ?? ''));
+$observaciones = $observaciones === '' ? $metadata : $observaciones . ' ' . $metadata;
+
+$idPedido = (new App\Controllers\PedidoController())->crearPedidoMozo(
+    (int) $pedido['Mesa'],
+    (string) $_SESSION['Usuario'],
+    $observaciones,
+    $pedido['items']
+);
+
+if (!$idPedido) {
+    http_response_code(400);
+    echo json_encode('No se pudieron insertar los datos');
+    exit;
+}
+
+echo json_encode('Se guardó el pedido');

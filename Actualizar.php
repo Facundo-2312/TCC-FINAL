@@ -52,6 +52,7 @@ if (isset($_GET['ID'])){
 			?>
 			<div class="row">
 				<form method="post" action ="InterfazE.php" enctype="multipart/form-data">
+				<?php echo csrf_field(); ?>
 
 				<h2>Agregar Empleado</h2>
 				

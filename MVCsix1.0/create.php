@@ -41,6 +41,7 @@ $flash = app_get_flash();
 <?php } ?>
 
 <form method="post" action="InterfazProducto.php" enctype="multipart/form-data">
+<?php echo csrf_field(); ?>
 
 <h2><i class="fas fa-plus"></i></h2>
 

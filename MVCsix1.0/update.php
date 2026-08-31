@@ -143,6 +143,7 @@ $imgActualUrl = resolverRutaImagen($datosProducto['img'] ?? '', $datosProducto['
     <div class="flash flash-<?php echo h($flash['type'] ?? 'info'); ?>"><?php echo h($flash['message']); ?></div>
   <?php } ?>
   <form method="post" action="InterfazProducto.php" enctype="multipart/form-data">
+    <?php echo csrf_field(); ?>
 
     <label>Nombre</label>
     <input type="text" name="Nombre" id="Nombre" class="form-control" maxlength="100" required value="<?php echo h($datosProducto['nombre']); ?>">

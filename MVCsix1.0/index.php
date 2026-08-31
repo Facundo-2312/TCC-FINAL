@@ -190,7 +190,7 @@ if (!is_array($productos)) {
           </td>
           <td>
             <a href="update.php?ID=<?php echo h($id); ?>" class="edit" title="Editar"><i class="fas fa-pencil-alt"></i></a>
-            <a href="delete.php?ID=<?php echo h($id); ?>" class="delete" title="Eliminar"><i class="fas fa-trash"></i></a>
+            <a href="delete.php?ID=<?php echo h($id); ?>&_csrf=<?php echo h(App\Support\Csrf::token()); ?>" class="delete" title="Eliminar" onclick="return confirm('¿Eliminar este producto?');"><i class="fas fa-trash"></i></a>
           </td>
         </tr>
         <?php } ?>

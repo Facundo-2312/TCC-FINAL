@@ -54,7 +54,7 @@ function chatbot_connect()
 
 function chatbot_recaudado_hoy($con)
 {
-    $sql = 'SELECT COALESCE(SUM(monto), 0) AS recaudado, COUNT(*) AS pagos FROM pagos WHERE DATE(fecha) = CURDATE()';
+    $sql = 'SELECT COALESCE(SUM(monto), 0) AS recaudado, COUNT(*) AS pagos FROM pagos WHERE fecha_dia = CURDATE()';
     $res = mysqli_query($con, $sql);
     if (!$res) {
         return null;
@@ -73,7 +73,7 @@ function chatbot_recaudado_hoy($con)
 
 function chatbot_propina_hoy($con)
 {
-    $sql = 'SELECT COALESCE(SUM(propina), 0) AS propina FROM pagos WHERE DATE(fecha) = CURDATE()';
+    $sql = 'SELECT COALESCE(SUM(propina), 0) AS propina FROM pagos WHERE fecha_dia = CURDATE()';
     $res = mysqli_query($con, $sql);
     if (!$res) {
         $dbError = mysqli_error($con);

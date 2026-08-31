@@ -1,19 +1,20 @@
 <?php
 
 require_once __DIR__ . '/app_bootstrap.php';
-require_once "Empleado.php";
 
 app_require_login('Login.php', ['1']);
 
-$empleado = new Empleado();
+$empleadoController = new App\Controllers\EmpleadoController();
 
 function ListarEmpleado()
 {
-    $repo = new Empleado();
-    return $repo->ListarEmpleado();
+    $controller = new App\Controllers\EmpleadoController();
+    return $controller->listar();
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crud'])) {
+    csrf_verify_or_die('EmpleadoI.php');
+
     $crud = (int) $_POST['crud'];
 
     if ($crud === 1) {
@@ -29,13 +30,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crud'])) {
             die("Datos incompletos para crear funcionario.");
         }
 
-        $res = $empleado->create($CI, $Nombre, $Apellido, $Direccion, $Rol, $Usuario, $Pass);
+        $res = $empleadoController->crear(array(
+            'CI' => $CI, 'Nombre' => $Nombre, 'Apellido' => $Apellido,
+            'Direccion' => $Direccion, 'Rol' => $Rol, 'Usuario' => $Usuario, 'Pass' => $Pass
+        ));
 
         if ($res) {
             app_redirect('EmpleadoI.php');
         }
 
-        $detalle = trim((string) $empleado->getLastError());
+        $detalle = trim((string) $empleadoController->ultimoError());
         die($detalle !== '' ? $detalle : "Error al insertar.");
     }
 
@@ -52,13 +56,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crud'])) {
             die("Datos incompletos para actualizar funcionario.");
         }
 
-        $res = $empleado->update($Nombre, $Apellido, $Direccion, $Rol, $Usuario, $Pass, $CI);
+        $res = $empleadoController->actualizar(array(
+            'CI' => $CI, 'Nombre' => $Nombre, 'Apellido' => $Apellido,
+            'Direccion' => $Direccion, 'Rol' => $Rol, 'Usuario' => $Usuario, 'Pass' => $Pass
+        ));
 
         if ($res) {
             app_redirect('EmpleadoI.php');
         }
 
-        $detalle = trim((string) $empleado->getLastError());
+        $detalle = trim((string) $empleadoController->ultimoError());
         die($detalle !== '' ? $detalle : "Error al actualizar.");
     }
 

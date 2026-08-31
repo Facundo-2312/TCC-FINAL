@@ -36,6 +36,7 @@ $loginCssVersion = @filemtime(__DIR__ . '/estilos/login.css') ?: time();
             <h2>INICIAR SESION</h2>
       
 	<form method="post" action="interfazlog.php">
+		<?php echo csrf_field(); ?>
 
 		<p>Usuario <input type="text"  name="Usuario" required placeholder="Digite su nombre" /></p>
 

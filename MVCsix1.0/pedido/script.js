@@ -333,7 +333,8 @@ function enviar(){
     CI: cedula,
     Mesa: Mesa,
     moneda: currentCurrency,
-    cotizacion: getCurrentExchangeRate()
+    cotizacion: getCurrentExchangeRate(),
+    _csrf: csrfToken
    
   } 
 
@@ -354,7 +355,7 @@ function enviar(){
         // Aquí puedes realizar acciones después de recibir la respuesta del backend
         var response = JSON.parse(xhr.responseText);
         let respuesta = document.getElementById('res');
-        respuesta.innerHTML = response;
+        respuesta.textContent = response;
         respuesta.style.display = "block";
         setTimeout(function() {
           respuesta.style.display = 'none';

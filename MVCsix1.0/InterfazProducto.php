@@ -250,6 +250,20 @@ function guardarImagenProducto($campo, $imagenActual = null)
         throw new RuntimeException('Solo se permiten imágenes JPG, JPEG, PNG, GIF o WEBP.');
     }
 
+    // Verifica el contenido real del archivo (no solo la extensión/nombre) para evitar subir
+    // un ejecutable/script disfrazado con extensión de imagen.
+    $tiposPermitidos = array('image/jpeg', 'image/png', 'image/gif', 'image/webp');
+    $mimeReal = false;
+    if (function_exists('finfo_open')) {
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mimeReal = finfo_file($finfo, $_FILES[$campo]['tmp_name']);
+        finfo_close($finfo);
+    }
+
+    if (!$mimeReal || !in_array($mimeReal, $tiposPermitidos, true)) {
+        throw new RuntimeException('El archivo no es una imagen valida.');
+    }
+
     $directorio = __DIR__ . '/files';
     if (!is_dir($directorio)) {
         mkdir($directorio, 0777, true);
@@ -267,7 +281,8 @@ function guardarImagenProducto($campo, $imagenActual = null)
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crud'])) {
     app_require_login('../Login.php', ['1']);
-    $producto = new Producto();
+    csrf_verify_or_die('index.php');
+    $productoController = new App\Controllers\ProductoController();
     $crud = (int) $_POST['crud'];
 
     try {
@@ -282,7 +297,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crud'])) {
                 throw new RuntimeException('Completa los campos obligatorios del producto.');
             }
 
-            $producto->create($nombre, $descripcion, $precio, $stock, $imagen);
+            if (!$productoController->crear($nombre, $descripcion, $precio, $stock, $imagen)) {
+                throw new RuntimeException('No se pudo crear el producto.');
+            }
             app_set_flash('success', 'Producto creado correctamente.');
             app_redirect('index.php');
         }
@@ -300,7 +317,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crud'])) {
                 throw new RuntimeException('Completa los campos obligatorios del producto.');
             }
 
-            $producto->update($idProducto, $nombre, $descripcion, $precio, $stock, $imagen);
+            if (!$productoController->actualizar($idProducto, $nombre, $descripcion, $precio, $stock, $imagen)) {
+                throw new RuntimeException('No se pudo actualizar el producto.');
+            }
             app_set_flash('success', 'Producto actualizado correctamente.');
             app_redirect('index.php');
         }

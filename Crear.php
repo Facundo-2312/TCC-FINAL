@@ -211,6 +211,7 @@ input[type="password"]:focus{
             <p class="hint">Los campos se envian a <strong>InterfazE.php</strong> sin cambiar el flujo actual.</p>
 
             <form method="post" action="InterfazE.php" enctype="multipart/form-data">
+                <?php echo csrf_field(); ?>
                 <div class="field-row">
                     <input type="number" name="CI" id="Pal" placeholder="CI" maxlength="100" required>
                     <input type="text" name="Nombre" id="Pal" placeholder="Nombre" maxlength="100" required>

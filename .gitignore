@@ -3,3 +3,5 @@ desktop/run/
 desktop/**/build/
 desktop/**/run/
 cmd-probe.txt
+.env
+storage/logs/*.log

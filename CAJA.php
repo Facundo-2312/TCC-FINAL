@@ -5,7 +5,7 @@ app_require_login('Login.php', ['1', '2']);
 
 $conexion = app_db_connect();
 if (!$conexion) {
-    die('Error de conexión: ' . mysqli_connect_error());
+    App\Support\Db::fail('No se pudo conectar con la base de datos.', 'CAJA.php: ' . mysqli_connect_error());
 }
 
 function h($value)
@@ -14,54 +14,14 @@ function h($value)
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['facturar'])) {
+    csrf_verify_or_die('caja.php');
+
     $idPedido = (int) ($_POST['id_pedido'] ?? 0);
     $metodo = trim($_POST['metodo_pago'] ?? '');
     $propina = isset($_POST['propina']) ? (float) $_POST['propina'] : 0.0;
-    if ($propina < 0) {
-        $propina = 0.0;
-    }
-    $metodosPermitidos = ['Efectivo', 'Tarjeta', 'Transferencia'];
 
-    if ($idPedido > 0 && in_array($metodo, $metodosPermitidos, true)) {
-        mysqli_begin_transaction($conexion);
-
-        try {
-            $stmtPedido = mysqli_prepare($conexion, 'SELECT id_mesa, total FROM pedidos WHERE id_pedido = ? LIMIT 1');
-            mysqli_stmt_bind_param($stmtPedido, 'i', $idPedido);
-            mysqli_stmt_execute($stmtPedido);
-            $resPedido = mysqli_stmt_get_result($stmtPedido);
-            $pedido = $resPedido ? mysqli_fetch_assoc($resPedido) : null;
-            mysqli_stmt_close($stmtPedido);
-
-            if ($pedido) {
-                $stmtPagoExistente = mysqli_prepare($conexion, 'SELECT id_pago FROM pagos WHERE id_pedido = ? LIMIT 1');
-                mysqli_stmt_bind_param($stmtPagoExistente, 'i', $idPedido);
-                mysqli_stmt_execute($stmtPagoExistente);
-                $resPagoExistente = mysqli_stmt_get_result($stmtPagoExistente);
-                $pagoExistente = $resPagoExistente ? mysqli_fetch_assoc($resPagoExistente) : null;
-                mysqli_stmt_close($stmtPagoExistente);
-
-                if (!$pagoExistente) {
-                    $monto = (float) $pedido['total'];
-                    $stmtPago = mysqli_prepare($conexion, 'INSERT INTO pagos (id_pedido, metodo_pago, monto, propina) VALUES (?, ?, ?, ?)');
-                    mysqli_stmt_bind_param($stmtPago, 'isdd', $idPedido, $metodo, $monto, $propina);
-                    mysqli_stmt_execute($stmtPago);
-                    mysqli_stmt_close($stmtPago);
-                }
-
-                $idMesa = (int) $pedido['id_mesa'];
-                $estadoLibre = 'Libre';
-                $stmtMesa = mysqli_prepare($conexion, 'UPDATE mesas SET estado = ? WHERE id_mesa = ?');
-                mysqli_stmt_bind_param($stmtMesa, 'si', $estadoLibre, $idMesa);
-                mysqli_stmt_execute($stmtMesa);
-                mysqli_stmt_close($stmtMesa);
-            }
-
-            mysqli_commit($conexion);
-        } catch (Throwable $e) {
-            mysqli_rollback($conexion);
-        }
-    }
+    $controller = new App\Controllers\PagoController();
+    $controller->facturar($idPedido, $metodo, $propina);
 
     app_redirect('caja.php');
     exit();
@@ -73,7 +33,7 @@ $sqlResumenCaja = "
         COALESCE(SUM(propina), 0) AS propinaHoy,
         COUNT(*) AS pagosHoy
     FROM pagos
-    WHERE DATE(fecha) = CURDATE()
+    WHERE fecha_dia = CURDATE()
 ";
 $resResumen = mysqli_query($conexion, $sqlResumenCaja);
 $resumen = $resResumen ? mysqli_fetch_assoc($resResumen) : ['recaudadoHoy' => 0, 'propinaHoy' => 0, 'pagosHoy' => 0];
@@ -182,6 +142,7 @@ select,button{padding:10px;border-radius:8px;border:1px solid #ccc}
             </ul>
 
             <form method="post" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px">
+                <?php echo csrf_field(); ?>
                 <input type="hidden" name="id_pedido" value="<?php echo $idPedido; ?>">
                 <select name="metodo_pago" required>
                     <option value="">Método de pago</option>

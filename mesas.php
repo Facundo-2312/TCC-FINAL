@@ -5,7 +5,7 @@ app_require_login('Login.php', ['1', '2', '3']);
 
 $conexion = app_db_connect();
 if (!$conexion) {
-    die('Error de conexión: ' . mysqli_connect_error());
+    App\Support\Db::fail('No se pudo conectar con la base de datos.', 'mesas.php: ' . mysqli_connect_error());
 }
 
 function h($value)
@@ -13,132 +13,30 @@ function h($value)
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 }
 
-function zonaMesa($numero)
-{
-    return ((int) $numero <= 3) ? 'Salón A' : 'Salón B';
-}
-
-function asegurarTablaHistorialMesas($conexion)
-{
-    $sql = "
-        CREATE TABLE IF NOT EXISTS mesas_historial (
-            id_historial INT AUTO_INCREMENT PRIMARY KEY,
-            id_mesa INT NOT NULL,
-            estado_anterior VARCHAR(30) NOT NULL,
-            estado_nuevo VARCHAR(30) NOT NULL,
-            usuario VARCHAR(100) NOT NULL,
-            fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            INDEX idx_mesa_fecha (id_mesa, fecha),
-            INDEX idx_fecha (fecha)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-    ";
-    @mysqli_query($conexion, $sql);
-}
-
-function registrarHistorialMesa($conexion, $idMesa, $estadoAnterior, $estadoNuevo, $usuario)
-{
-    if ($estadoAnterior === $estadoNuevo) {
-        return;
-    }
-
-    $stmt = mysqli_prepare(
-        $conexion,
-        'INSERT INTO mesas_historial (id_mesa, estado_anterior, estado_nuevo, usuario) VALUES (?, ?, ?, ?)'
-    );
-    mysqli_stmt_bind_param($stmt, 'isss', $idMesa, $estadoAnterior, $estadoNuevo, $usuario);
-    mysqli_stmt_execute($stmt);
-    mysqli_stmt_close($stmt);
-}
-
-function asegurarEstadoLimpieza($conexion)
-{
-    $sql = "SELECT COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'mesas' AND COLUMN_NAME = 'estado' LIMIT 1";
-    $res = mysqli_query($conexion, $sql);
-    $row = $res ? mysqli_fetch_assoc($res) : null;
-    $columnType = (string) ($row['COLUMN_TYPE'] ?? '');
-
-    if ($columnType !== '' && stripos($columnType, 'Limpieza') === false) {
-        @mysqli_query($conexion, "ALTER TABLE mesas MODIFY estado ENUM('Libre','Ocupada','Limpieza') DEFAULT 'Libre'");
-    }
-}
-
-asegurarEstadoLimpieza($conexion);
-asegurarTablaHistorialMesas($conexion);
+$mesaController = new App\Controllers\MesaController();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion_mesa'])) {
+    csrf_verify_or_die('mesas.php');
+
     $idMesa = (int) ($_POST['id_mesa'] ?? 0);
     $estado = trim($_POST['estado'] ?? '');
-    $permitidos = ['Libre', 'Ocupada', 'Limpieza'];
     $usuarioAccion = (string) ($_SESSION['Usuario'] ?? 'sistema');
 
-    if ($idMesa > 0 && in_array($estado, $permitidos, true)) {
-        $estadoActual = '';
-        $stmtEstado = mysqli_prepare($conexion, 'SELECT estado FROM mesas WHERE id_mesa = ? LIMIT 1');
-        mysqli_stmt_bind_param($stmtEstado, 'i', $idMesa);
-        mysqli_stmt_execute($stmtEstado);
-        $resEstado = mysqli_stmt_get_result($stmtEstado);
-        $rowEstado = $resEstado ? mysqli_fetch_assoc($resEstado) : null;
-        mysqli_stmt_close($stmtEstado);
-        $estadoActual = (string) ($rowEstado['estado'] ?? '');
-
-        if ($estado === 'Ocupada') {
-            // Prevent double booking: only reserve if currently Libre.
-            $estadoLibre = 'Libre';
-            $stmt = mysqli_prepare($conexion, 'UPDATE mesas SET estado = ? WHERE id_mesa = ? AND estado = ?');
-            mysqli_stmt_bind_param($stmt, 'sis', $estado, $idMesa, $estadoLibre);
-            mysqli_stmt_execute($stmt);
-            $filas = mysqli_stmt_affected_rows($stmt);
-            mysqli_stmt_close($stmt);
-
-            if ($filas === 0) {
-                app_redirect('mesas.php?msg=occupied');
-                exit();
-            }
-
-            registrarHistorialMesa($conexion, $idMesa, $estadoActual, $estado, $usuarioAccion);
-        } else {
-            $stmt = mysqli_prepare($conexion, 'UPDATE mesas SET estado = ? WHERE id_mesa = ?');
-            mysqli_stmt_bind_param($stmt, 'si', $estado, $idMesa);
-            mysqli_stmt_execute($stmt);
-            mysqli_stmt_close($stmt);
-
-            registrarHistorialMesa($conexion, $idMesa, $estadoActual, $estado, $usuarioAccion);
-        }
+    $resultado = $mesaController->cambiarEstado($idMesa, $estado, $usuarioAccion);
+    if (!$resultado['ok'] && $resultado['codigo'] === 'occupied') {
+        app_redirect('mesas.php?msg=occupied');
     }
 
     app_redirect('mesas.php');
     exit();
 }
 
-$mesas = [];
-$res = mysqli_query($conexion, 'SELECT id_mesa, numero, estado FROM mesas ORDER BY numero ASC');
-while ($row = mysqli_fetch_assoc($res)) {
-    $row['zona'] = zonaMesa((int) $row['numero']);
-    $mesas[] = $row;
-}
-
-$libres = 0;
-$ocupadas = 0;
-$limpieza = 0;
-
-foreach ($mesas as $mesa) {
-    if ($mesa['estado'] === 'Libre') $libres++;
-    if ($mesa['estado'] === 'Ocupada') $ocupadas++;
-    if ($mesa['estado'] === 'Limpieza') $limpieza++;
-}
-
-$historial = [];
-$resHistorial = mysqli_query(
-    $conexion,
-    'SELECT h.id_historial, h.id_mesa, m.numero, h.estado_anterior, h.estado_nuevo, h.usuario, h.fecha
-     FROM mesas_historial h
-     INNER JOIN mesas m ON m.id_mesa = h.id_mesa
-     ORDER BY h.fecha DESC
-     LIMIT 12'
-);
-while ($resHistorial && $row = mysqli_fetch_assoc($resHistorial)) {
-    $historial[] = $row;
-}
+$vistaMesas = $mesaController->listar();
+$mesas = $vistaMesas['mesas'];
+$libres = $vistaMesas['stats']['Libre'];
+$ocupadas = $vistaMesas['stats']['Ocupada'];
+$limpieza = $vistaMesas['stats']['Limpieza'];
+$historial = $mesaController->historial();
 
 $cssVersion = @filemtime(__DIR__ . '/estilos/mesas.css') ?: time();
 
@@ -237,6 +135,7 @@ $cssVersion = @filemtime(__DIR__ . '/estilos/mesas.css') ?: time();
 
         <div class="actions">
             <form method="post">
+                <?php echo csrf_field(); ?>
                 <input type="hidden" name="accion_mesa" value="1">
                 <input type="hidden" name="id_mesa" value="<?php echo (int) $mesa['id_mesa']; ?>">
                 <input type="hidden" name="estado" value="Ocupada">
@@ -244,6 +143,7 @@ $cssVersion = @filemtime(__DIR__ . '/estilos/mesas.css') ?: time();
             </form>
 
             <form method="post">
+                <?php echo csrf_field(); ?>
                 <input type="hidden" name="accion_mesa" value="1">
                 <input type="hidden" name="id_mesa" value="<?php echo (int) $mesa['id_mesa']; ?>">
                 <input type="hidden" name="estado" value="Limpieza">
@@ -251,6 +151,7 @@ $cssVersion = @filemtime(__DIR__ . '/estilos/mesas.css') ?: time();
             </form>
 
             <form method="post">
+                <?php echo csrf_field(); ?>
                 <input type="hidden" name="accion_mesa" value="1">
                 <input type="hidden" name="id_mesa" value="<?php echo (int) $mesa['id_mesa']; ?>">
                 <input type="hidden" name="estado" value="Libre">
