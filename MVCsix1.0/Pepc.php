@@ -2,7 +2,6 @@
 
 require_once __DIR__ . '/../app_bootstrap.php';
 
-// Compatibility facade for deprecated item-detail integrations. It no longer creates legacy tables.
 class Pepc
 {
     private $servicio;
