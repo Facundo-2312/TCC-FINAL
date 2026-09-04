@@ -77,6 +77,12 @@ $chatbotJsVersion = @filemtime(__DIR__ . '/chatbot.js') ?: time();
             </a> 
         </div>
 
+        <div class="Links"> 
+            <a href="<?php echo htmlspecialchars(app_url('centro_reservas.php'), ENT_QUOTES, 'UTF-8'); ?>" style="background: linear-gradient(135deg, #ff006e, #fb5607);">
+                <i class="fas fa-calendar-check" style="margin-right: 5px;"></i>Centro de Reservas
+            </a> 
+        </div>
+
     </div>
 
 </div>
