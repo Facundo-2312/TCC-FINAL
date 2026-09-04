@@ -78,24 +78,188 @@ foreach ($reservas as $r) {
     $estadisticas['personas'] += (int)$r['cantidad_personas'];
 }
 
+$principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
+
 // Obtener lista de mesas
 $resultMesas = mysqli_query($conexion, 'SELECT id_mesa, numero FROM mesas ORDER BY numero ASC');
 $mesas = mysqli_fetch_all($resultMesas, MYSQLI_ASSOC);
 
-$cssVersion = @filemtime(__DIR__ . '/estilos/mesas_salon.css') ?: time();
-
 ?>
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Reporte de Reservas</title>
-    <link rel="stylesheet" type="text/css" href="estilos/mesas_salon.css?v=<?php echo $cssVersion; ?>">
+    <link rel="stylesheet" type="text/css" href="estilos/Principal.css?v=<?php echo $principalCssVersion; ?>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="<?php echo htmlspecialchars(app_url('no-popups.js'), ENT_QUOTES, 'UTF-8'); ?>"></script>
+    <style>
+        .filters-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-group label {
+            color: #aaa;
+            font-weight: bold;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #ff0055;
+            border-radius: 5px;
+            color: #fff;
+            padding: 8px;
+        }
+
+        .filter-button {
+            background-color: #ff0055;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-button:hover {
+            background-color: #ff1a66;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 20px auto;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #ff0055;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            color: #fff;
+        }
+
+        .stat-label {
+            color: #aaa;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #ff0055;
+        }
+
+        .table-container {
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .table-wrapper {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #ff0055;
+            border-radius: 10px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            color: #fff;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: rgba(255, 0, 85, 0.2);
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+            border-bottom: 2px solid #ff0055;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        tr:hover {
+            background: rgba(255, 0, 85, 0.1);
+        }
+
+        .btn-export {
+            background-color: #26d07c;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .btn-export:hover {
+            background-color: #1eb368;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .badge.confirmada {
+            background: #26d07c;
+            color: #fff;
+        }
+
+        .badge.cancelada {
+            background: #ff6b6b;
+            color: #fff;
+        }
+
+        .badge.completada {
+            background: #5a189a;
+            color: #fff;
+        }
+    </style>
 </head>
+
 <body>
 
-<div class="container">
+<header>
+    <h1>📊 REPORTES DE RESERVAS</h1>
+    <a class="salir" href="<?php echo htmlspecialchars(app_url('centro_reservas.php'), ENT_QUOTES, 'UTF-8'); ?>">
+        <i class="fas fa-arrow-left" style="margin-right: 8px;"></i>Volver
+    </a>
+</header>
+
+<div id="contenido">
     <!-- Header -->
     <div class="header">
         <h1>📊 Reporte de Reservas</h1>
