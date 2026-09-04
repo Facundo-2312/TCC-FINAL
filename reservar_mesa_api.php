@@ -24,8 +24,25 @@ $datos = array(
     'id_usuario' => $_SESSION['IdUsuario'] ?? null
 );
 
+$usuarioAccion = (string) ($_SESSION['Usuario'] ?? 'sistema');
+$mesaController = new App\Controllers\MesaController();
 $servicio = new App\Services\ReservaService();
+
+// Ocupar la mesa primero (operación atómica): evita que dos clientes reserven
+// la misma mesa al mismo tiempo, ya que solo puede pasar a Ocupada si está Libre.
+$ocupacion = $mesaController->cambiarEstado($datos['id_mesa'], 'Ocupada', $usuarioAccion);
+if (!$ocupacion['ok']) {
+    http_response_code(409);
+    echo json_encode(['ok' => false, 'error' => 'La mesa ya está ocupada o reservada, elegí otro horario u otra mesa']);
+    exit;
+}
+
 $resultado = $servicio->crear($datos);
+
+if (!$resultado['ok']) {
+    // La reserva no se pudo crear: liberar la mesa que se había ocupado
+    $mesaController->cambiarEstado($datos['id_mesa'], 'Libre', $usuarioAccion);
+}
 
 http_response_code($resultado['ok'] ? 200 : 400);
 echo json_encode($resultado);

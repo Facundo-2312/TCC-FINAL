@@ -14,6 +14,7 @@ function h($value)
 }
 
 $mesaController = new App\Controllers\MesaController();
+$servicioReserva = new App\Services\ReservaService();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion_mesa'])) {
     csrf_verify_or_die('mesas.php');
@@ -25,6 +26,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion_mesa'])) {
     $resultado = $mesaController->cambiarEstado($idMesa, $estado, $usuarioAccion);
     if (!$resultado['ok'] && $resultado['codigo'] === 'occupied') {
         app_redirect('mesas.php?msg=occupied');
+    }
+
+    if ($resultado['ok'] && $estado === 'Libre') {
+        // El cliente se retiró: cerrar cualquier reserva ligada a esta mesa
+        $servicioReserva->completarPorMesa($idMesa);
     }
 
     app_redirect('mesas.php');
@@ -39,7 +45,6 @@ $limpieza = $vistaMesas['stats']['Limpieza'];
 $historial = $mesaController->historial();
 
 // Cargar reservas para mostrar en las mesas
-$servicioReserva = new App\Services\ReservaService();
 $reservasActivas = $servicioReserva->listarActivas();
 $reservasPorMesa = array();
 foreach ($reservasActivas as $r) {
@@ -648,9 +653,15 @@ $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
                 </div>
 
                 <div class="mesa-actions">
-                    <button class="btn-mesa btn-reservar" onclick="abrirModalReserva(<?php echo $idMesa; ?>)">
-                        📅 HACER RESERVA
-                    </button>
+                    <?php if ($estado === 'Libre') { ?>
+                        <button class="btn-mesa btn-reservar" onclick="abrirModalReserva(<?php echo $idMesa; ?>)">
+                            📅 HACER RESERVA
+                        </button>
+                    <?php } else { ?>
+                        <button class="btn-mesa btn-reservar" disabled title="La mesa debe estar libre para reservar" style="opacity: 0.5; cursor: not-allowed;">
+                            📅 NO DISPONIBLE PARA RESERVA
+                        </button>
+                    <?php } ?>
 
                     <div class="btn-row">
                         <form method="post">
@@ -739,15 +750,14 @@ $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
                 </div>
             </div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="horaInicio">⏰ Entrada *</label>
-                    <input type="datetime-local" id="horaInicio" name="hora_inicio" required>
-                </div>
-                <div class="form-group">
-                    <label for="horaFin">⏰ Salida *</label>
-                    <input type="datetime-local" id="horaFin" name="hora_fin" required>
-                </div>
+            <div class="form-group">
+                <label for="horarioSlot">⏰ Horario de la Reserva *</label>
+                <select id="horarioSlot" name="horario_slot" required>
+                    <option value="">Cargando horarios...</option>
+                </select>
+                <input type="hidden" id="horaInicio" name="hora_inicio">
+                <input type="hidden" id="horaFin" name="hora_fin">
+                <small id="horarioAyuda" style="display: block; margin-top: 6px; color: #aaa;"></small>
             </div>
 
             <div class="form-group">
@@ -756,7 +766,7 @@ $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
             </div>
 
             <div class="modal-actions">
-                <button type="submit" class="btn-submit">✓ GUARDAR</button>
+                <button type="submit" class="btn-submit" id="btnGuardarReserva">✓ GUARDAR</button>
                 <button type="button" class="btn-cancel" onclick="cerrarModalReserva()">CANCELAR</button>
             </div>
         </form>
@@ -766,19 +776,75 @@ $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
 <script>
 <?php echo 'var csrfToken = ' . json_encode(App\Support\Csrf::token()) . ';'; ?>
 
+function cargarHorarios(idMesa) {
+    var select = document.getElementById('horarioSlot');
+    var ayuda = document.getElementById('horarioAyuda');
+    var btnGuardar = document.getElementById('btnGuardarReserva');
+
+    select.innerHTML = '<option value="">Cargando horarios...</option>';
+    select.disabled = true;
+    btnGuardar.disabled = true;
+    ayuda.textContent = '';
+
+    fetch('<?php echo htmlspecialchars(app_url('horarios_disponibles.php'), ENT_QUOTES, 'UTF-8'); ?>?id_mesa=' + idMesa, { cache: 'no-store' })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            select.innerHTML = '';
+
+            if (!data.ok) {
+                select.innerHTML = '<option value="">No se pudieron cargar los horarios</option>';
+                return;
+            }
+
+            if (!data.mesa_libre) {
+                select.innerHTML = '<option value="">Mesa no disponible</option>';
+                ayuda.textContent = 'Esta mesa ya está ocupada o reservada.';
+                return;
+            }
+
+            var hayDisponibles = false;
+            select.innerHTML = '<option value="">Seleccioná un horario</option>';
+
+            data.slots.forEach(function (slot) {
+                var option = document.createElement('option');
+                option.value = slot.hora_inicio + '|' + slot.hora_fin;
+                option.textContent = slot.etiqueta + (slot.disponible ? '' : ' (no disponible)');
+                option.disabled = !slot.disponible;
+                option.dataset.inicio = slot.hora_inicio;
+                option.dataset.fin = slot.hora_fin;
+                if (slot.disponible) hayDisponibles = true;
+                select.appendChild(option);
+            });
+
+            if (!hayDisponibles) {
+                ayuda.textContent = 'No quedan turnos disponibles por hoy para esta mesa.';
+            } else {
+                ayuda.textContent = 'La mesa quedará marcada como Ocupada hasta que se libere.';
+                select.disabled = false;
+                btnGuardar.disabled = false;
+            }
+        })
+        .catch(function () {
+            select.innerHTML = '<option value="">Error al cargar horarios</option>';
+        });
+}
+
+document.getElementById('horarioSlot').addEventListener('change', function () {
+    var opcion = this.options[this.selectedIndex];
+    document.getElementById('horaInicio').value = opcion.dataset.inicio || '';
+    document.getElementById('horaFin').value = opcion.dataset.fin || '';
+});
+
 function abrirModalReserva(idMesa) {
     document.getElementById('inputIdMesa').value = idMesa;
     var mesaNumero = document.querySelector(`[data-id="${idMesa}"] h3`).textContent.replace('Mesa ', '');
     document.getElementById('mesaNumero').textContent = mesaNumero;
-    
-    var ahora = new Date();
-    ahora.setHours(ahora.getHours() + 1);
-    document.getElementById('horaInicio').value = ahora.toISOString().slice(0, 16);
-    
-    var fin = new Date(ahora);
-    fin.setHours(fin.getHours() + 2);
-    document.getElementById('horaFin').value = fin.toISOString().slice(0, 16);
-    
+
+    document.getElementById('horaInicio').value = '';
+    document.getElementById('horaFin').value = '';
+
+    cargarHorarios(idMesa);
+
     document.getElementById('modalReserva').classList.add('show');
 }
 
@@ -789,7 +855,12 @@ function cerrarModalReserva() {
 
 function guardarReserva(e) {
     e.preventDefault();
-    
+
+    if (!document.getElementById('horaInicio').value || !document.getElementById('horaFin').value) {
+        alert('✗ Elegí un horario disponible antes de guardar la reserva');
+        return;
+    }
+
     var formData = new FormData(document.getElementById('formReserva'));
     formData.append('_csrf', csrfToken);
 

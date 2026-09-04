@@ -96,4 +96,24 @@ class ReservaService
 
         return array('ok' => false, 'error' => 'Error al cancelar reserva');
     }
+
+    /**
+     * Verificar disponibilidad de una mesa en un rango horario
+     */
+    public function disponible($idMesa, $horaInicio, $horaFin)
+    {
+        return $this->repositorio->mesaDisponible($idMesa, $horaInicio, $horaFin);
+    }
+
+    /**
+     * Marcar como completadas todas las reservas activas de una mesa
+     * (se usa al liberar la mesa, ya sea por pago o por retiro del cliente)
+     */
+    public function completarPorMesa($idMesa)
+    {
+        $reservas = $this->repositorio->listarPorMesa($idMesa);
+        foreach ($reservas as $reserva) {
+            $this->repositorio->marcarCompletada((int) $reserva['id_reserva']);
+        }
+    }
 }
