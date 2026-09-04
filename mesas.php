@@ -53,7 +53,6 @@ foreach ($reservasActivas as $r) {
 $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
 
 ?>
-?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -462,6 +461,84 @@ $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
             color: #aaa;
             border-color: #666;
         }
+
+        @media (max-width: 900px) {
+            .mesas-container {
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                padding: 12px;
+                gap: 14px;
+            }
+
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+                padding: 12px;
+                gap: 10px;
+            }
+
+            .filters-container {
+                padding: 12px;
+                gap: 12px;
+            }
+
+            .history-container {
+                margin: 20px 12px;
+                padding: 15px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 1.1em;
+            }
+
+            .mesas-container {
+                grid-template-columns: 1fr;
+                padding: 10px;
+                gap: 12px;
+            }
+
+            .mesa-card {
+                min-height: auto;
+                padding: 15px;
+            }
+
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+
+            .stat-box {
+                padding: 12px;
+            }
+
+            .stat-value {
+                font-size: 1.8em;
+            }
+
+            .filters-container {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+
+            .filter-item {
+                justify-content: space-between;
+            }
+
+            .mesa-info {
+                grid-template-columns: 1fr 1fr;
+                font-size: 12px;
+            }
+
+            .modal-content {
+                padding: 20px;
+                width: 95%;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 
@@ -835,194 +912,6 @@ window.onclick = function(e) {
 
     poll();
     setInterval(poll, 3000);
-})();
-</script>
-
-</body>
-</html>
-</script>
-
-</body>
-</html>
-
-    <div id="historialList" class="history-list">
-        <?php if (!empty($historial)) { ?>
-            <?php foreach ($historial as $item) { ?>
-                <div class="history-item">
-                    <div class="history-main">
-                        <strong>Mesa <?php echo (int) $item['numero']; ?></strong>
-                        <span><?php echo h($item['estado_anterior']); ?> → <?php echo h($item['estado_nuevo']); ?></span>
-                    </div>
-                    <div class="history-meta">
-                        <span><?php echo h($item['usuario']); ?></span>
-                        <span><?php echo h($item['fecha']); ?></span>
-                    </div>
-                </div>
-            <?php } ?>
-        <?php } else { ?>
-            <div class="history-empty">Aún no hay cambios registrados.</div>
-        <?php } ?>
-    </div>
-</section>
-
-<div class="grid" id="mesasGrid">
-<?php foreach ($mesas as $mesa) { ?>
-    <?php
-        $estado = (string) $mesa['estado'];
-        $estadoClass = strtolower($estado);
-    ?>
-    <article class="mesa-card <?php echo h($estadoClass); ?>" data-id="<?php echo (int) $mesa['id_mesa']; ?>">
-        <div class="mesa-head">
-            <h3>Mesa <?php echo (int) $mesa['numero']; ?></h3>
-            <span class="badge estado-text"><?php echo h($estado); ?></span>
-        </div>
-
-        <div class="zone"><?php echo h($mesa['zona']); ?></div>
-
-        <div class="actions">
-            <form method="post">
-                <?php echo csrf_field(); ?>
-                <input type="hidden" name="accion_mesa" value="1">
-                <input type="hidden" name="id_mesa" value="<?php echo (int) $mesa['id_mesa']; ?>">
-                <input type="hidden" name="estado" value="Ocupada">
-                <button type="submit" class="btn-action reserve">Reservar</button>
-            </form>
-
-            <form method="post">
-                <?php echo csrf_field(); ?>
-                <input type="hidden" name="accion_mesa" value="1">
-                <input type="hidden" name="id_mesa" value="<?php echo (int) $mesa['id_mesa']; ?>">
-                <input type="hidden" name="estado" value="Limpieza">
-                <button type="submit" class="btn-action cleaning">Limpieza</button>
-            </form>
-
-            <form method="post">
-                <?php echo csrf_field(); ?>
-                <input type="hidden" name="accion_mesa" value="1">
-                <input type="hidden" name="id_mesa" value="<?php echo (int) $mesa['id_mesa']; ?>">
-                <input type="hidden" name="estado" value="Libre">
-                <button type="submit" class="btn-action free">Liberar</button>
-            </form>
-        </div>
-    </article>
-<?php } ?>
-</div>
-
-<script>
-(function () {
-    var statLibre = document.getElementById('statLibre');
-    var statOcupada = document.getElementById('statOcupada');
-    var statLimpieza = document.getElementById('statLimpieza');
-    var filtroEstado = document.getElementById('filtroEstado');
-    var filtroZona = document.getElementById('filtroZona');
-    var lastUpdate = document.getElementById('lastUpdate');
-    var historialList = document.getElementById('historialList');
-
-    function applyFilters() {
-        var estado = filtroEstado ? filtroEstado.value : '';
-        var zona = filtroZona ? filtroZona.value : '';
-
-        document.querySelectorAll('.mesa-card').forEach(function (card) {
-            var estadoText = (card.querySelector('.estado-text') || { textContent: '' }).textContent.trim();
-            var zonaText = (card.querySelector('.zone') || { textContent: '' }).textContent.trim();
-
-            var matchEstado = !estado || estadoText === estado;
-            var matchZona = !zona || zonaText === zona;
-            card.style.display = (matchEstado && matchZona) ? '' : 'none';
-        });
-    }
-
-    function estadoClass(estado) {
-        var e = (estado || '').toLowerCase();
-        if (e === 'ocupada') return 'ocupada';
-        if (e === 'limpieza') return 'limpieza';
-        return 'libre';
-    }
-
-    function syncMesas(data) {
-        if (!data || !Array.isArray(data.mesas)) return;
-
-        data.mesas.forEach(function (mesa) {
-            var card = document.querySelector('.mesa-card[data-id="' + mesa.id_mesa + '"]');
-            if (!card) return;
-
-            card.classList.remove('libre', 'ocupada', 'limpieza');
-            card.classList.add(estadoClass(mesa.estado));
-
-            var badge = card.querySelector('.estado-text');
-            if (badge) {
-                badge.textContent = mesa.estado;
-            }
-
-            var zone = card.querySelector('.zone');
-            if (zone && mesa.zona) {
-                zone.textContent = mesa.zona;
-            }
-        });
-
-        if (data.stats) {
-            if (statLibre) statLibre.textContent = data.stats.Libre || 0;
-            if (statOcupada) statOcupada.textContent = data.stats.Ocupada || 0;
-            if (statLimpieza) statLimpieza.textContent = data.stats.Limpieza || 0;
-        }
-
-        if (lastUpdate) {
-            if (data.updatedAt) {
-                lastUpdate.textContent = data.updatedAt;
-            } else {
-                lastUpdate.textContent = new Date().toLocaleTimeString();
-            }
-        }
-
-        applyFilters();
-    }
-
-    function poll() {
-        fetch('<?php echo htmlspecialchars(app_url('mesas_estado.php'), ENT_QUOTES, 'UTF-8'); ?>', { cache: 'no-store' })
-            .then(function (res) { return res.json(); })
-            .then(syncMesas)
-            .catch(function () {});
-
-        fetch('<?php echo htmlspecialchars(app_url('mesas_historial.php'), ENT_QUOTES, 'UTF-8'); ?>', { cache: 'no-store' })
-            .then(function (res) { return res.json(); })
-            .then(function (data) {
-                if (!historialList || !data || !Array.isArray(data.historial)) return;
-
-                if (data.historial.length === 0) {
-                    historialList.innerHTML = '<div class="history-empty">Aún no hay cambios registrados.</div>';
-                    return;
-                }
-
-                historialList.innerHTML = data.historial.map(function (item) {
-                    var numero = item.numero || item.id_mesa || '-';
-                    var anterior = item.estado_anterior || '-';
-                    var nuevo = item.estado_nuevo || '-';
-                    var usuario = item.usuario || 'sistema';
-                    var fecha = item.fecha || '';
-
-                    return '<div class="history-item">'
-                        + '<div class="history-main"><strong>Mesa ' + numero + '</strong><span>' + anterior + ' → ' + nuevo + '</span></div>'
-                        + '<div class="history-meta"><span>' + usuario + '</span><span>' + fecha + '</span></div>'
-                        + '</div>';
-                }).join('');
-            })
-            .catch(function () {});
-    }
-
-    if (filtroEstado) {
-        filtroEstado.addEventListener('change', applyFilters);
-    }
-
-    if (filtroZona) {
-        filtroZona.addEventListener('change', applyFilters);
-    }
-
-    applyFilters();
-    if (lastUpdate) {
-        lastUpdate.textContent = new Date().toLocaleTimeString();
-    }
-
-    setInterval(poll, 7000);
 })();
 </script>
 
