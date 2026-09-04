@@ -438,6 +438,15 @@ $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
             color: #666;
         }
 
+        .form-group select option {
+            color: #000;
+            background: #fff;
+        }
+
+        .form-group select option:disabled {
+            color: #999;
+        }
+
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
