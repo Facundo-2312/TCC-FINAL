@@ -48,6 +48,8 @@ mysqli_stmt_execute($stmt);
 $ocupacionPorHora = mysqli_fetch_all(mysqli_stmt_get_result($stmt), MYSQLI_ASSOC);
 mysqli_stmt_close($stmt);
 
+$principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
+
 // Ocupación por mesa
 $queryMesas = 'SELECT 
     m.id_mesa,
@@ -95,17 +97,352 @@ foreach ($ocupacionPorHora as $o) {
     );
 }
 
-$cssVersion = @filemtime(__DIR__ . '/estilos/mesas_salon.css') ?: time();
-
 ?>
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Dashboard de Ocupación</title>
-    <link rel="stylesheet" type="text/css" href="estilos/mesas_salon.css?v=<?php echo $cssVersion; ?>">
+    <link rel="stylesheet" type="text/css" href="estilos/Principal.css?v=<?php echo $principalCssVersion; ?>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="<?php echo htmlspecialchars(app_url('no-popups.js'), ENT_QUOTES, 'UTF-8'); ?>"></script>
+    <style>
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .date-selector {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .date-selector input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #ff0055;
+            border-radius: 5px;
+            color: #fff;
+            padding: 8px 12px;
+        }
+
+        .date-selector button {
+            background-color: #ff0055;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .date-selector button:hover {
+            background-color: #ff1a66;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #ff0055;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            color: #fff;
+        }
+
+        .stat-label {
+            color: #aaa;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #ff0055;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #ff0055;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            height: 400px;
+        }
+
+        .chart-title {
+            color: #fff;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            color: #fff;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th {
+            background: rgba(255, 0, 85, 0.2);
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+            border-bottom: 2px solid #ff0055;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        tr:hover {
+            background: rgba(255, 0, 85, 0.1);
+        }
+
+        .table-container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #ff0055;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            overflow-x: auto;
+        }
+
+        #contenido {
+            min-height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>📈 DASHBOARD DE OCUPACIÓN</h1>
+    <a class="salir" href="<?php echo htmlspecialchars(app_url('centro_reservas.php'), ENT_QUOTES, 'UTF-8'); ?>">
+        <i class="fas fa-arrow-left" style="margin-right: 8px;"></i>Volver
+    </a>
+</header>
+
+<div id="contenido">
+    <div class="dashboard-container">
+
+        <!-- Selector de Fecha -->
+        <div class="date-selector">
+            <label for="fechaSelector">📅 Selecciona una fecha:</label>
+            <input type="date" id="fechaSelector" value="<?php echo htmlspecialchars($fecha); ?>">
+            <button onclick="cambiarFecha()">Ir</button>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Reservas</div>
+                <div class="stat-value"><?php echo $stats['total_reservas'] ?? 0; ?></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Personas</div>
+                <div class="stat-value"><?php echo $stats['personas_totales'] ?? 0; ?></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Confirmadas</div>
+                <div class="stat-value"><?php echo $stats['confirmadas'] ?? 0; ?></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Canceladas</div>
+                <div class="stat-value"><?php echo $stats['canceladas'] ?? 0; ?></div>
+            </div>
+        </div>
+
+        <!-- Gráfico: Ocupación por Hora -->
+        <div class="chart-container">
+            <div class="chart-title">Ocupación por Hora</div>
+            <canvas id="graficoHoras"></canvas>
+        </div>
+
+        <!-- Gráfico: Ocupación por Mesa -->
+        <div class="chart-container">
+            <div class="chart-title">Ocupación por Mesa</div>
+            <canvas id="graficoMesas"></canvas>
+        </div>
+
+        <!-- Tabla: Detalles de Mesas -->
+        <div class="table-container">
+            <h3 style="color: #fff; margin-top: 0;">🍽️ Detalle de Mesas</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mesa</th>
+                        <th>Reservas</th>
+                        <th>Personas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($ocupacionMesas as $m) { ?>
+                        <tr>
+                            <td>Mesa <?php echo (int)$m['numero']; ?></td>
+                            <td><?php echo (int)($m['cantidad_reservas'] ?? 0); ?></td>
+                            <td><?php echo (int)($m['personas_totales'] ?? 0); ?></td>
+                        </tr>
+                    <?php } ?>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Tabla: Top Clientes -->
+        <div class="table-container">
+            <h3 style="color: #fff; margin-top: 0;">👤 Top 10 Clientes</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Reservas</th>
+                        <th>Personas</th>
+                        <th>Última Reserva</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($topClientes as $c) { ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($c['nombre_cliente'], ENT_QUOTES, 'UTF-8'); ?></td>
+                            <td><?php echo (int)$c['cantidad']; ?></td>
+                            <td><?php echo (int)$c['personas']; ?></td>
+                            <td><?php echo date('d/m/Y', strtotime($c['ultima_fecha'])); ?></td>
+                        </tr>
+                    <?php } ?>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<script>
+function cambiarFecha() {
+    var fecha = document.getElementById('fechaSelector').value;
+    if (fecha) {
+        window.location.href = '<?php echo htmlspecialchars(app_url('dashboard_ocupacion.php'), ENT_QUOTES, 'UTF-8'); ?>?fecha=' + fecha;
+    }
+}
+
+// Gráfico: Ocupación por Hora
+var ctxHoras = document.getElementById('graficoHoras').getContext('2d');
+var datosHoras = <?php echo json_encode([
+    'horas' => array_keys($datosOcupacion),
+    'cantidad' => array_column($datosOcupacion, 'cantidad'),
+    'personas' => array_column($datosOcupacion, 'personas')
+]); ?>;
+
+new Chart(ctxHoras, {
+    type: 'line',
+    data: {
+        labels: datosHoras.horas.map(h => h + ':00'),
+        datasets: [
+            {
+                label: 'Reservas',
+                data: datosHoras.cantidad,
+                borderColor: '#ff0055',
+                backgroundColor: 'rgba(255, 0, 85, 0.1)',
+                tension: 0.4,
+                borderWidth: 2,
+                fill: true
+            },
+            {
+                label: 'Personas',
+                data: datosHoras.personas,
+                borderColor: '#26d07c',
+                backgroundColor: 'rgba(38, 208, 124, 0.1)',
+                tension: 0.4,
+                borderWidth: 2,
+                fill: true
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                labels: { color: '#fff' }
+            }
+        },
+        scales: {
+            y: {
+                ticks: { color: '#aaa' },
+                grid: { color: 'rgba(255,255,255,0.1)' }
+            },
+            x: {
+                ticks: { color: '#aaa' },
+                grid: { color: 'rgba(255,255,255,0.1)' }
+            }
+        }
+    }
+});
+
+// Gráfico: Ocupación por Mesa
+var ctxMesas = document.getElementById('graficoMesas').getContext('2d');
+var datosMesas = <?php echo json_encode([
+    'mesas' => array_map(function($m) { return 'Mesa ' . $m['numero']; }, $ocupacionMesas),
+    'reservas' => array_column($ocupacionMesas, 'cantidad_reservas'),
+    'personas' => array_column($ocupacionMesas, 'personas_totales')
+]); ?>;
+
+new Chart(ctxMesas, {
+    type: 'bar',
+    data: {
+        labels: datosMesas.mesas,
+        datasets: [
+            {
+                label: 'Reservas',
+                data: datosMesas.reservas,
+                backgroundColor: '#ff0055'
+            },
+            {
+                label: 'Personas',
+                data: datosMesas.personas,
+                backgroundColor: '#5a189a'
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                labels: { color: '#fff' }
+            }
+        },
+        scales: {
+            y: {
+                ticks: { color: '#aaa' },
+                grid: { color: 'rgba(255,255,255,0.1)' }
+            },
+            x: {
+                ticks: { color: '#aaa' },
+                grid: { color: 'rgba(255,255,255,0.1)' }
+            }
+        }
+    }
+});
+</script>
 </head>
 <body>
 
