@@ -50,181 +50,588 @@ foreach ($reservasActivas as $r) {
     $reservasPorMesa[$id][] = $r;
 }
 
-$cssVersion = @filemtime(__DIR__ . '/estilos/mesas_salon.css') ?: time();
+$principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
 
 ?>
 ?>
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Mesas en Tiempo Real</title>
-    <link rel="stylesheet" type="text/css" href="estilos/mesas_salon.css?v=<?php echo $cssVersion; ?>">
+    <link rel="stylesheet" type="text/css" href="estilos/Principal.css?v=<?php echo $principalCssVersion; ?>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="<?php echo htmlspecialchars(app_url('no-popups.js'), ENT_QUOTES, 'UTF-8'); ?>"></script>
+    <style>
+        .mesas-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .mesa-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #ff0055;
+            border-radius: 10px;
+            padding: 20px;
+            color: #fff;
+            transition: all 0.3s ease;
+            min-height: 420px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mesa-card:hover {
+            background: rgba(255, 0, 85, 0.1);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 0, 85, 0.2);
+        }
+
+        .mesa-card.libre {
+            border-color: #26d07c;
+        }
+
+        .mesa-card.libre:hover {
+            background: rgba(38, 208, 124, 0.1);
+        }
+
+        .mesa-card.ocupada {
+            border-color: #ff6b6b;
+        }
+
+        .mesa-card.ocupada:hover {
+            background: rgba(255, 107, 107, 0.1);
+        }
+
+        .mesa-card.limpieza {
+            border-color: #ffd60a;
+        }
+
+        .mesa-card.limpieza:hover {
+            background: rgba(255, 214, 10, 0.1);
+        }
+
+        .mesa-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .mesa-head h3 {
+            margin: 0;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            background: #ff0055;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        .badge.libre {
+            background: #26d07c;
+        }
+
+        .badge.ocupada {
+            background: #ff6b6b;
+        }
+
+        .badge.limpieza {
+            background: #ffd60a;
+            color: #000;
+        }
+
+        .mesa-info {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+            font-size: 13px;
+        }
+
+        .info-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px;
+            border-radius: 6px;
+            border-left: 3px solid #ff0055;
+        }
+
+        .info-label {
+            color: #aaa;
+            font-size: 11px;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .mesa-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: auto;
+        }
+
+        .btn-mesa {
+            padding: 10px;
+            border: 1px solid;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            color: #fff;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 12px;
+            text-transform: uppercase;
+            flex: 1;
+        }
+
+        .btn-mesa:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-reservar {
+            background-color: #5a189a;
+            border-color: #5a189a;
+        }
+
+        .btn-ocupar {
+            background-color: #ff0055;
+            border-color: #ff0055;
+        }
+
+        .btn-limpiar {
+            background-color: #ffd60a;
+            border-color: #ffd60a;
+            color: #000;
+        }
+
+        .btn-liberar {
+            background-color: #26d07c;
+            border-color: #26d07c;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-row button,
+        .btn-row form {
+            flex: 1;
+            display: flex;
+        }
+
+        .btn-row button {
+            margin: 0;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 30px auto;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #ff0055;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            color: #fff;
+        }
+
+        .stat-label {
+            color: #aaa;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #ff0055;
+        }
+
+        .filters-container {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-item label {
+            color: #aaa;
+            font-weight: bold;
+        }
+
+        .filter-item select {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #ff0055;
+            border-radius: 5px;
+            color: #fff;
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+
+        .history-container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #ff0055;
+            border-radius: 10px;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 30px auto;
+            color: #fff;
+        }
+
+        .history-container h3 {
+            margin-top: 0;
+            font-size: 1.2em;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 13px;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            margin: 20px auto;
+            max-width: 1400px;
+            border-radius: 10px;
+            border-left: 4px solid;
+        }
+
+        .alert.warning {
+            background: rgba(255, 214, 10, 0.1);
+            border-color: #ffd60a;
+            color: #ffd60a;
+        }
+
+        #contenido {
+            height: auto;
+            min-height: 100vh;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            border: 2px solid #ff0055;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            color: #fff;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 15px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.3em;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #ff0055;
+            font-size: 28px;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #ff0055;
+            border-radius: 5px;
+            color: #fff;
+            font-family: inherit;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: #666;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-actions button {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+
+        .btn-submit {
+            background-color: #ff0055;
+            color: white;
+            border-color: #ff0055;
+        }
+
+        .btn-cancel {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #aaa;
+            border-color: #666;
+        }
+    </style>
 </head>
+
 <body>
 
-<div class="container">
-    <!-- Header -->
-    <div class="header">
-        <h1>🍽️ Mesas en Tiempo Real</h1>
-        <div class="controls">
-            <a class="btn back" href="<?php echo htmlspecialchars(app_url('Principal.php'), ENT_QUOTES, 'UTF-8'); ?>">← Volver</a>
-            <a class="btn logout" href="<?php echo htmlspecialchars(app_url('Salir.php'), ENT_QUOTES, 'UTF-8'); ?>">Salir</a>
-        </div>
-    </div>
+<header>
+    <h1>🍽️ MESAS EN TIEMPO REAL</h1>
+    <a class="salir" href="<?php echo htmlspecialchars(app_url('Principal.php'), ENT_QUOTES, 'UTF-8'); ?>">
+        <i class="fas fa-arrow-left" style="margin-right: 8px;"></i>Volver
+    </a>
+</header>
 
-    <!-- Alertas -->
+<div id="contenido">
+
     <?php if (isset($_GET['msg']) && $_GET['msg'] === 'occupied') { ?>
-        <div class="alert error">
+        <div class="alert warning">
             ⚠️ No se pudo reservar: la mesa ya fue ocupada por otro usuario.
         </div>
     <?php } ?>
 
+    <!-- Estadísticas -->
+    <div class="stats-container">
+        <div class="stat-box">
+            <div class="stat-label">Mesas Libres</div>
+            <div class="stat-value" id="statLibre"><?php echo $libres; ?></div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Mesas Ocupadas</div>
+            <div class="stat-value" id="statOcupada"><?php echo $ocupadas; ?></div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">En Limpieza</div>
+            <div class="stat-value" id="statLimpieza"><?php echo $limpieza; ?></div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Última Actualización</div>
+            <div class="stat-value" id="lastUpdate" style="font-size: 1em;">--:--:--</div>
+        </div>
+    </div>
+
     <!-- Filtros -->
-    <div class="filters">
-        <div class="filter-group">
-            <label for="filtroEstado">📊 Filtrar por estado</label>
+    <div class="filters-container">
+        <div class="filter-item">
+            <label for="filtroEstado">📊 Filtrar estado:</label>
             <select id="filtroEstado">
                 <option value="">Todos</option>
                 <option value="Libre">Libre</option>
                 <option value="Ocupada">Ocupada</option>
                 <option value="Limpieza">Limpieza</option>
-                <option value="Reservada">Reservada</option>
             </select>
         </div>
 
-        <div class="filter-group">
-            <label for="filtroZona">🏠 Filtrar por zona</label>
+        <div class="filter-item">
+            <label for="filtroZona">🏠 Filtrar zona:</label>
             <select id="filtroZona">
                 <option value="">Todas</option>
                 <option value="Salón A">Salón A</option>
                 <option value="Salón B">Salón B</option>
             </select>
         </div>
-
-        <div style="margin-left: auto;">
-            <span class="last-update">Última actualización: <strong id="lastUpdate">--:--:--</strong></span>
-        </div>
     </div>
 
-    <!-- Estadísticas -->
-    <div class="stats">
-        <div class="stat-card libres">
-            <div class="label">Mesas Libres</div>
-            <div class="value" id="statLibre"><?php echo $libres; ?></div>
-        </div>
-        <div class="stat-card ocupadas">
-            <div class="label">Mesas Ocupadas</div>
-            <div class="value" id="statOcupada"><?php echo $ocupadas; ?></div>
-        </div>
-        <div class="stat-card limpieza">
-            <div class="label">En Limpieza</div>
-            <div class="value" id="statLimpieza"><?php echo $limpieza; ?></div>
-        </div>
-        <div class="stat-card reservadas">
-            <div class="label">Reservadas</div>
-            <div class="value" id="statReservadas">0</div>
-        </div>
-    </div>
+    <!-- Mesas Grid -->
+    <div class="mesas-container" id="mesasGrid">
+        <?php foreach ($mesas as $mesa) { ?>
+            <?php
+                $estado = (string) $mesa['estado'];
+                $estadoClass = strtolower($estado);
+                $idMesa = (int)$mesa['id_mesa'];
+                $tieneReserva = isset($reservasPorMesa[$idMesa]) && count($reservasPorMesa[$idMesa]) > 0;
+                $reserva = $tieneReserva ? $reservasPorMesa[$idMesa][0] : null;
+            ?>
+            <div class="mesa-card <?php echo h($estadoClass); ?>" data-id="<?php echo $idMesa; ?>" data-zona="<?php echo h($mesa['zona']); ?>">
+                <div class="mesa-head">
+                    <h3>Mesa <?php echo (int) $mesa['numero']; ?></h3>
+                    <span class="badge <?php echo h($estadoClass); ?>"><?php echo h($estado); ?></span>
+                </div>
 
-    <!-- Salón A -->
-    <div class="salon">
-        <div class="mesas-grid" id="mesasGrid">
-            <?php foreach ($mesas as $mesa) { ?>
-                <?php
-                    $estado = (string) $mesa['estado'];
-                    $estadoClass = strtolower($estado);
-                    $idMesa = (int)$mesa['id_mesa'];
-                    $tieneReserva = isset($reservasPorMesa[$idMesa]) && count($reservasPorMesa[$idMesa]) > 0;
-                    $reserva = $tieneReserva ? $reservasPorMesa[$idMesa][0] : null;
-                ?>
-                <article class="mesa-card <?php echo h($estadoClass); ?>" data-id="<?php echo $idMesa; ?>" data-zona="<?php echo h($mesa['zona']); ?>">
-                    <div class="mesa-header">
-                        <h3>Mesa <?php echo (int) $mesa['numero']; ?></h3>
-                        <span class="mesa-badge <?php echo h($estadoClass); ?>"><?php echo h($estado); ?></span>
+                <div class="mesa-info">
+                    <div class="info-item">
+                        <span class="info-label">Zona</span>
+                        <span class="info-value"><?php echo h($mesa['zona']); ?></span>
                     </div>
-
-                    <div class="mesa-info">
-                        <div class="mesa-info-item">
-                            <span class="label">Zona</span>
-                            <span class="value"><?php echo h($mesa['zona']); ?></span>
-                        </div>
-                        <div class="mesa-info-item">
-                            <span class="label">Capacidad</span>
-                            <span class="value"><?php echo (int)($mesa['capacidad'] ?? 4); ?> personas</span>
-                        </div>
-                        <?php if ($tieneReserva) { ?>
-                            <div class="mesa-info-item">
-                                <span class="label">Cliente</span>
-                                <span class="value"><?php echo h($reserva['nombre_cliente']); ?></span>
-                            </div>
-                            <div class="mesa-info-item">
-                                <span class="label">Personas</span>
-                                <span class="value"><?php echo (int)$reserva['cantidad_personas']; ?></span>
-                            </div>
-                            <div class="mesa-info-item">
-                                <span class="label">Entrada</span>
-                                <span class="value"><?php echo date('H:i', strtotime($reserva['hora_inicio'])); ?></span>
-                            </div>
-                            <div class="mesa-info-item">
-                                <span class="label">Salida</span>
-                                <span class="value"><?php echo date('H:i', strtotime($reserva['hora_fin'])); ?></span>
-                            </div>
-                        <?php } ?>
+                    <div class="info-item">
+                        <span class="info-label">Capacidad</span>
+                        <span class="info-value"><?php echo (int)($mesa['capacidad'] ?? 4); ?> 👥</span>
                     </div>
+                    
+                    <?php if ($tieneReserva) { ?>
+                        <div class="info-item">
+                            <span class="info-label">Cliente</span>
+                            <span class="info-value"><?php echo h($reserva['nombre_cliente']); ?></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Personas</span>
+                            <span class="info-value"><?php echo (int)$reserva['cantidad_personas']; ?></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Entrada</span>
+                            <span class="info-value"><?php echo date('H:i', strtotime($reserva['hora_inicio'])); ?></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Salida</span>
+                            <span class="info-value"><?php echo date('H:i', strtotime($reserva['hora_fin'])); ?></span>
+                        </div>
+                    <?php } ?>
+                </div>
 
-                    <div class="mesa-actions">
-                        <button class="btn-action reserve" onclick="abrirModalReserva(<?php echo $idMesa; ?>)">
-                            📅 Hacer Reserva
-                        </button>
+                <div class="mesa-actions">
+                    <button class="btn-mesa btn-reservar" onclick="abrirModalReserva(<?php echo $idMesa; ?>)">
+                        📅 HACER RESERVA
+                    </button>
 
-                        <form method="post" style="display: flex; gap: 10px;">
+                    <div class="btn-row">
+                        <form method="post">
                             <?php echo csrf_field(); ?>
                             <input type="hidden" name="accion_mesa" value="1">
                             <input type="hidden" name="id_mesa" value="<?php echo $idMesa; ?>">
-                            
                             <input type="hidden" name="estado" value="Ocupada">
-                            <button type="submit" class="btn-action reserve" style="flex: 1;">✓ Ocupar</button>
-
-                            <input type="hidden" name="estado" value="Limpieza">
-                            <button type="submit" class="btn-action cleaning" style="flex: 1;">🧹 Limpiar</button>
-                            
-                            <input type="hidden" name="estado" value="Libre">
-                            <button type="submit" class="btn-action free" style="flex: 1;">✔ Liberar</button>
+                            <button type="submit" class="btn-mesa btn-ocupar">✓ OCUPAR</button>
                         </form>
                     </div>
-                </article>
-            <?php } ?>
-        </div>
+
+                    <div class="btn-row">
+                        <form method="post">
+                            <?php echo csrf_field(); ?>
+                            <input type="hidden" name="accion_mesa" value="1">
+                            <input type="hidden" name="id_mesa" value="<?php echo $idMesa; ?>">
+                            <input type="hidden" name="estado" value="Limpieza">
+                            <button type="submit" class="btn-mesa btn-limpiar">🧹 LIMPIAR</button>
+                        </form>
+
+                        <form method="post">
+                            <?php echo csrf_field(); ?>
+                            <input type="hidden" name="accion_mesa" value="1">
+                            <input type="hidden" name="id_mesa" value="<?php echo $idMesa; ?>">
+                            <input type="hidden" name="estado" value="Libre">
+                            <button type="submit" class="btn-mesa btn-liberar">✔ LIBERAR</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        <?php } ?>
     </div>
 
     <!-- Historial -->
-    <div class="history-section">
-        <div class="history-header">
-            <h2>📋 Historial de Cambios</h2>
-            <span style="color: #888; font-size: 12px;">Últimos cambios de estado</span>
-        </div>
-        <div class="history-list" id="historialList">
+    <div class="history-container">
+        <h3>📋 HISTORIAL DE CAMBIOS</h3>
+        <div id="historialList">
             <?php if (!empty($historial)) { ?>
                 <?php foreach ($historial as $item) { ?>
                     <div class="history-item">
-                        <div class="history-main">
-                            <strong>Mesa <?php echo (int) $item['numero']; ?></strong>
-                            <span><?php echo h($item['estado_anterior']); ?> → <?php echo h($item['estado_nuevo']); ?></span>
+                        <div>
+                            <strong>Mesa <?php echo (int) $item['numero']; ?>:</strong>
+                            <?php echo h($item['estado_anterior']); ?> → <?php echo h($item['estado_nuevo']); ?>
                         </div>
-                        <div class="history-meta">
-                            <span><?php echo h($item['usuario']); ?></span>
-                            <span><?php echo h($item['fecha']); ?></span>
+                        <div style="text-align: right; color: #aaa;">
+                            <div><?php echo h($item['usuario']); ?></div>
+                            <div><?php echo h($item['fecha']); ?></div>
                         </div>
                     </div>
                 <?php } ?>
             <?php } else { ?>
-                <div class="history-empty">Aún no hay cambios registrados.</div>
+                <div style="text-align: center; color: #aaa; padding: 20px;">
+                    Aún no hay cambios registrados.
+                </div>
             <?php } ?>
         </div>
     </div>
+
 </div>
 
 <!-- Modal de Reserva -->
@@ -246,34 +653,34 @@ $cssVersion = @filemtime(__DIR__ . '/estilos/mesas_salon.css') ?: time();
 
             <div class="form-row">
                 <div class="form-group">
-                    <label for="cantidadPersonas"># Cantidad de Personas *</label>
-                    <input type="number" id="cantidadPersonas" name="cantidad_personas" required min="1" max="50" value="1" placeholder="Ej: 4">
+                    <label for="cantidadPersonas"># Cantidad *</label>
+                    <input type="number" id="cantidadPersonas" name="cantidad_personas" required min="1" max="50" value="1">
                 </div>
                 <div class="form-group">
                     <label for="telefono">📱 Teléfono</label>
-                    <input type="tel" id="telefono" name="telefono" placeholder="Ej: 123-456-7890">
+                    <input type="tel" id="telefono" name="telefono" placeholder="123-456-7890">
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label for="horaInicio">⏰ Hora Entrada *</label>
+                    <label for="horaInicio">⏰ Entrada *</label>
                     <input type="datetime-local" id="horaInicio" name="hora_inicio" required>
                 </div>
                 <div class="form-group">
-                    <label for="horaFin">⏰ Hora Salida *</label>
+                    <label for="horaFin">⏰ Salida *</label>
                     <input type="datetime-local" id="horaFin" name="hora_fin" required>
                 </div>
             </div>
 
             <div class="form-group">
-                <label for="notas">📝 Notas Especiales</label>
-                <textarea id="notas" name="notas" placeholder="Ej: Celebración de cumpleaños, dieta especial, etc."></textarea>
+                <label for="notas">📝 Notas</label>
+                <textarea id="notas" name="notas" placeholder="Observaciones..." style="min-height: 80px;"></textarea>
             </div>
 
             <div class="modal-actions">
-                <button type="submit" class="btn-submit">✓ Guardar Reserva</button>
-                <button type="button" class="btn-cancel" onclick="cerrarModalReserva()">Cancelar</button>
+                <button type="submit" class="btn-submit">✓ GUARDAR</button>
+                <button type="button" class="btn-cancel" onclick="cerrarModalReserva()">CANCELAR</button>
             </div>
         </form>
     </div>
@@ -284,9 +691,9 @@ $cssVersion = @filemtime(__DIR__ . '/estilos/mesas_salon.css') ?: time();
 
 function abrirModalReserva(idMesa) {
     document.getElementById('inputIdMesa').value = idMesa;
-    document.getElementById('mesaNumero').textContent = document.querySelector(`[data-id="${idMesa}"] h3`).textContent.replace('Mesa ', '');
+    var mesaNumero = document.querySelector(`[data-id="${idMesa}"] h3`).textContent.replace('Mesa ', '');
+    document.getElementById('mesaNumero').textContent = mesaNumero;
     
-    // Pre-llenar horarios sugeridos
     var ahora = new Date();
     ahora.setHours(ahora.getHours() + 1);
     document.getElementById('horaInicio').value = ahora.toISOString().slice(0, 16);
@@ -336,7 +743,7 @@ window.onclick = function(e) {
     }
 }
 
-// Sync en tiempo real
+// Sincronización en tiempo real
 (function() {
     var filtroEstado = document.getElementById('filtroEstado');
     var filtroZona = document.getElementById('filtroZona');
@@ -344,10 +751,10 @@ window.onclick = function(e) {
     var historialList = document.getElementById('historialList');
 
     function applyFilters() {
-        var estado = filtroEstado ? filtroEstado.value : '';
-        var zona = filtroZona ? filtroZona.value : '';
+        var estado = filtroEstado.value;
+        var zona = filtroZona.value;
 
-        document.querySelectorAll('.mesa-card').forEach(function(card) {
+        document.querySelectorAll('[data-id]').forEach(function(card) {
             var cardZona = card.getAttribute('data-zona');
             var cardEstado = card.className.split(' ')[1] || '';
             
@@ -358,37 +765,30 @@ window.onclick = function(e) {
     }
 
     function estadoClass(estado) {
-        var e = (estado || '').toLowerCase();
-        if (e === 'ocupada') return 'ocupada';
-        if (e === 'limpieza') return 'limpieza';
-        if (e === 'reservada') return 'reservada';
-        return 'libre';
+        return (estado || '').toLowerCase();
     }
 
     function syncMesas(data) {
         if (!data || !Array.isArray(data.mesas)) return;
 
         data.mesas.forEach(function(mesa) {
-            var card = document.querySelector('.mesa-card[data-id="' + mesa.id_mesa + '"]');
+            var card = document.querySelector(`[data-id="${mesa.id_mesa}"]`);
             if (!card) return;
 
             card.className = 'mesa-card ' + estadoClass(mesa.estado);
             card.setAttribute('data-zona', mesa.zona);
 
-            var badge = card.querySelector('.mesa-badge');
+            var badge = card.querySelector('.badge');
             if (badge) {
-                badge.className = 'mesa-badge ' + estadoClass(mesa.estado);
+                badge.className = 'badge ' + estadoClass(mesa.estado);
                 badge.textContent = mesa.estado;
             }
         });
 
         if (data.stats) {
-            var libre = document.getElementById('statLibre');
-            var ocupada = document.getElementById('statOcupada');
-            var limpieza = document.getElementById('statLimpieza');
-            if (libre) libre.textContent = data.stats.Libre || 0;
-            if (ocupada) ocupada.textContent = data.stats.Ocupada || 0;
-            if (limpieza) limpieza.textContent = data.stats.Limpieza || 0;
+            document.getElementById('statLibre').textContent = data.stats.Libre || 0;
+            document.getElementById('statOcupada').textContent = data.stats.Ocupada || 0;
+            document.getElementById('statLimpieza').textContent = data.stats.Limpieza || 0;
         }
 
         if (lastUpdate) {
@@ -410,19 +810,19 @@ window.onclick = function(e) {
                 if (!historialList || !data || !Array.isArray(data.historial)) return;
 
                 if (data.historial.length === 0) {
-                    historialList.innerHTML = '<div class="history-empty">Aún no hay cambios registrados.</div>';
+                    historialList.innerHTML = '<div style="text-align: center; color: #aaa; padding: 20px;">Aún no hay cambios registrados.</div>';
                     return;
                 }
 
                 historialList.innerHTML = data.historial.map(item => `
                     <div class="history-item">
-                        <div class="history-main">
-                            <strong>Mesa ${item.numero}</strong>
-                            <span>${item.estado_anterior} → ${item.estado_nuevo}</span>
+                        <div>
+                            <strong>Mesa ${item.numero}:</strong>
+                            ${item.estado_anterior} → ${item.estado_nuevo}
                         </div>
-                        <div class="history-meta">
-                            <span>${item.usuario}</span>
-                            <span>${item.fecha}</span>
+                        <div style="text-align: right; color: #aaa;">
+                            <div>${item.usuario}</div>
+                            <div>${item.fecha}</div>
                         </div>
                     </div>
                 `).join('');
@@ -430,12 +830,16 @@ window.onclick = function(e) {
             .catch(() => {});
     }
 
-    filtroEstado?.addEventListener('change', applyFilters);
-    filtroZona?.addEventListener('change', applyFilters);
+    filtroEstado.addEventListener('change', applyFilters);
+    filtroZona.addEventListener('change', applyFilters);
 
     poll();
     setInterval(poll, 3000);
 })();
+</script>
+
+</body>
+</html>
 </script>
 
 </body>
