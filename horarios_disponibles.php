@@ -35,12 +35,12 @@ if (!$mesaActual) {
 $mesaLibre = $mesaActual['estado'] === 'Libre';
 
 $duracionMinutos = 90;
-$horaAperturaJornada = '12:00';
-$horaCierreJornada = '23:30';
+$horaAperturaJornada = '18:00';
+$horaCierreJornada = '00:00';
 
 $hoy = date('Y-m-d');
 $inicioJornada = strtotime($hoy . ' ' . $horaAperturaJornada);
-$finJornada = strtotime($hoy . ' ' . $horaCierreJornada);
+$finJornada = strtotime($hoy . ' ' . $horaCierreJornada) + 86400;
 $ahora = time();
 
 $slots = [];
