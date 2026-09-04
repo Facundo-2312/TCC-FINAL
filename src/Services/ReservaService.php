@@ -39,11 +39,6 @@ class ReservaService
             return array('ok' => false, 'error' => 'La hora fin debe ser después de la hora inicio');
         }
 
-        // Verificar que no sea en el pasado
-        if (strtotime($horaInicio) < time()) {
-            return array('ok' => false, 'error' => 'No se puede reservar en horarios pasados');
-        }
-
         $idMesa = (int)($datos['id_mesa'] ?? 0);
 
         // Verificar disponibilidad

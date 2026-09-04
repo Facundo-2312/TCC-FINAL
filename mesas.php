@@ -68,6 +68,11 @@ $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="<?php echo htmlspecialchars(app_url('no-popups.js'), ENT_QUOTES, 'UTF-8'); ?>"></script>
     <style>
+        .modal-content *,
+        .modal-content *::before,
+        .modal-content *::after {
+            box-sizing: border-box;
+        }
         .mesas-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -417,6 +422,7 @@ $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
         }
 
         .form-group input,
+        .form-group select,
         .form-group textarea {
             width: 100%;
             padding: 10px;

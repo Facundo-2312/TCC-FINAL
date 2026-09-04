@@ -41,7 +41,6 @@ $horaCierreJornada = '00:00';
 $hoy = date('Y-m-d');
 $inicioJornada = strtotime($hoy . ' ' . $horaAperturaJornada);
 $finJornada = strtotime($hoy . ' ' . $horaCierreJornada) + 86400;
-$ahora = time();
 
 $slots = [];
 for ($actual = $inicioJornada; $actual < $finJornada; $actual += 30 * 60) {
@@ -49,8 +48,7 @@ for ($actual = $inicioJornada; $actual < $finJornada; $actual += 30 * 60) {
     $horaInicio = date('Y-m-d\TH:i', $actual);
     $horaFin = date('Y-m-d\TH:i', $finTurno);
 
-    $esPasado = $actual <= $ahora;
-    $disponible = $mesaLibre && !$esPasado
+    $disponible = $mesaLibre
         && $servicioReserva->disponible($idMesa, date('Y-m-d H:i:s', $actual), date('Y-m-d H:i:s', $finTurno));
 
     $slots[] = [
