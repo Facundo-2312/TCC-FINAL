@@ -95,14 +95,25 @@ $mesas = mysqli_fetch_all($resultMesas, MYSQLI_ASSOC);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="<?php echo htmlspecialchars(app_url('no-popups.js'), ENT_QUOTES, 'UTF-8'); ?>"></script>
     <style>
-        .filters-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            padding: 20px;
+        #contenido {
+            display: block;
+            height: auto;
+            min-height: 100vh;
             max-width: 1400px;
             margin: 0 auto;
-            background: rgba(255, 255, 255, 0.02);
+            padding: 20px;
+            text-align: left;
+        }
+
+        .filters {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 10px;
         }
 
@@ -114,77 +125,92 @@ $mesas = mysqli_fetch_all($resultMesas, MYSQLI_ASSOC);
 
         .filter-group label {
             color: #aaa;
-            font-weight: bold;
+            font-weight: 600;
             font-size: 12px;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .filter-group input,
         .filter-group select {
             background: rgba(255, 255, 255, 0.1);
-            border: 1px solid #ff0055;
-            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
             color: #fff;
-            padding: 8px;
+            padding: 10px 12px;
+            font-size: 14px;
         }
 
-        .filter-button {
-            background-color: #ff0055;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            padding: 8px;
-            font-weight: bold;
-            cursor: pointer;
+        .filter-group input:focus,
+        .filter-group select:focus {
+            border-color: #ff006e;
+            outline: none;
+            background: rgba(255, 0, 110, 0.1);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
             transition: all 0.3s ease;
         }
 
-        .filter-button:hover {
-            background-color: #ff1a66;
+        .stat-card:hover {
+            border-color: #ff006e;
+            transform: translateY(-4px);
         }
 
-        .stats-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 15px;
-            padding: 20px;
-            max-width: 1400px;
-            margin: 20px auto;
-        }
-
-        .stat-box {
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid #ff0055;
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
-            color: #fff;
-        }
-
-        .stat-label {
+        .stat-card .label {
             color: #aaa;
-            font-size: 12px;
+            font-size: 13px;
             text-transform: uppercase;
+            letter-spacing: 1px;
             margin-bottom: 10px;
         }
 
-        .stat-value {
-            font-size: 2em;
+        .stat-card .value {
+            font-size: 2.4em;
             font-weight: bold;
-            color: #ff0055;
+            background: linear-gradient(135deg, #ff006e, #fb5607);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .table-container {
-            padding: 20px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .table-wrapper {
+        .history-section {
+            padding: 25px;
             background: rgba(255, 255, 255, 0.05);
-            border: 2px solid #ff0055;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 10px;
-            overflow-x: auto;
+            margin-bottom: 25px;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .history-header h2 {
+            font-size: 1.2em;
+        }
+
+        .history-empty {
+            text-align: center;
+            padding: 30px;
+            color: #888;
         }
 
         table {
@@ -194,57 +220,71 @@ $mesas = mysqli_fetch_all($resultMesas, MYSQLI_ASSOC);
         }
 
         th {
-            background: rgba(255, 0, 85, 0.2);
+            background: rgba(255, 0, 110, 0.15);
             padding: 12px;
             text-align: left;
-            font-weight: bold;
-            border-bottom: 2px solid #ff0055;
+            font-weight: 600;
+            border-bottom: 2px solid rgba(255, 0, 110, 0.4);
         }
 
         td {
             padding: 12px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        tr:hover {
-            background: rgba(255, 0, 85, 0.1);
+        tbody tr:hover {
+            background: rgba(255, 0, 110, 0.08);
         }
 
-        .btn-export {
-            background-color: #26d07c;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 20px;
-        }
-
-        .btn-export:hover {
-            background-color: #1eb368;
-        }
-
-        .badge {
-            padding: 4px 8px;
-            border-radius: 4px;
+        .mesa-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
             font-size: 11px;
             font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .badge.confirmada {
+        .mesa-badge.confirmada {
             background: #26d07c;
-            color: #fff;
+            color: #000;
         }
 
-        .badge.cancelada {
+        .mesa-badge.cancelada {
             background: #ff6b6b;
             color: #fff;
         }
 
-        .badge.completada {
+        .mesa-badge.completada {
             background: #5a189a;
+            color: #fff;
+        }
+
+        .btn-action {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-action.reserve {
+            background: linear-gradient(135deg, #5a189a, #6d28d9);
+            color: #fff;
+        }
+
+        .btn-action.free {
+            background: linear-gradient(135deg, #26d07c, #1fad5b);
             color: #fff;
         }
     </style>
@@ -260,15 +300,6 @@ $mesas = mysqli_fetch_all($resultMesas, MYSQLI_ASSOC);
 </header>
 
 <div id="contenido">
-    <!-- Header -->
-    <div class="header">
-        <h1>📊 Reporte de Reservas</h1>
-        <div class="controls">
-            <a class="btn back" href="<?php echo htmlspecialchars(app_url('mesas.php'), ENT_QUOTES, 'UTF-8'); ?>">← Mesas</a>
-            <a class="btn back" href="<?php echo htmlspecialchars(app_url('Principal.php'), ENT_QUOTES, 'UTF-8'); ?>">← Volver</a>
-        </div>
-    </div>
-
     <!-- Filtros -->
     <div class="filters">
         <form method="get" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; width: 100%;">

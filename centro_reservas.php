@@ -113,30 +113,17 @@ $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
             color: #ff0055;
         }
 
-        .welcome-section {
-            background: rgba(255, 255, 255, 0.02);
-            border-top: 2px solid #ff0055;
-            border-bottom: 2px solid #ff0055;
-            padding: 30px;
-            margin: 30px 0;
-            text-align: center;
-            color: #fff;
-        }
-
-        .welcome-section h2 {
-            margin: 0;
-            font-size: 1.8em;
-            color: #ff0055;
-        }
-
-        .welcome-section p {
-            margin: 10px 0 0 0;
-            color: #aaa;
-            font-size: 14px;
-        }
-
         #contenido {
-            min-height: 100vh;
+            display: block;
+            height: auto;
+            min-height: 0;
+            padding: 20px;
+            text-align: left;
+            box-sizing: border-box;
+        }
+
+        #contenido * {
+            box-sizing: border-box;
         }
     </style>
 </head>
@@ -151,12 +138,6 @@ $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
 </header>
 
 <div id="contenido">
-
-    <!-- Bienvenida -->
-    <div class="welcome-section">
-        <h2>Gestión Integral de Reservas</h2>
-        <p>Accede a todas las herramientas para administrar reservas, mesas y notificaciones de clientes</p>
-    </div>
 
     <!-- Estadísticas -->
     <div class="stats-row">
