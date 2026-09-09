@@ -12,6 +12,12 @@
 			"label": "commit-clean-working-tree-2",
 			"type": "shell",
 			"command": "git add -A; git commit -m cleanup_alertas; git status --short --branch; git log -1 --oneline",
+		},
+		{
+			"label": "upload-all-changes-now",
+			"type": "shell",
+			"command": "git add -A; git commit -m subida_catalogo_completa; git push origin main; git status --short --branch; git log -1 --oneline",
+			"isBackground": false
 			"isBackground": false
 		},
 		{
