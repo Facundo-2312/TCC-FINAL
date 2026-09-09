@@ -220,10 +220,11 @@ ul.social-icons li {
   line-height: 1;
   color: #fff;
   letter-spacing: 0;
+  transform: scaleX(1.12);
 }
 
 .x-3x {
-  font-size: 2.4rem;
+  font-size: 3.65rem;
 }
 
 @media (max-width: 1024px) {
@@ -472,6 +473,10 @@ footer {
   height: 44px;
   border-radius: 50%;
   border: 1px solid rgba(255,255,255,0.2);
+}
+
+.social-icons a.social-x {
+  border-color: transparent;
 }
 
 @media (max-width: 768px) {

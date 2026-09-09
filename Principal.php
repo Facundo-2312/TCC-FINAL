@@ -104,7 +104,7 @@ $chatbotJsVersion = @filemtime(__DIR__ . '/chatbot.js') ?: time();
     <h3>Síguenos</h3>
     <ul class="social-icons">
       <li><a href="#"><i class="fab fa-facebook fa-3x"></i></a></li>
-    <li><a href="#" aria-label="X"><span class="x-brand x-3x">X</span></a></li>
+        <li><a href="#" class="social-x" aria-label="X"><span class="x-brand x-3x">X</span></a></li>
       <li><a href="#"><i class="fab fa-instagram fa-3x"></i></a></li>
     </ul>
   </div>
