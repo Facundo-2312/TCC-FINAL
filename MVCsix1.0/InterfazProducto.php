@@ -115,6 +115,28 @@ function resolverImagenProducto($nombreProducto, $rutaImagen)
         return $ruta;
     }
 
+    // Las imágenes asignadas explícitamente al producto tienen prioridad sobre
+    // las reglas heredadas por palabras clave.
+    if ($ruta !== '') {
+        $normalizada = str_replace('\\\\', '/', $ruta);
+        $normalizada = ltrim($normalizada, '/');
+        $base = basename($normalizada);
+        $baseSinExt = pathinfo($base, PATHINFO_FILENAME);
+        $imagenesGuardadas = array(
+            $normalizada,
+            $baseSinExt !== '' ? 'img/' . $baseSinExt . '_hq.jpg' : '',
+            $baseSinExt !== '' ? 'files/' . $baseSinExt . '_hq.jpg' : '',
+            'img/' . $base,
+            'files/' . $base
+        );
+
+        foreach ($imagenesGuardadas as $imagenGuardada) {
+            if ($imagenGuardada !== '' && is_file(__DIR__ . '/' . $imagenGuardada)) {
+                return $imagenGuardada;
+            }
+        }
+    }
+
     $nombre = mb_strtolower((string) $nombreProducto, 'UTF-8');
 
     $imagenesEspecificas = array(

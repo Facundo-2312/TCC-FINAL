@@ -73,6 +73,46 @@
 			"type": "shell",
 			"command": "git status --short --branch; git add .vscode/tasks.json; git commit -m 'Actualiza tareas locales de VS Code'; git push origin main; git status --short --branch; git log -1 --oneline",
 			"isBackground": false
+		},
+		{
+			"label": "validate-image-resolver",
+			"type": "shell",
+			"command": "C:\\xampp\\php\\php.exe -l MVCsix1.0\\InterfazProducto.php",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "status-before-upload",
+			"type": "shell",
+			"command": "git status --short --branch; git diff --stat",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "review-upload-diff",
+			"type": "shell",
+			"command": "git diff -- MVCsix1.0/InterfazProducto.php .vscode/tasks.json; git status --short MVCsix1.0/img/catalogo",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "upload-catalog-fix",
+			"type": "shell",
+			"command": "git add MVCsix1.0/InterfazProducto.php MVCsix1.0/img/catalogo/*.jpg; git commit -m \"Corrige rutas e imagenes del catalogo\"; git push origin main; git status --short --branch; git log -1 --oneline",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "upload-all-changes-now",
+			"type": "shell",
+			"command": "git add -A; git commit -m subida_catalogo_completa; git push origin main; git status --short --branch; git log -1 --oneline",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
 		}
 	]
 }

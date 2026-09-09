@@ -139,15 +139,19 @@ $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
         }
 
         .form-group label {
-            display: block;
+            display: flex;
+            align-items: center;
+            height: 24px;
             margin-bottom: 8px;
             font-weight: bold;
             color: #fff;
+            text-align: left;
         }
 
         .form-group input,
         .form-group textarea {
             width: 100%;
+            box-sizing: border-box;
             padding: 10px;
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid #ff0055;
@@ -163,8 +167,12 @@ $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
 
         .form-row {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
             gap: 15px;
+        }
+
+        .form-group {
+            min-width: 0;
         }
 
         .info-item {
@@ -266,8 +274,11 @@ $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
             background: #26d07c;
         }
 
-        #contenido {
-            min-height: 100vh;
+        #contenido.edit-content {
+            min-height: 0;
+            height: auto;
+            display: block;
+            padding: 0;
         }
     </style>
 </head>
@@ -281,7 +292,7 @@ $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
     </a>
 </header>
 
-<div id="contenido">
+<div id="contenido" class="edit-content">
     <div class="edit-container">
 
         <?php if (!empty($mensaje)) { ?>
