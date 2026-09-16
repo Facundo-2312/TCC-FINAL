@@ -41,7 +41,14 @@ $loginCssVersion = @filemtime(__DIR__ . '/estilos/login.css') ?: time();
 		<p>Usuario <input type="text"  name="Usuario" required placeholder="Digite su nombre" /></p>
 
    
-		<p>Contraseña<input type="password"  name="Pass" required placeholder="Digite su Contraseña"  /></p>
+		<p>Contraseña
+      <span class="password-field">
+        <input id="login-password" type="password" name="Pass" required placeholder="Digite su Contraseña" />
+        <button class="password-toggle" type="button" aria-label="Mostrar contraseña" aria-pressed="false">
+          <i class="fas fa-eye" aria-hidden="true"></i><span class="password-toggle-fallback" aria-hidden="true">◉</span>
+        </button>
+      </span>
+    </p>
   
   
     <p><input type="submit" value="Ingresar" /></p>
@@ -50,6 +57,26 @@ $loginCssVersion = @filemtime(__DIR__ . '/estilos/login.css') ?: time();
   </div>
 	
 </div>					
+
+<script>
+  (function () {
+    var toggle = document.querySelector('.password-toggle');
+    var password = document.getElementById('login-password');
+
+    if (!toggle || !password) {
+      return;
+    }
+
+    toggle.addEventListener('click', function () {
+      var isVisible = password.type === 'text';
+
+      password.type = isVisible ? 'password' : 'text';
+      toggle.setAttribute('aria-label', isVisible ? 'Mostrar contraseña' : 'Ocultar contraseña');
+      toggle.setAttribute('aria-pressed', String(!isVisible));
+      toggle.querySelector('i').className = isVisible ? 'fas fa-eye' : 'fas fa-eye-slash';
+    });
+  }());
+</script>
 
 
 <footer class="foot">

@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/app_bootstrap.php';
 
+$flash = app_get_flash();
+
 app_require_login('Login.php', ['1', '3']);
 
 $conexion = app_db_connect();
@@ -22,13 +24,14 @@ function estadoClass($estado)
     return 'pendiente';
 }
 
+$mensaje = (string) ($flash['message'] ?? '');
+$tipoMensaje = (string) ($flash['type'] ?? '');
+
 $pedidoController = new App\Controllers\PedidoController();
 $productoController = new App\Controllers\ProductoController();
 $productos = array_values(array_filter($productoController->listar(), function ($producto) {
     return ($producto['estado'] ?? 'Activo') === 'Activo' && (int) ($producto['stock'] ?? 0) > 0;
 }));
-$mensaje = '';
-$tipoMensaje = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear_pedido'])) {
     csrf_verify_or_die('InterfazObtenerPedidos.php');
@@ -63,6 +66,7 @@ $pedidosConDetalle = $pedidoController->listarRecientes(30);
 :root{--bg:#111217;--panel:#1c1e25;--panel-soft:#272a33;--accent:#ff0055;--accent-soft:#ff4d8a;--text:#f4f4f4;--muted:#bdbdbd;--line:rgba(255,255,255,.1);--success:#22a95b}
 *{box-sizing:border-box}
 body{margin:0;padding:24px;background:radial-gradient(circle at top left,rgba(255,0,85,.16),transparent 34%),var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+.alert{max-width:1440px;margin:0 auto 16px;padding:12px 14px;border:1px solid rgba(220,38,38,.5);border-radius:6px;background:rgba(220,38,38,.16);color:#fecaca}.alert.success{border-color:rgba(34,169,91,.55);background:rgba(34,169,91,.16);color:#bbf7d0}
 .top{display:flex;justify-content:space-between;align-items:center;gap:12px;max-width:1440px;margin:auto}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 15px;border-radius:8px;text-decoration:none;font-weight:700;border:0;cursor:pointer}.back{background:#343740;color:#fff}.primary{background:var(--accent);color:#fff;width:100%;font-size:1rem}.primary:hover,.add:hover{background:var(--accent-soft)}
 h1{max-width:1440px;margin:18px auto;color:#fff;font-size:clamp(1.8rem,3vw,2.5rem)}.top span{color:#ff8fb3;font-weight:700}.grid{max-width:1440px;margin:auto;display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px}.panel{background:linear-gradient(180deg,var(--panel),var(--panel-soft));border:1px solid var(--line);border-radius:8px;padding:18px}.catalog-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}.catalog-head h2,.order-title{margin:0;font-size:1.2rem}.products{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}.product{overflow:hidden;background:#15171d;border:1px solid var(--line);border-radius:8px}.product img{display:block;width:100%;height:132px;object-fit:cover;background:#0d0e12}.product-info{padding:12px}.product h3{margin:0 0 6px;font-size:1rem}.product p{color:var(--muted);font-size:.82rem;line-height:1.35;height:34px;margin:0 0 10px;overflow:hidden}.product-bottom{display:flex;justify-content:space-between;align-items:center;gap:8px}.price{font-weight:700;color:#fff}.add{border:0;border-radius:6px;background:var(--accent);color:#fff;padding:8px 10px;font-weight:700;cursor:pointer}.order-panel{align-self:start;position:sticky;top:16px}label{display:block;color:var(--muted);font-size:.86rem;margin:14px 0 6px}input,textarea{width:100%;padding:11px 12px;border-radius:6px;border:1px solid #424651;background:#101116;color:#fff;font:inherit}textarea{min-height:76px;resize:vertical}.cart{margin-top:16px;border-top:1px solid var(--line);max-height:330px;overflow:auto}.cart-empty{color:var(--muted);padding:18px 0;text-align:center}.cart-item{padding:12px 0;border-bottom:1px solid var(--line)}.cart-name{font-weight:700;font-size:.92rem}.cart-line{display:flex;justify-content:space-between;align-items:center;margin-top:8px;color:var(--muted);font-size:.88rem}.quantity{display:inline-flex;align-items:center;gap:8px}.quantity button{width:26px;height:26px;border:1px solid #515561;border-radius:5px;background:transparent;color:#fff;cursor:pointer}.total{display:flex;justify-content:space-between;font-size:1.15rem;font-weight:700;padding:16px 0}.alert{max-width:1440px;margin:0 auto 16px;padding:12px 14px;border-radius:6px;background:rgba(220,38,38,.16);border:1px solid rgba(220,38,38,.5);color:#fecaca}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin-top:14px}.card{background:#f5f5f6;color:#1f1f1f;border-radius:8px;padding:12px;border:1px solid #e8e8ea;box-shadow:0 8px 18px rgba(0,0,0,.14)}

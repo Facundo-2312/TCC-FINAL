@@ -303,7 +303,7 @@ function guardarImagenProducto($campo, $imagenActual = null)
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crud'])) {
     app_require_login('../Login.php', ['1']);
-    csrf_verify_or_die('index.php');
+    csrf_verify_or_die('MVCsix1.0/index.php');
     $productoController = new App\Controllers\ProductoController();
     $crud = (int) $_POST['crud'];
 
@@ -323,7 +323,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crud'])) {
                 throw new RuntimeException('No se pudo crear el producto.');
             }
             app_set_flash('success', 'Producto creado correctamente.');
-            app_redirect('index.php');
+            app_redirect('MVCsix1.0/index.php');
         }
 
         if ($crud === 2) {
@@ -343,25 +343,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crud'])) {
                 throw new RuntimeException('No se pudo actualizar el producto.');
             }
             app_set_flash('success', 'Producto actualizado correctamente.');
-            app_redirect('index.php');
+            app_redirect('MVCsix1.0/index.php');
         }
 
         app_set_flash('warning', 'Operacion no valida.');
-        app_redirect('index.php');
+        app_redirect('MVCsix1.0/index.php');
     } catch (RuntimeException $e) {
         app_set_flash('error', $e->getMessage());
 
         if ($crud === 1) {
-            app_redirect('create.php');
+            app_redirect('MVCsix1.0/create.php');
         }
 
         if ($crud === 2) {
             $idProducto = (int) ($_POST['IDProducto'] ?? 0);
             if ($idProducto > 0) {
-                app_redirect('update.php?ID=' . $idProducto);
+                app_redirect('MVCsix1.0/update.php?ID=' . $idProducto);
             }
         }
 
-        app_redirect('index.php');
+        app_redirect('MVCsix1.0/index.php');
     }
 }

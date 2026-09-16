@@ -130,7 +130,7 @@ $imgActualUrl = resolverRutaImagen($datosProducto['img'] ?? '', $datosProducto['
 <body>
 
 <header>
-<a class="Atras" href="index.php">
+<a class="Atras" href="<?php echo h(app_url('MVCsix1.0/index.php')); ?>">
   <i class="fas fa-arrow-circle-left" style="margin-left: 5px;"></i>
 </a>
 
@@ -142,7 +142,7 @@ $imgActualUrl = resolverRutaImagen($datosProducto['img'] ?? '', $datosProducto['
   <?php if (!empty($flash) && !empty($flash['message'])) { ?>
     <div class="flash flash-<?php echo h($flash['type'] ?? 'info'); ?>"><?php echo h($flash['message']); ?></div>
   <?php } ?>
-  <form method="post" action="InterfazProducto.php" enctype="multipart/form-data">
+  <form method="post" action="<?php echo h(app_url('MVCsix1.0/InterfazProducto.php')); ?>" enctype="multipart/form-data">
     <?php echo csrf_field(); ?>
 
     <label>Nombre</label>
