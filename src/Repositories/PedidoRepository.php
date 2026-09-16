@@ -257,6 +257,26 @@ class PedidoRepository
         mysqli_begin_transaction($this->connection);
 
         try {
+            // Los pedidos ya cobrados deben conservarse para que la caja mantenga el total diario.
+            $stmt = mysqli_prepare($this->connection, 'SELECT id_pago FROM pagos WHERE id_pedido = ? LIMIT 1 FOR UPDATE');
+            mysqli_stmt_bind_param($stmt, 'i', $idPedido);
+            mysqli_stmt_execute($stmt);
+            $resultadoPago = mysqli_stmt_get_result($stmt);
+            $tienePago = $resultadoPago && mysqli_num_rows($resultadoPago) > 0;
+            mysqli_stmt_close($stmt);
+
+            if ($tienePago) {
+                $estado = 'ArchivadoCocina';
+                $stmt = mysqli_prepare($this->connection, 'UPDATE pedidos SET estado = ? WHERE id_pedido = ?');
+                mysqli_stmt_bind_param($stmt, 'si', $estado, $idPedido);
+                $ok = mysqli_stmt_execute($stmt);
+                mysqli_stmt_close($stmt);
+
+                if (!$ok) throw new \RuntimeException('No se pudo archivar el pedido cobrado.');
+                mysqli_commit($this->connection);
+                return true;
+            }
+
             $stmt = mysqli_prepare($this->connection, 'DELETE FROM detalle_pedido WHERE id_pedido = ?');
             mysqli_stmt_bind_param($stmt, 'i', $idPedido);
             mysqli_stmt_execute($stmt);
