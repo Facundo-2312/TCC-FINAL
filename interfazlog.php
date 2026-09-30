@@ -26,6 +26,7 @@ if (isset($_POST['cliente_login'])) {
     }
 
     session_regenerate_id(true);
+    App\Support\Auth::createContext();
     $_SESSION['Usuario'] = $usuarioCliente;
     $_SESSION['Rol'] = 5;
     $_SESSION['CI'] = null;
@@ -67,6 +68,7 @@ if ($res !== null) {
     SecurityLog::log('login_exitoso', array('usuario' => $Usuario));
 
     session_regenerate_id(true);
+    App\Support\Auth::createContext();
 
     // ✅ GUARDAR SESIÓN SOLO SI LOGIN ES CORRECTO
     $_SESSION["Usuario"] = $Usuario;

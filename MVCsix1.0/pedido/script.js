@@ -1,5 +1,7 @@
 const searchInput = document.getElementById('searchInput');
 const productsContainer = document.getElementById('productsContainer');
+const carouselPrevious = document.querySelector('.carousel-prev');
+const carouselNext = document.querySelector('.carousel-next');
 const orderList = document.getElementById('orderList');
 const orderItemsCount = document.getElementById('orderItemsCount');
 const orderTotalValue = document.getElementById('orderTotalValue');
@@ -19,6 +21,13 @@ function getCurrentExchangeRate() {
 }
 
 let currentCurrency = currencySelect ? currencySelect.value : 'UYU';
+
+function moveProductCarousel(direction) {
+  if (!productsContainer) return;
+  const card = productsContainer.querySelector('.product');
+  const distance = card ? (card.getBoundingClientRect().width + 12) * 4 : productsContainer.clientWidth;
+  productsContainer.scrollLeft += direction * distance;
+}
 
 function getCurrencyFormatter() {
   return new Intl.NumberFormat(currencyLocales[currentCurrency] || 'es-UY', {

@@ -134,7 +134,7 @@ h1{max-width:1440px;margin:18px auto;color:#fff;font-size:clamp(1.8rem,3vw,2.5re
 <body>
 
 <div class="top">
-    <a class="btn back" href="<?php echo htmlspecialchars(app_url('Principal.php'), ENT_QUOTES, 'UTF-8'); ?>">← Volver</a>
+    <a class="btn back" href="<?php echo htmlspecialchars(app_url('inicio_rol.php'), ENT_QUOTES, 'UTF-8'); ?>">← Volver</a>
     <span style="color:#ff8fb3;font-weight:700">Gestión de Pedidos</span>
 </div>
 

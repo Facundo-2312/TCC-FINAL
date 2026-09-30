@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/app_bootstrap.php';
 
-app_require_login('Login.php', ['1', '2', '3', '5']);
+app_require_login('Login.php');
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -13,12 +13,11 @@ if ($idMesa <= 0) {
     exit;
 }
 
-$mesaController = new App\Controllers\MesaController();
+$mesaRepository = new App\Repositories\MesaRepository();
 $servicioReserva = new App\Services\ReservaService();
 
-$vistaMesas = $mesaController->listar();
 $mesaActual = null;
-foreach ($vistaMesas['mesas'] as $mesa) {
+foreach ($mesaRepository->listar() as $mesa) {
     if ((int) $mesa['id_mesa'] === $idMesa) {
         $mesaActual = $mesa;
         break;

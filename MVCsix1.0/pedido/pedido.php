@@ -68,7 +68,11 @@ if ($Rol== "Mozo"){
 
 
   
-  <div class="products-container" id="productsContainer"></div>
+  <div class="products-carousel" aria-label="Catalogo de productos">
+    <button class="carousel-arrow carousel-prev" type="button" aria-label="Productos anteriores" onclick="document.getElementById('productsContainer').scrollLeft -= document.getElementById('productsContainer').clientWidth * 0.8">&#10094;</button>
+    <div class="products-container" id="productsContainer"></div>
+    <button class="carousel-arrow carousel-next" type="button" aria-label="Mas productos" onclick="document.getElementById('productsContainer').scrollLeft += document.getElementById('productsContainer').clientWidth * 0.8">&#10095;</button>
+  </div>
   
   <section id="pedidoSection">
   <h2><i class="fas fa-shopping-cart" style="margin-right: 5px;"></i>PEDIDO</h2>
@@ -97,9 +101,8 @@ if ($Rol== "Mozo"){
 <script>
     const products = <?php echo $products; ?>;
     const cedula = <?php echo json_encode($_SESSION["CI"] ?? null); ?>;
+  const csrfToken = <?php echo json_encode(App\Support\Csrf::token()); ?>;
     console.log(cedula);
 
 </script>
 <script src="script.js"></script>
-
-  const csrfToken = <?php echo json_encode(App\Support\Csrf::token()); ?>;

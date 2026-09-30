@@ -105,7 +105,7 @@ ul{padding-left:18px;margin:8px 0 0;flex:1;overflow:auto}
 <body>
 
 <div class="top">
-    <a class="btn back" href="<?php echo htmlspecialchars(app_url('Principal.php'), ENT_QUOTES, 'UTF-8'); ?>">← Volver</a>
+    <a class="btn back" href="<?php echo htmlspecialchars(app_url('inicio_rol.php'), ENT_QUOTES, 'UTF-8'); ?>">← Volver</a>
     <a class="btn salir" href="<?php echo htmlspecialchars(app_url('Salir.php'), ENT_QUOTES, 'UTF-8'); ?>">Salir</a>
 </div>
 

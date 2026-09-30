@@ -20,10 +20,21 @@ if (!$conexion) {
 }
 
 $vistaMesas = (new App\Controllers\MesaController())->listar();
+$reservas = (new App\Services\ReservaService())->listarActivas();
+$reservasPorMesa = array();
+foreach ($reservas as $reserva) {
+    $reservasPorMesa[(int) $reserva['id_mesa']] = array(
+        'nombre_cliente' => $reserva['nombre_cliente'],
+        'cantidad_personas' => (int) $reserva['cantidad_personas'],
+        'hora_inicio' => $reserva['hora_inicio'],
+        'hora_fin' => $reserva['hora_fin']
+    );
+}
 
 header('Content-Type: application/json; charset=utf-8');
 echo json_encode([
     'mesas' => $vistaMesas['mesas'],
     'stats' => $vistaMesas['stats'],
+    'reservas' => $reservasPorMesa,
     'updatedAt' => date('Y-m-d H:i:s'),
 ], JSON_UNESCAPED_UNICODE);

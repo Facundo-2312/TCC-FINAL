@@ -55,7 +55,15 @@ class Url
         }
 
         $basePath = self::basePath();
-        return ($basePath !== '' ? $basePath : '') . '/' . ltrim($path, '/');
+        $url = ($basePath !== '' ? $basePath : '') . '/' . ltrim($path, '/');
+        if (class_exists('App\\Support\\Auth') && session_status() === PHP_SESSION_ACTIVE) {
+            $context = (string) ($_SESSION['_active_context'] ?? '');
+            if ($context !== '' && preg_match('/^[a-f0-9]{64}$/', $context) && !preg_match('/(?:^|[?&])ctx=[a-f0-9]{64}(?:&|$)/', $url)) {
+                $separator = strpos($url, '?') === false ? '?' : '&';
+                $url .= $separator . 'ctx=' . rawurlencode($context);
+            }
+        }
+        return $url;
     }
 
     public static function redirect($path)

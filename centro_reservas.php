@@ -132,7 +132,7 @@ $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
 
 <header>
     <h1>🎯 CENTRO DE RESERVAS</h1>
-    <a class="salir" href="<?php echo htmlspecialchars(app_url('Principal.php'), ENT_QUOTES, 'UTF-8'); ?>">
+            <a class="salir" href="<?php echo htmlspecialchars(app_url('inicio_rol.php'), ENT_QUOTES, 'UTF-8'); ?>">
         <i class="fas fa-arrow-left" style="margin-right: 8px;"></i>Volver
     </a>
 </header>

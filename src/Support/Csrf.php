@@ -22,7 +22,8 @@ class Csrf
     public static function field()
     {
         $token = htmlspecialchars(self::token(), ENT_QUOTES, 'UTF-8');
-        return '<input type="hidden" name="' . self::FIELD_NAME . '" value="' . $token . '">';
+        $context = htmlspecialchars(Auth::contextId(), ENT_QUOTES, 'UTF-8');
+        return '<input type="hidden" name="' . self::FIELD_NAME . '" value="' . $token . '"><input type="hidden" name="ctx" value="' . $context . '">';
     }
 
     public static function verify($token)

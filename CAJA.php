@@ -109,7 +109,7 @@ select,button{padding:10px;border-radius:8px;border:1px solid #ccc}
 <body>
 
 <div class="top">
-    <a class="btn back" href="<?php echo htmlspecialchars(app_url('Principal.php'), ENT_QUOTES, 'UTF-8'); ?>">← Volver</a>
+    <a class="btn back" href="<?php echo htmlspecialchars(app_url('inicio_rol.php'), ENT_QUOTES, 'UTF-8'); ?>">← Volver</a>
     <a class="btn logout" href="<?php echo htmlspecialchars(app_url('Salir.php'), ENT_QUOTES, 'UTF-8'); ?>">Salir</a>
 </div>
 

@@ -566,7 +566,7 @@ $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
 
 <header>
     <h1>🍽️ MESAS EN TIEMPO REAL</h1>
-    <a class="salir" href="<?php echo htmlspecialchars(app_url('Principal.php'), ENT_QUOTES, 'UTF-8'); ?>">
+    <a class="salir" href="<?php echo htmlspecialchars(app_url('inicio_rol.php'), ENT_QUOTES, 'UTF-8'); ?>">
         <i class="fas fa-arrow-left" style="margin-right: 8px;"></i>Volver
     </a>
 </header>
@@ -801,7 +801,7 @@ function cargarHorarios(idMesa) {
     btnGuardar.disabled = true;
     ayuda.textContent = '';
 
-    fetch('<?php echo htmlspecialchars(app_url('horarios_disponibles.php'), ENT_QUOTES, 'UTF-8'); ?>?id_mesa=' + idMesa, { cache: 'no-store' })
+    fetch('<?php echo htmlspecialchars(app_url('horarios_disponibles.php'), ENT_QUOTES, 'UTF-8'); ?><?php echo strpos(app_url('horarios_disponibles.php'), '?') === false ? '?' : '&'; ?>id_mesa=' + idMesa, { cache: 'no-store' })
         .then(function (r) { return r.json(); })
         .then(function (data) {
             select.innerHTML = '';
@@ -946,6 +946,21 @@ window.onclick = function(e) {
                 badge.className = 'badge ' + estadoClass(mesa.estado);
                 badge.textContent = mesa.estado;
             }
+
+            var reserva = data.reservas ? data.reservas[String(mesa.id_mesa)] : null;
+            var info = card.querySelector('.mesa-info');
+            if (info) {
+                var capacidad = mesa.capacidad || 4;
+                var html = '<div class="info-item"><span class="info-label">Zona</span><span class="info-value">' + (mesa.zona || '') + '</span></div>';
+                html += '<div class="info-item"><span class="info-label">Capacidad</span><span class="info-value">' + capacidad + ' 👥</span></div>';
+                if (reserva) {
+                    html += '<div class="info-item"><span class="info-label">Cliente</span><span class="info-value">' + escapeHtml(reserva.nombre_cliente) + '</span></div>';
+                    html += '<div class="info-item"><span class="info-label">Personas</span><span class="info-value">' + reserva.cantidad_personas + '</span></div>';
+                    html += '<div class="info-item"><span class="info-label">Entrada</span><span class="info-value">' + reserva.hora_inicio.substring(11, 16) + '</span></div>';
+                    html += '<div class="info-item"><span class="info-label">Salida</span><span class="info-value">' + reserva.hora_fin.substring(11, 16) + '</span></div>';
+                }
+                info.innerHTML = html;
+            }
         });
 
         if (data.stats) {
@@ -959,6 +974,12 @@ window.onclick = function(e) {
         }
 
         applyFilters();
+    }
+
+    function escapeHtml(value) {
+        var div = document.createElement('div');
+        div.textContent = value == null ? '' : String(value);
+        return div.innerHTML;
     }
 
     function poll() {

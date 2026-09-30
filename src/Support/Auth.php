@@ -5,6 +5,8 @@ namespace App\Support;
 // Centralized session/authentication/authorization. Same behavior as the previous app_* session functions.
 class Auth
 {
+    private static $contextKeys = array('Usuario', 'Rol', 'CI', 'ClienteNombre', 'cliente_pedido_token', '_csrf_token');
+
     public static function startSession()
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {
@@ -40,6 +42,7 @@ class Auth
             );
         }
 
+        self::activateContext();
         $_SESSION['_last_activity'] = $now;
 
         if (!isset($_SESSION['_last_regen'])) {
@@ -50,6 +53,62 @@ class Auth
         }
 
         self::guardAgainstHijacking();
+    }
+
+    private static function activateContext()
+    {
+        $requested = trim((string) ($_GET['ctx'] ?? $_POST['ctx'] ?? ''));
+        if ($requested === '' || !preg_match('/^[a-f0-9]{64}$/', $requested)) {
+            return;
+        }
+
+        if (!isset($_SESSION['_contexts']) || !is_array($_SESSION['_contexts'])) {
+            $_SESSION['_contexts'] = array();
+        }
+
+        $active = (string) ($_SESSION['_active_context'] ?? '');
+        if ($active === $requested) {
+            return;
+        }
+
+        if ($active !== '') {
+            $_SESSION['_contexts'][$active] = self::captureContext();
+        }
+
+        $context = $_SESSION['_contexts'][$requested] ?? array();
+        foreach (self::$contextKeys as $key) {
+            if (array_key_exists($key, $context)) $_SESSION[$key] = $context[$key];
+            else unset($_SESSION[$key]);
+        }
+        $_SESSION['_active_context'] = $requested;
+    }
+
+    private static function captureContext()
+    {
+        $context = array();
+        foreach (self::$contextKeys as $key) {
+            if (array_key_exists($key, $_SESSION)) $context[$key] = $_SESSION[$key];
+        }
+        return $context;
+    }
+
+    public static function createContext()
+    {
+        self::startSession();
+        $contextId = bin2hex(random_bytes(32));
+        if (!isset($_SESSION['_contexts']) || !is_array($_SESSION['_contexts'])) $_SESSION['_contexts'] = array();
+        $active = (string) ($_SESSION['_active_context'] ?? '');
+        if ($active !== '') $_SESSION['_contexts'][$active] = self::captureContext();
+        foreach (self::$contextKeys as $key) unset($_SESSION[$key]);
+        $_SESSION['_active_context'] = $contextId;
+        $_SESSION['_contexts'][$contextId] = array();
+        return $contextId;
+    }
+
+    public static function contextId()
+    {
+        self::startSession();
+        return (string) ($_SESSION['_active_context'] ?? '');
     }
 
     // Binds an authenticated session to a hash of the User-Agent. If a stolen session cookie is
@@ -119,19 +178,17 @@ class Auth
     public static function logout($redirectPath = 'Login.php')
     {
         self::startSession();
-        $_SESSION = array();
+        $active = (string) ($_SESSION['_active_context'] ?? '');
+        if ($active !== '' && isset($_SESSION['_contexts'][$active])) unset($_SESSION['_contexts'][$active]);
+        foreach (self::$contextKeys as $key) unset($_SESSION[$key]);
+        unset($_SESSION['_active_context']);
 
         if (ini_get('session.use_cookies')) {
             $params = session_get_cookie_params();
             setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], $params['secure'], $params['httponly']);
         }
 
-        session_destroy();
-        session_start();
-        $_SESSION['_flash'] = array(
-            'type' => 'success',
-            'message' => 'Sesion cerrada correctamente.'
-        );
+        $_SESSION['_flash'] = array('type' => 'success', 'message' => 'Sesion cerrada correctamente.');
 
         Url::redirect($redirectPath);
     }
