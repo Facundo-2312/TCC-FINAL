@@ -35,6 +35,11 @@ class PedidoService
         return $this->repositorio->listarConDetalle(null, $limite);
     }
 
+    public function listarDelUsuario($usuario, $limite = 10)
+    {
+        return $this->repositorio->listarDelUsuario(trim((string) $usuario), $limite);
+    }
+
     public function cambiarEstado($idPedido, $estado)
     {
         $idPedido = (int) $idPedido;

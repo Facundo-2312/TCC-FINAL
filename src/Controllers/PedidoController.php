@@ -54,6 +54,7 @@ class PedidoController
 
     public function listarCocina() { return $this->servicio->listarCocina(); }
     public function listarRecientes($limite = 30) { return $this->servicio->listarRecientes($limite); }
+    public function listarDelUsuario($usuario, $limite = 10) { return $this->servicio->listarDelUsuario($usuario, $limite); }
     public function ocultarDeCocina($idPedido) { return $this->servicio->ocultarDeCocina($idPedido); }
     public function crearPedidoRapido($mesa, $producto, $precio, $cantidad, $usuario) { return $this->servicio->crearPedidoRapido($mesa, $producto, $precio, $cantidad, $usuario); }
     public function crearPedidoMozo($numeroMesa, $usuario, $observaciones, array $items) { return $this->servicio->crearPedidoMozo($numeroMesa, $usuario, $observaciones, $items); }

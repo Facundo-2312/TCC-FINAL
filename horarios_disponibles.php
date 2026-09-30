@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/app_bootstrap.php';
 
-app_require_login('Login.php', ['1', '2', '3']);
+app_require_login('Login.php', ['1', '2', '3', '5']);
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -38,7 +38,9 @@ $duracionMinutos = 90;
 $horaAperturaJornada = '18:00';
 $horaCierreJornada = '00:00';
 
-$hoy = date('Y-m-d');
+$fechaSolicitada = trim((string) ($_GET['fecha'] ?? date('Y-m-d')));
+$fechaObjeto = DateTime::createFromFormat('Y-m-d', $fechaSolicitada);
+$hoy = $fechaObjeto && $fechaObjeto->format('Y-m-d') === $fechaSolicitada ? $fechaSolicitada : date('Y-m-d');
 $inicioJornada = strtotime($hoy . ' ' . $horaAperturaJornada);
 $finJornada = strtotime($hoy . ' ' . $horaCierreJornada) + 86400;
 

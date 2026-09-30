@@ -24,13 +24,17 @@ class PedidoRepository
         return $this->listarConDetalle();
     }
 
-    public function listarConDetalle($estados = null, $limite = null, $ordenCocina = false)
+    public function listarConDetalle($estados = null, $limite = null, $ordenCocina = false, $idUsuario = null)
     {
-        $where = '';
+        $condiciones = array();
         if (is_array($estados) && !empty($estados)) {
             $valores = array_map(function ($estado) { return "'" . mysqli_real_escape_string($this->connection, $estado) . "'"; }, $estados);
-            $where = ' WHERE p.estado IN (' . implode(',', $valores) . ')';
+            $condiciones[] = 'p.estado IN (' . implode(',', $valores) . ')';
         }
+        if ($idUsuario !== null && (int) $idUsuario > 0) {
+            $condiciones[] = 'p.id_usuario = ' . (int) $idUsuario;
+        }
+        $where = $condiciones ? ' WHERE ' . implode(' AND ', $condiciones) : '';
 
         $orden = $ordenCocina
             ? "ORDER BY FIELD(p.estado,'Pendiente','Preparando','Entregado'), p.fecha ASC"
@@ -60,6 +64,17 @@ class PedidoRepository
         }
         $pedidos = array_values($pedidos);
         return $limite !== null ? array_slice($pedidos, 0, max(1, (int) $limite)) : $pedidos;
+    }
+
+    public function listarDelUsuario($usuario, $limite = 10)
+    {
+        $stmt = mysqli_prepare($this->connection, 'SELECT id_usuario FROM usuarios WHERE usuario = ? LIMIT 1');
+        mysqli_stmt_bind_param($stmt, 's', $usuario);
+        mysqli_stmt_execute($stmt);
+        $resultado = mysqli_stmt_get_result($stmt);
+        $fila = $resultado ? mysqli_fetch_assoc($resultado) : null;
+        mysqli_stmt_close($stmt);
+        return $fila ? $this->listarConDetalle(null, $limite, false, (int) $fila['id_usuario']) : array();
     }
 
     public function detalle($idPedido)
@@ -121,7 +136,7 @@ class PedidoRepository
         $result = mysqli_stmt_get_result($stmt);
         $row = $result ? mysqli_fetch_assoc($result) : null;
         mysqli_stmt_close($stmt);
-        return $row ? (int) $row['id_usuario'] : 1;
+        return $row ? (int) $row['id_usuario'] : 0;
     }
 
     public function buscarIdUsuarioPorCi($ci)

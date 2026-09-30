@@ -10,6 +10,30 @@ app_start_session();
 
 $authService = new App\Services\AuthService();
 
+if (isset($_POST['cliente_login'])) {
+    csrf_verify_or_die('Login.php');
+    $nombreCliente = trim((string) ($_POST['nombre_cliente'] ?? ''));
+
+    if ($nombreCliente === '' || strlen($nombreCliente) > 100 || !preg_match('/^[\p{L} .\'-]+$/u', $nombreCliente)) {
+        app_set_flash('error', 'Ingresa un nombre valido para continuar.');
+        app_redirect('Login.php');
+    }
+
+    $usuarioCliente = (new App\Repositories\UsuarioRepository())->crearClienteInvitado($nombreCliente);
+    if ($usuarioCliente === null) {
+        app_set_flash('error', 'No se pudo iniciar el acceso de cliente.');
+        app_redirect('Login.php');
+    }
+
+    session_regenerate_id(true);
+    $_SESSION['Usuario'] = $usuarioCliente;
+    $_SESSION['Rol'] = 5;
+    $_SESSION['CI'] = null;
+    $_SESSION['ClienteNombre'] = $nombreCliente;
+    app_set_flash('success', 'Bienvenido, ' . $nombreCliente . '.');
+    app_redirect('cliente.php');
+}
+
 // Validar que llegan datos
 if (!isset($_POST['Usuario']) || !isset($_POST['Pass'])) {
     app_set_flash('error', 'Completa usuario y contrasena para ingresar.');
@@ -60,6 +84,8 @@ if ($res !== null) {
         app_redirect("pedidos.php"); // Mozo
     } elseif ($Rol == 4) {
         app_redirect("cocina.php"); // Cocina
+    } elseif ($Rol == 5) {
+        app_redirect("cliente.php"); // Cliente
     } else {
         app_set_flash('warning', 'Tu usuario no tiene un rol valido.');
         app_redirect("Login.php");

@@ -63,4 +63,37 @@ class UsuarioRepository
         mysqli_stmt_close($stmt);
         return $ok;
     }
+
+    public function crearCliente($nombre, $usuario, $password)
+    {
+        $stmt = mysqli_prepare($this->connection, "SELECT id_rol FROM roles WHERE LOWER(nombre) = 'cliente' LIMIT 1");
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $rol = $result ? mysqli_fetch_assoc($result) : null;
+        mysqli_stmt_close($stmt);
+        if (!$rol) return array('ok' => false, 'error' => 'El rol de cliente no esta habilitado. Ejecuta las migraciones de la base de datos.');
+
+        $hash = password_hash($password, PASSWORD_DEFAULT);
+        $idRol = (int) $rol['id_rol'];
+        $stmt = mysqli_prepare($this->connection, 'INSERT INTO usuarios (nombre, usuario, password, id_rol) VALUES (?, ?, ?, ?)');
+        mysqli_stmt_bind_param($stmt, 'sssi', $nombre, $usuario, $hash, $idRol);
+        $ok = mysqli_stmt_execute($stmt);
+        $error = mysqli_stmt_errno($stmt) === 1062 ? 'Ese usuario ya existe.' : 'No se pudo crear el registro.';
+        mysqli_stmt_close($stmt);
+        return array('ok' => $ok, 'error' => $ok ? '' : $error);
+    }
+
+    public function crearClienteInvitado($nombre)
+    {
+        $rol = $this->idRolPorNombre('Cliente');
+        if (!$rol) return null;
+
+        $usuario = 'cliente_' . date('YmdHis') . '_' . bin2hex(random_bytes(4));
+        $password = password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT);
+        $stmt = mysqli_prepare($this->connection, 'INSERT INTO usuarios (nombre, usuario, password, id_rol) VALUES (?, ?, ?, ?)');
+        mysqli_stmt_bind_param($stmt, 'sssi', $nombre, $usuario, $password, $rol);
+        $ok = mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+        return $ok ? $usuario : null;
+    }
 }

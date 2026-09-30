@@ -8,7 +8,7 @@
 USE ProyectoMagnus;
 
 -- Agregar columnas a mesas para soporte de reservas
-ALTER TABLE mesas ADD COLUMN capacidad INT DEFAULT 4 COMMENT 'Cantidad de personas que puede ocupar';
+ALTER TABLE mesas ADD COLUMN IF NOT EXISTS capacidad INT DEFAULT 4 COMMENT 'Cantidad de personas que puede ocupar';
 
 -- Nueva tabla de reservas
 CREATE TABLE IF NOT EXISTS reservas (

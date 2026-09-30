@@ -24,6 +24,56 @@ function estadoClass($estado)
     return 'pendiente';
 }
 
+function resolverImagenPedido($producto)
+{
+    $ruta = trim((string) ($producto['img'] ?? ''));
+    if ($ruta !== '' && preg_match('/^(https?:)?\/\//i', $ruta)) {
+        return $ruta;
+    }
+
+    $normalizada = ltrim(str_replace('\\', '/', $ruta), '/');
+    $base = basename($normalizada);
+    $baseSinExtension = pathinfo($base, PATHINFO_FILENAME);
+    $candidatas = array(
+        $normalizada !== '' ? 'MVCsix1.0/' . $normalizada : '',
+        $base !== '' ? 'MVCsix1.0/img/' . $base : '',
+        $base !== '' ? 'MVCsix1.0/files/' . $base : ''
+    );
+
+    foreach ($candidatas as $candidata) {
+        if ($candidata !== '' && strpos($candidata, '..') === false && is_file(__DIR__ . '/' . $candidata)) {
+            return $candidata;
+        }
+    }
+
+    $nombre = mb_strtolower((string) ($producto['nombre'] ?? ''), 'UTF-8');
+    $imagenesPorCategoria = array(
+        'hamburguesa' => 'MVCsix1.0/img/default_hamburguesa_hq.jpg',
+        'burger' => 'MVCsix1.0/img/default_hamburguesa_hq.jpg',
+        'pizza' => 'MVCsix1.0/img/default_pizza_hq.jpg',
+        'coca' => 'MVCsix1.0/img/coca-orig.jpeg',
+        'cola' => 'MVCsix1.0/img/coca-orig.jpeg',
+        'agua' => 'MVCsix1.0/img/agua_hq.jpg'
+    );
+
+    foreach ($imagenesPorCategoria as $keyword => $imagen) {
+        if (mb_strpos($nombre, $keyword) !== false && is_file(__DIR__ . '/' . $imagen)) {
+            return $imagen;
+        }
+    }
+
+    foreach (array(
+        $baseSinExtension !== '' ? 'MVCsix1.0/img/' . $baseSinExtension . '_hq.jpg' : '',
+        $baseSinExtension !== '' ? 'MVCsix1.0/files/' . $baseSinExtension . '_hq.jpg' : ''
+    ) as $candidata) {
+        if ($candidata !== '' && is_file(__DIR__ . '/' . $candidata)) {
+            return $candidata;
+        }
+    }
+
+    return 'MVCsix1.0/img/default_comida_hq.jpg';
+}
+
 $mensaje = (string) ($flash['message'] ?? '');
 $tipoMensaje = (string) ($flash['type'] ?? '');
 
@@ -99,9 +149,9 @@ h1{max-width:1440px;margin:18px auto;color:#fff;font-size:clamp(1.8rem,3vw,2.5re
         <div class="catalog-head"><h2>Menu disponible</h2><span><?php echo count($productos); ?> productos</span></div>
         <div class="products">
         <?php foreach ($productos as $producto) { ?>
-            <?php $rutaImagen = trim((string) ($producto['img'] ?? '')); $imagen = $rutaImagen !== '' && is_file(__DIR__ . '/MVCsix1.0/' . $rutaImagen) ? 'MVCsix1.0/' . $rutaImagen : 'MVCsix1.0/img/default_comida_hq.jpg'; ?>
+            <?php $imagen = resolverImagenPedido($producto); ?>
             <article class="product">
-                <img src="<?php echo h($imagen); ?>" alt="<?php echo h($producto['nombre']); ?>">
+                <img src="<?php echo h(app_url($imagen)); ?>" alt="<?php echo h($producto['nombre']); ?>">
                 <div class="product-info"><h3><?php echo h($producto['nombre']); ?></h3><p><?php echo h($producto['descripcion']); ?></p><div class="product-bottom"><span class="price">$<?php echo number_format((float) $producto['precio'], 2, ',', '.'); ?></span><button class="add" type="button" data-id="<?php echo (int) $producto['id_producto']; ?>" data-name="<?php echo h($producto['nombre']); ?>" data-price="<?php echo h((string) $producto['precio']); ?>">Agregar</button></div></div>
             </article>
         <?php } ?>

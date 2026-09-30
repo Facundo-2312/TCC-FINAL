@@ -20,7 +20,7 @@ class MesaRepository
 
     public function listar()
     {
-        $result = mysqli_query($this->connection, 'SELECT id_mesa, numero, estado FROM mesas ORDER BY numero ASC');
+        $result = mysqli_query($this->connection, 'SELECT id_mesa, numero, capacidad, estado FROM mesas ORDER BY numero ASC');
         return $result ? mysqli_fetch_all($result, MYSQLI_ASSOC) : array();
     }
 
