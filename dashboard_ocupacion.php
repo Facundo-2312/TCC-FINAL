@@ -284,6 +284,7 @@ foreach ($ocupacionPorHora as $o) {
     <!-- Selector de Fecha -->
     <div class="filters">
         <form method="get" style="display: flex; gap: 15px; align-items: flex-end;">
+            <?php echo ctx_field(); ?>
             <div class="filter-group">
                 <label for="fecha">📅 Fecha a Analizar</label>
                 <input type="date" id="fecha" name="fecha" value="<?php echo htmlspecialchars($fecha); ?>">

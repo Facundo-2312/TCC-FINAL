@@ -32,7 +32,7 @@ $Rol = $_SESSION['Rol'] ?? null;
 if ($Rol== "Admin"){
 
 ?>
-<a class="Atras" href="../../Principal.php">
+<a class="Atras" href="<?php echo htmlspecialchars(app_url('Principal.php'), ENT_QUOTES, 'UTF-8'); ?>">
 <i class="fas fa-arrow-circle-left" style="margin-left: 5px;"></i>
 </a> 
 <h1 class="titulo-pedido">Haga su pedido</h1> 
@@ -57,7 +57,7 @@ if ($Rol== "Mozo"){
 ?>
   
   
-    <a class="salir" href='../../Salir.php'><b>Salir</b> <i class="fas fa-sign-out-alt" style="margin-left: 5px;"></i></a>
+    <a class="salir" href="<?php echo htmlspecialchars(app_url('Salir.php'), ENT_QUOTES, 'UTF-8'); ?>"><b>Salir</b> <i class="fas fa-sign-out-alt" style="margin-left: 5px;"></i></a>
    
   </header>
 
@@ -101,7 +101,8 @@ if ($Rol== "Mozo"){
 <script>
     const products = <?php echo $products; ?>;
     const cedula = <?php echo json_encode($_SESSION["CI"] ?? null); ?>;
-  const csrfToken = <?php echo json_encode(App\Support\Csrf::token()); ?>;
+    const csrfToken = <?php echo json_encode(App\Support\Csrf::token()); ?>;
+    const contextId = <?php echo json_encode(App\Support\Auth::contextId()); ?>;
     console.log(cedula);
 
 </script>

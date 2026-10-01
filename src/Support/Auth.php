@@ -68,11 +68,13 @@ class Auth
 
         $active = (string) ($_SESSION['_active_context'] ?? '');
         if ($active === $requested) {
+            $_SESSION['_context_activity'][$requested] = time();
             return;
         }
 
         if ($active !== '') {
             $_SESSION['_contexts'][$active] = self::captureContext();
+            $_SESSION['_context_activity'][$active] = time();
         }
 
         $context = $_SESSION['_contexts'][$requested] ?? array();
@@ -81,6 +83,7 @@ class Auth
             else unset($_SESSION[$key]);
         }
         $_SESSION['_active_context'] = $requested;
+        $_SESSION['_context_activity'][$requested] = time();
     }
 
     private static function captureContext()
@@ -98,10 +101,20 @@ class Auth
         $contextId = bin2hex(random_bytes(32));
         if (!isset($_SESSION['_contexts']) || !is_array($_SESSION['_contexts'])) $_SESSION['_contexts'] = array();
         $active = (string) ($_SESSION['_active_context'] ?? '');
-        if ($active !== '') $_SESSION['_contexts'][$active] = self::captureContext();
+        $now = time();
+        if ($active !== '') {
+            $_SESSION['_contexts'][$active] = self::captureContext();
+            $_SESSION['_context_activity'][$active] = $now;
+        }
+        foreach ((array) ($_SESSION['_contexts'] ?? array()) as $existingContext => $unused) {
+            if (isset($_SESSION['_context_activity'][$existingContext]) && $now - (int) $_SESSION['_context_activity'][$existingContext] > 7200) {
+                unset($_SESSION['_contexts'][$existingContext], $_SESSION['_context_activity'][$existingContext], $_SESSION['_flash_contexts'][$existingContext]);
+            }
+        }
         foreach (self::$contextKeys as $key) unset($_SESSION[$key]);
         $_SESSION['_active_context'] = $contextId;
         $_SESSION['_contexts'][$contextId] = array();
+        $_SESSION['_context_activity'][$contextId] = $now;
         return $contextId;
     }
 
@@ -109,6 +122,29 @@ class Auth
     {
         self::startSession();
         return (string) ($_SESSION['_active_context'] ?? '');
+    }
+
+    public static function hasAuthenticatedContext()
+    {
+        self::startSession();
+        if (isset($_SESSION['Usuario'], $_SESSION['Rol'])) return true;
+        foreach ((array) ($_SESSION['_contexts'] ?? array()) as $context) {
+            if (isset($context['Usuario'], $context['Rol'])) return true;
+        }
+        return false;
+    }
+
+    public static function hasOtherContext()
+    {
+        self::startSession();
+        $active = (string) ($_SESSION['_active_context'] ?? '');
+        $now = time();
+        foreach ((array) ($_SESSION['_contexts'] ?? array()) as $contextId => $context) {
+            if ($contextId === $active) continue;
+            $lastActivity = (int) ($_SESSION['_context_activity'][$contextId] ?? 0);
+            if ($lastActivity > 0 && $now - $lastActivity <= 7200) return true;
+        }
+        return false;
     }
 
     // Binds an authenticated session to a hash of the User-Agent. If a stolen session cookie is
@@ -146,15 +182,24 @@ class Auth
     public static function setFlash($type, $message)
     {
         self::startSession();
-        $_SESSION['_flash'] = array(
+        $flash = array(
             'type' => (string) $type,
             'message' => (string) $message
         );
+        $context = (string) ($_SESSION['_active_context'] ?? '');
+        if ($context !== '') $_SESSION['_flash_contexts'][$context] = $flash;
+        else $_SESSION['_flash'] = $flash;
     }
 
     public static function getFlash()
     {
         self::startSession();
+        $context = (string) ($_SESSION['_active_context'] ?? '');
+        if ($context !== '' && isset($_SESSION['_flash_contexts'][$context])) {
+            $flash = $_SESSION['_flash_contexts'][$context];
+            unset($_SESSION['_flash_contexts'][$context]);
+            return $flash;
+        }
         $flash = isset($_SESSION['_flash']) ? $_SESSION['_flash'] : null;
         unset($_SESSION['_flash']);
         return $flash;
@@ -180,14 +225,9 @@ class Auth
         self::startSession();
         $active = (string) ($_SESSION['_active_context'] ?? '');
         if ($active !== '' && isset($_SESSION['_contexts'][$active])) unset($_SESSION['_contexts'][$active]);
+        unset($_SESSION['_context_activity'][$active], $_SESSION['_flash_contexts'][$active]);
         foreach (self::$contextKeys as $key) unset($_SESSION[$key]);
         unset($_SESSION['_active_context']);
-
-        if (ini_get('session.use_cookies')) {
-            $params = session_get_cookie_params();
-            setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], $params['secure'], $params['httponly']);
-        }
-
         $_SESSION['_flash'] = array('type' => 'success', 'message' => 'Sesion cerrada correctamente.');
 
         Url::redirect($redirectPath);

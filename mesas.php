@@ -790,6 +790,7 @@ $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
 
 <script>
 <?php echo 'var csrfToken = ' . json_encode(App\Support\Csrf::token()) . ';'; ?>
+<?php echo 'var contextId = ' . json_encode(App\Support\Auth::contextId()) . ';'; ?>
 
 function cargarHorarios(idMesa) {
     var select = document.getElementById('horarioSlot');
@@ -878,6 +879,7 @@ function guardarReserva(e) {
 
     var formData = new FormData(document.getElementById('formReserva'));
     formData.append('_csrf', csrfToken);
+    formData.append('ctx', contextId);
 
     fetch('<?php echo htmlspecialchars(app_url('reservar_mesa_api.php'), ENT_QUOTES, 'UTF-8'); ?>', {
         method: 'POST',

@@ -32,6 +32,18 @@ if (!function_exists('csrf_verify_or_die')) {
     }
 }
 
+if (!function_exists('ctx_field')) {
+    // Hidden input that preserves the per-tab context id across GET forms (csrf_field() already covers POST forms).
+    function ctx_field()
+    {
+        $context = App\Support\Auth::contextId();
+        if ($context === '' || !preg_match('/^[a-f0-9]{64}$/', $context)) {
+            return '';
+        }
+        return '<input type="hidden" name="ctx" value="' . htmlspecialchars($context, ENT_QUOTES, 'UTF-8') . '">';
+    }
+}
+
 if (!function_exists('app_set_flash')) {
     function app_set_flash($type, $message)
     {

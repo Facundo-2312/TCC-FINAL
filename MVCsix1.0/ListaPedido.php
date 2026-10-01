@@ -435,6 +435,7 @@ th{
 
 <div class="filters">
     <form method="get">
+        <?php echo ctx_field(); ?>
         <div style="flex:1; min-width: 180px;">
             <label for="desde">Desde</label>
             <input type="date" id="desde" name="desde" value="<?php echo h($desde); ?>">

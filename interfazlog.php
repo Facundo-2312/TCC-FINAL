@@ -25,8 +25,7 @@ if (isset($_POST['cliente_login'])) {
         app_redirect('Login.php');
     }
 
-    session_regenerate_id(true);
-    App\Support\Auth::createContext();
+    if (!App\Support\Auth::hasOtherContext()) session_regenerate_id(true);
     $_SESSION['Usuario'] = $usuarioCliente;
     $_SESSION['Rol'] = 5;
     $_SESSION['CI'] = null;
@@ -67,9 +66,7 @@ if ($res !== null) {
     LoginThrottle::limpiar($Usuario);
     SecurityLog::log('login_exitoso', array('usuario' => $Usuario));
 
-    session_regenerate_id(true);
-    App\Support\Auth::createContext();
-
+    if (!App\Support\Auth::hasOtherContext()) session_regenerate_id(true);
     // ✅ GUARDAR SESIÓN SOLO SI LOGIN ES CORRECTO
     $_SESSION["Usuario"] = $Usuario;
     $_SESSION["Rol"] = $res->id_rol;

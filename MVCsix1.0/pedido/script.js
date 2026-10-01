@@ -353,7 +353,7 @@ function enviar(){
 
   // Crear una solicitud HTTP
   var xhr = new XMLHttpRequest();
-  var url = '../GuardarPedido.php';
+  var url = '../GuardarPedido.php?ctx=' + encodeURIComponent(contextId);
 
   xhr.open('POST', url, true);
   xhr.setRequestHeader('Content-type', 'application/json');

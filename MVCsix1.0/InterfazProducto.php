@@ -120,8 +120,8 @@ function resolverImagenProducto($nombreProducto, $rutaImagen)
         'copa de dulce de leche' => 'img/catalogo/copa-dulce-leche.jpg',
         'flan casero' => 'img/catalogo/flan-casero.jpg',
         'helado' => 'files/Helado.jpg',
-        'mousse de chocolate' => 'img/catalogo/mousse-chocolate.jpg',
-        'torta de chocolate' => 'img/catalogo/torta-chocolate.jpg',
+        'mousse de chocolate' => 'img/catalogo/brownie-helado.jpg',
+        'torta de chocolate' => 'img/catalogo/chocotorta.jpg',
         'tiramisu' => 'img/catalogo/tiramisu.jpg'
     );
     foreach ($imagenesCatalogoCorregidas as $nombreCorregido => $imagenCorregida) {

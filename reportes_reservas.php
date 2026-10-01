@@ -303,6 +303,7 @@ $mesas = mysqli_fetch_all($resultMesas, MYSQLI_ASSOC);
     <!-- Filtros -->
     <div class="filters">
         <form method="get" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; width: 100%;">
+            <?php echo ctx_field(); ?>
             <div class="filter-group">
                 <label for="fecha_inicio">📅 Desde</label>
                 <input type="date" id="fecha_inicio" name="fecha_inicio" value="<?php echo h($filtroFechaInicio); ?>">

@@ -2,6 +2,12 @@
 require_once __DIR__ . '/app_bootstrap.php';
 app_start_session();
 
+$contextoLogin = (string) ($_GET['ctx'] ?? '');
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && !preg_match('/^[a-f0-9]{64}$/', $contextoLogin)) {
+  App\Support\Auth::createContext();
+  app_redirect('Login.php');
+}
+
 $flash = app_get_flash();
 $loginCssVersion = @filemtime(__DIR__ . '/estilos/login.css') ?: time();
 ?>

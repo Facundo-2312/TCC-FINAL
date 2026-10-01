@@ -23,8 +23,8 @@ function cliente_imagen($producto)
         'copa de dulce de leche' => 'MVCsix1.0/img/catalogo/copa-dulce-leche.jpg',
         'flan casero' => 'MVCsix1.0/img/catalogo/flan-casero.jpg',
         'helado' => 'MVCsix1.0/files/Helado.jpg',
-        'mousse de chocolate' => 'MVCsix1.0/img/catalogo/mousse-chocolate.jpg',
-        'torta de chocolate' => 'MVCsix1.0/img/catalogo/torta-chocolate.jpg',
+        'mousse de chocolate' => 'MVCsix1.0/img/catalogo/brownie-helado.jpg',
+        'torta de chocolate' => 'MVCsix1.0/img/catalogo/chocotorta.jpg',
         'tiramisu' => 'MVCsix1.0/img/catalogo/tiramisu.jpg'
     );
     foreach ($imagenesCatalogoCorregidas as $nombreProducto => $imagen) {
