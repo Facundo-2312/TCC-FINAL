@@ -107,6 +107,13 @@ function asegurarCatalogoMinimo(Producto $producto, $minimo = 8)
     return $producto->ListarProductos();
 }
 
+// Estos archivos quedaron con una foto que no corresponde al producto (dato corrupto en disco,
+// no un error de codigo); se excluyen para que el resolver use la imagen por defecto correcta.
+function imagenesProductoConContenidoIncorrecto()
+{
+    return array('img/hamburguesa.jpg', 'img/hamburguesa_hq.jpg', 'img/pizza.jpg', 'img/pizza_hq.jpg', 'img/coca_hq.jpg');
+}
+
 function resolverImagenProducto($nombreProducto, $rutaImagen)
 {
     $ruta = trim((string) $rutaImagen);
@@ -151,7 +158,7 @@ function resolverImagenProducto($nombreProducto, $rutaImagen)
         );
 
         foreach ($imagenesGuardadas as $imagenGuardada) {
-            if ($imagenGuardada !== '' && is_file(__DIR__ . '/' . $imagenGuardada)) {
+            if ($imagenGuardada !== '' && !in_array($imagenGuardada, imagenesProductoConContenidoIncorrecto(), true) && is_file(__DIR__ . '/' . $imagenGuardada)) {
                 return $imagenGuardada;
             }
         }
@@ -232,7 +239,7 @@ function resolverImagenProducto($nombreProducto, $rutaImagen)
     $candidatas[] = $categoriaDefault;
 
     foreach ($candidatas as $candidata) {
-        if ($candidata !== '' && is_file(__DIR__ . '/' . $candidata)) {
+        if ($candidata !== '' && !in_array($candidata, imagenesProductoConContenidoIncorrecto(), true) && is_file(__DIR__ . '/' . $candidata)) {
             return $candidata;
         }
     }
