@@ -30,7 +30,8 @@ INSERT INTO roles (nombre) VALUES
 ('Administrador'),
 ('Caja'),
 ('Mozo'),
-('Cocina');
+('Cocina'),
+('Cliente');
 
 -- =========================
 -- USUARIOS (acceso al sistema)

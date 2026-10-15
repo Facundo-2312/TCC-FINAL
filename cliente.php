@@ -19,40 +19,8 @@ function cliente_imagen($producto)
     $base = basename($normalizada);
     $baseSinExtension = pathinfo($base, PATHINFO_FILENAME);
     $nombre = mb_strtolower((string) ($producto['nombre'] ?? ''), 'UTF-8');
-    $imagenesCatalogoCorregidas = array(
-        'copa de dulce de leche' => 'MVCsix1.0/img/catalogo/copa-dulce-leche.jpg',
-        'flan casero' => 'MVCsix1.0/img/catalogo/flan-casero.jpg',
-        'helado' => 'MVCsix1.0/files/Helado.jpg',
-        'mousse de chocolate' => 'MVCsix1.0/img/catalogo/brownie-helado.jpg',
-        'torta de chocolate' => 'MVCsix1.0/img/catalogo/chocotorta.jpg',
-        'tiramisu' => 'MVCsix1.0/img/catalogo/tiramisu.jpg'
-    );
-    foreach ($imagenesCatalogoCorregidas as $nombreProducto => $imagen) {
-        if ($nombre === $nombreProducto && is_file(__DIR__ . '/' . $imagen)) {
-            return $imagen;
-        }
-    }
 
-    if (strpos($normalizada, 'img/catalogo/') === 0) {
-        $catalogo = 'MVCsix1.0/' . $normalizada;
-        if (is_file(__DIR__ . '/' . $catalogo)) {
-            return $catalogo;
-        }
-    }
-
-    $imagenesCorregidas = array(
-        'hamburguesa' => 'MVCsix1.0/img/default_hamburguesa_hq.jpg',
-        'pizza' => 'MVCsix1.0/img/default_pizza_hq.jpg',
-        'coca' => 'MVCsix1.0/img/coca_hq.jpg',
-        'cola' => 'MVCsix1.0/img/coca_hq.jpg',
-        'agua' => 'MVCsix1.0/img/agua_hq.jpg'
-    );
-    foreach ($imagenesCorregidas as $keyword => $imagen) {
-        if (mb_strpos($nombre, $keyword) !== false && is_file(__DIR__ . '/' . $imagen)) {
-            return $imagen;
-        }
-    }
-
+    // 1) Respetar primero la ruta configurada en la base de datos.
     $candidatas = array(
         $normalizada,
         $normalizada !== '' ? 'MVCsix1.0/' . $normalizada : '',
@@ -65,6 +33,26 @@ function cliente_imagen($producto)
     foreach ($candidatas as $candidata) {
         if ($candidata !== '' && strpos($candidata, '..') === false && is_file(__DIR__ . '/' . $candidata)) {
             return $candidata;
+        }
+    }
+
+    // 2) Fallback por nombre de producto solo si la ruta de la BD no existe.
+    $fallbackPorNombre = array(
+        'copa de dulce de leche' => 'MVCsix1.0/img/catalogo/copa-dulce-leche.jpg',
+        'flan casero' => 'MVCsix1.0/img/catalogo/flan-casero.jpg',
+        'helado' => 'MVCsix1.0/img/catalogo/helado.jpg',
+        'mousse de chocolate' => 'MVCsix1.0/img/catalogo/mousse-chocolate.jpg',
+        'torta de chocolate' => 'MVCsix1.0/img/catalogo/torta-chocolate.jpg',
+        'tiramisu' => 'MVCsix1.0/img/catalogo/tiramisu.jpg',
+        'hamburguesa' => 'MVCsix1.0/img/catalogo/hamburguesa-clasica.jpg',
+        'pizza' => 'MVCsix1.0/img/catalogo/pizza-muzzarella.jpg',
+        'coca' => 'MVCsix1.0/img/catalogo/coca-cola-600.jpg',
+        'cola' => 'MVCsix1.0/img/catalogo/coca-cola-600.jpg',
+        'agua' => 'MVCsix1.0/img/catalogo/agua-mineral-500.jpg'
+    );
+    foreach ($fallbackPorNombre as $keyword => $imagen) {
+        if (mb_strpos($nombre, $keyword) !== false && is_file(__DIR__ . '/' . $imagen)) {
+            return $imagen;
         }
     }
 
@@ -204,8 +192,208 @@ if ($conexion) {
 <title>Pedido del cliente</title>
 <script src="<?php echo cliente_h(app_url('no-popups.js')); ?>"></script>
 <style>
-:root{--bg:#111217;--panel:#1c1e25;--panel-soft:#272a33;--accent:#ff0055;--accent-soft:#ff4d8a;--text:#f4f4f4;--muted:#bdbdbd;--line:rgba(255,255,255,.1);--success:#22a95b;--danger:#dc2626}
-*{box-sizing:border-box}body{margin:0;padding:22px;background:radial-gradient(circle at top left,rgba(255,0,85,.16),transparent 34%),var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;max-width:1500px;margin:auto}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 15px;border:0;border-radius:8px;text-decoration:none;font-weight:700;cursor:pointer}.back{background:#343740;color:#fff}.primary{width:100%;background:var(--accent);color:#fff;font-size:1rem}.primary:hover,.add:hover{background:var(--accent-soft)}h1{max-width:1500px;margin:18px auto;color:#fff;font-size:clamp(1.8rem,3vw,2.5rem)}.user{color:#ff8fb3;font-weight:700}.alert{max-width:1500px;margin:0 auto 16px;padding:12px 14px;border-radius:6px;color:#fecaca;background:rgba(220,38,38,.16);border:1px solid rgba(220,38,38,.5)}.alert.success{color:#bbf7d0;background:rgba(34,169,91,.16);border-color:rgba(34,169,91,.55)}.reservation-panel{max-width:1500px;margin:0 auto 18px}.reservation-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 14px}.reservation-submit{max-width:260px;margin-top:16px}.tracking-panel{max-width:1500px;margin:0 auto 18px}.tracking-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}.tracking-item{padding:13px;border:1px solid var(--line);border-radius:7px;background:#15171d}.tracking-item strong{font-size:1rem}.tracking-item p{margin:8px 0 0;color:var(--muted);font-size:.84rem}.tracking-status{float:right;padding:4px 8px;border-radius:999px;color:#fff;font-size:.75rem;font-weight:700;background:#f59e0b}.tracking-status.preparando{background:#2563eb}.tracking-status.entregado{background:#22a95b}.tracking-status.cancelado{background:#dc2626}.layout{max-width:1500px;margin:auto;display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:18px;align-items:start}.panel{background:linear-gradient(180deg,var(--panel),var(--panel-soft));border:1px solid var(--line);border-radius:8px;padding:18px}.panel h2{margin:0 0 16px;font-size:1.2rem}.products{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}.product{display:flex;flex-direction:column;overflow:hidden;background:#15171d;border:1px solid var(--line);border-radius:8px;min-width:0}.product img{display:block;width:100%;height:150px;object-fit:cover;background:#0d0e12}.product-info{display:flex;flex:1;flex-direction:column;padding:12px}.product h3{margin:0 0 6px;font-size:1rem}.product p{height:36px;margin:0 0 10px;color:var(--muted);font-size:.84rem;line-height:1.35;overflow:hidden}.product-bottom{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:auto}.price{font-weight:700}.availability{display:block;margin-bottom:8px;color:#86efac;font-size:.75rem}.availability.unavailable{color:#fca5a5}.add{padding:8px 10px;border:0;border-radius:6px;background:var(--accent);color:#fff;font-weight:700;cursor:pointer}.add:disabled{background:#555b66;cursor:not-allowed;opacity:.75}.order-panel{position:sticky;top:16px}label{display:block;margin:12px 0 6px;color:var(--muted);font-size:.86rem}select,textarea,input{width:100%;padding:11px 12px;border:1px solid #424651;border-radius:6px;background:#101116;color:#fff;font:inherit}textarea{min-height:78px;resize:vertical}.cart{margin-top:16px;border-top:1px solid var(--line);max-height:350px;overflow:auto}.empty{padding:18px 0;text-align:center;color:var(--muted)}.cart-item{padding:12px 0;border-bottom:1px solid var(--line)}.cart-name{font-weight:700;font-size:.92rem}.cart-line{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;color:var(--muted);font-size:.88rem}.quantity{display:inline-flex;align-items:center;gap:8px}.quantity button{width:27px;height:27px;border:1px solid #515561;border-radius:5px;background:transparent;color:#fff;cursor:pointer}.remove{border:0;background:transparent;color:#ff8fb3;cursor:pointer;font-size:.8rem}.total{display:flex;justify-content:space-between;padding:16px 0;font-size:1.15rem;font-weight:700}.note{margin:14px 0 0;color:var(--muted);font-size:.8rem;line-height:1.4}@media(max-width:1050px){.reservation-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.layout{grid-template-columns:1fr}.order-panel{position:static}}@media(max-width:620px){body{padding:15px}.reservation-grid{grid-template-columns:1fr}.products{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.product img{height:112px}.product-info{padding:10px}.product p{display:none}.top .user{display:none}}
+:root{
+  --bg:#0d0f14;--panel:#16181f;--panel-2:#1d2029;--card:#14161d;
+  --accent:#ff2d6f;--accent-2:#ff5c8f;--accent-ink:#fff;
+  --text:#f3f4f8;--muted:#a9adba;--line:rgba(255,255,255,.09);
+  --ok:#2fbf71;--warn:#f5a623;--info:#3b82f6;--bad:#ef4444;
+  --radius:14px;--shadow:0 10px 30px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;padding:0 0 70px;
+  background:
+    radial-gradient(1200px 480px at 10% -8%,rgba(255,45,111,.13),transparent 60%),
+    radial-gradient(900px 420px at 105% 0%,rgba(59,130,246,.10),transparent 55%),
+    var(--bg);
+  color:var(--text);
+  font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+/* ===== Barra superior (ancho completo, no fija) ===== */
+.top{
+  display:flex;justify-content:space-between;align-items:center;gap:14px;
+  width:100%;margin:0;padding:14px 28px;
+  background:#101218;
+  border-bottom:1px solid var(--line);
+}
+.user{color:var(--accent-2);font-weight:600;font-size:.95rem}
+/* ===== Botones ===== */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:10px 16px;border:0;border-radius:10px;cursor:pointer;
+  font-weight:600;font-size:.92rem;text-decoration:none;
+  transition:transform .15s,filter .15s,box-shadow .15s;
+}
+.btn:hover{filter:brightness(1.1)}
+.btn:active{transform:translateY(1px)}
+.back{background:#23262f;color:var(--text);border:1px solid var(--line)}
+.primary{
+  width:100%;color:var(--accent-ink);font-size:1rem;padding:13px 18px;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  box-shadow:0 6px 18px rgba(255,45,111,.32);
+}
+.primary:hover{box-shadow:0 8px 24px rgba(255,45,111,.45)}
+/* ===== Titulo ===== */
+h1{
+  max-width:1280px;margin:26px auto 20px;padding:0 22px;
+  font-size:clamp(1.7rem,3vw,2.3rem);font-weight:800;letter-spacing:-.5px;
+}
+/* ===== Alertas ===== */
+.alert{
+  max-width:1200px;margin:0 auto 18px;padding:13px 16px;border-radius:12px;
+  color:#fecaca;background:rgba(239,68,68,.13);border:1px solid rgba(239,68,68,.4);
+}
+.alert.success{color:#bbf7d0;background:rgba(47,191,113,.13);border-color:rgba(47,191,113,.4)}
+/* ===== Paneles ===== */
+.panel{
+  background:linear-gradient(180deg,var(--panel),var(--panel-2));
+  border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:22px 24px;
+}
+.panel h2{
+  display:flex;align-items:center;gap:10px;
+  margin:0 0 18px;font-size:1.12rem;font-weight:700;letter-spacing:.2px;
+}
+.panel h2::before{
+  content:"";width:7px;height:20px;border-radius:4px;
+  background:linear-gradient(180deg,var(--accent),var(--accent-2));
+}
+.reservation-panel,.tracking-panel,.table-live-panel{max-width:1280px;margin:0 auto 20px}
+/* ===== Formulario de reserva ===== */
+.reservation-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.reservation-grid>div{min-width:0}
+.reservation-submit{width:auto;min-width:220px;margin-top:18px}
+label{display:block;margin:0 0 7px;color:var(--muted);font-size:.83rem;font-weight:600}
+select,textarea,input{
+  width:100%;padding:11px 13px;border-radius:10px;
+  border:1px solid #2b2f3a;background:#101218;color:var(--text);
+  font:inherit;font-size:.92rem;
+  transition:border-color .15s,box-shadow .15s;
+}
+select:focus,textarea:focus,input:focus{
+  outline:none;border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(255,45,111,.16);
+}
+textarea{min-height:76px;resize:vertical}
+.note{margin:12px 0 0;color:var(--muted);font-size:.8rem;line-height:1.45}
+/* ===== Seguimiento ===== */
+.tracking-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.tracking-item{
+  padding:14px;border-radius:12px;background:var(--card);border:1px solid var(--line);
+}
+.tracking-item strong{font-size:.95rem}
+.tracking-item p{margin:7px 0 0;color:var(--muted);font-size:.83rem}
+.tracking-status{
+  display:inline-block;margin-left:8px;padding:3px 10px;border-radius:999px;
+  color:#fff;font-size:.72rem;font-weight:700;background:var(--warn);
+}
+.tracking-status.preparando{background:var(--info)}
+.tracking-status.entregado{background:var(--ok)}
+.tracking-status.cancelado{background:var(--bad)}
+/* ===== Estado de mesa en vivo ===== */
+.table-live-panel #table-live{max-height:200px;overflow:auto;margin-top:4px}
+.table-person{
+  margin-top:10px;padding:12px;border-radius:10px;
+  background:var(--card);border:1px solid var(--line);font-size:.88rem;
+}
+.table-order{
+  margin-top:10px;padding:12px;border-radius:10px;
+  background:var(--card);border:1px solid var(--line);font-size:.88rem;
+}
+.table-order ul{margin:8px 0;padding-left:18px;color:var(--muted)}
+.table-order small{color:var(--muted)}
+/* ===== Layout principal ===== */
+.layout{
+  max-width:1280px;margin:0 auto;padding:0 22px;
+  display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:22px;align-items:start;
+  position:relative;z-index:1;
+}
+/* ===== Menu / tarjetas ===== */
+.products{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px}
+@media(min-width:1000px){.products{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.product{
+  display:flex;flex-direction:column;overflow:hidden;
+  background:var(--card);border:1px solid var(--line);border-radius:14px;
+  transition:transform .18s,box-shadow .18s,border-color .18s;
+}
+.product:hover{
+  transform:translateY(-4px);
+  border-color:rgba(255,45,111,.45);
+  box-shadow:0 14px 30px rgba(0,0,0,.5);
+  z-index:1;
+}
+.product img{display:block;width:100%;height:150px;object-fit:cover;background:#0a0c10}
+.product-info{display:flex;flex:1;flex-direction:column;padding:13px 14px 15px}
+.product h3{margin:0 0 4px;font-size:.97rem;font-weight:700}
+.product p{
+  margin:0 0 10px;color:var(--muted);font-size:.8rem;line-height:1.35;
+  min-height:34px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.availability{
+  display:inline-flex;align-items:center;gap:7px;margin-bottom:10px;
+  color:#7ee2a8;font-size:.75rem;font-weight:700;
+}
+.availability::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--ok)}
+.availability.unavailable{color:#fca5a5}
+.availability.unavailable::before{background:var(--bad)}
+.product-bottom{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:auto}
+.price{font-size:1.02rem;font-weight:800}
+.add{
+  padding:8px 16px;border:0;border-radius:9px;cursor:pointer;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  color:#fff;font-weight:700;font-size:.85rem;
+  transition:filter .15s,transform .12s;
+}
+.add:hover:not(:disabled){filter:brightness(1.12)}
+.add:not(:disabled):active{transform:scale(.95)}
+.add:disabled{background:#3a3f4c;cursor:not-allowed;opacity:.7}
+/* ===== Panel de pedido ===== */
+.order-panel{position:sticky;top:20px}
+.cart{margin-top:14px;border-top:1px solid var(--line);max-height:320px;overflow:auto}
+.cart-item{padding:12px 0;border-bottom:1px solid var(--line)}
+.cart-name{font-weight:700;font-size:.9rem}
+.cart-line{
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
+  margin-top:8px;color:var(--muted);font-size:.86rem;
+}
+.quantity{display:inline-flex;align-items:center;gap:9px}
+.quantity button{
+  width:26px;height:26px;border:1px solid #3a3f4c;border-radius:7px;
+  background:transparent;color:var(--text);cursor:pointer;font-weight:700;
+  transition:background .15s;
+}
+.quantity button:hover{background:#23262f}
+.remove{
+  border:0;background:transparent;color:var(--accent-2);cursor:pointer;
+  font-size:.8rem;padding:4px 6px;border-radius:6px;
+}
+.remove:hover{background:rgba(255,45,111,.12)}
+.total{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:16px 0;margin-top:4px;border-top:1px solid var(--line);
+  font-size:1.18rem;font-weight:800;
+}
+.empty{padding:22px 10px;text-align:center;color:var(--muted);font-size:.88rem}
+/* ===== Responsive ===== */
+@media(max-width:1050px){
+  .reservation-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .layout{grid-template-columns:1fr}
+  .order-panel{position:static}
+}
+@media(max-width:620px){
+  body{padding-bottom:40px}
+  .top{padding:12px 16px}
+  .top .user{display:none}
+  h1{padding:0 16px}
+  .layout{padding:0 12px}
+  .reservation-grid{grid-template-columns:1fr}
+  .products{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .product img{height:120px}
+  .product p{display:none}
+  .panel{padding:18px}
+}
 </style>
 </head>
 <body>
