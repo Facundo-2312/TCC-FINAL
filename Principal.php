@@ -39,6 +39,8 @@ $chatbotJsVersion = @filemtime(__DIR__ . '/chatbot.js') ?: time();
 
     <div class="botones">
 
+        <h2 class="grupo-titulo"><i class="fas fa-store"></i> Restaurante <small>Gestión interna: funcionarios, mozo y cocina</small></h2>
+
         <div class="Links"> 
             <a href="<?php echo htmlspecialchars(app_url('EmpleadoI.php'), ENT_QUOTES, 'UTF-8'); ?>">
                 <i class="fas fa-user" style="margin-right: 5px;"></i>Funcionarios
@@ -87,9 +89,17 @@ $chatbotJsVersion = @filemtime(__DIR__ . '/chatbot.js') ?: time();
             </a> 
         </div>
 
+        <h2 class="grupo-titulo"><i class="fas fa-users"></i> Cliente <small>Vista del comensal: pedido y reserva</small></h2>
+
         <div class="Links">
             <a href="<?php echo htmlspecialchars(app_url('cliente.php'), ENT_QUOTES, 'UTF-8'); ?>">
-                <i class="fas fa-user-plus" style="margin-right: 5px;"></i>Cliente
+                <i class="fas fa-receipt" style="margin-right: 5px;"></i>Pedido del cliente
+            </a>
+        </div>
+
+        <div class="Links">
+            <a href="<?php echo htmlspecialchars(app_url('cliente.php#reservar'), ENT_QUOTES, 'UTF-8'); ?>">
+                <i class="fas fa-calendar-alt" style="margin-right: 5px;"></i>Reserva (opción cliente)
             </a>
         </div>
 

@@ -1,7 +1,13 @@
 <?php
 require_once __DIR__ . '/app_bootstrap.php';
 
-app_require_login('Login.php', ['1', '4']);
+app_require_login('Login.php', ['1', '3', '4']);
+
+// El mozo (rol 3) solo consulta lo que emite la cocina.
+$soloLectura = (string) ($_SESSION['Rol'] ?? '') === '3';
+if ($soloLectura && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    app_redirect('Cocina2.php');
+}
 
 $conexion = app_db_connect();
 if (!$conexion) {
@@ -69,6 +75,7 @@ $entregados = $vistaCocina['resumen']['Entregado'];
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cocina</title>
+<?php if ($soloLectura) { ?><meta http-equiv="refresh" content="15"><?php } ?>
 <script src="<?php echo htmlspecialchars(app_url('no-popups.js'), ENT_QUOTES, 'UTF-8'); ?>"></script>
 <style>
 :root{--bg:#171717;--panel:#242424;--panel-soft:#2c2c2c;--accent:#ff0055;--text:#f4f4f4;--muted:#bdbdbd;--line:rgba(255,255,255,.08)}
@@ -84,6 +91,7 @@ h1{text-align:center;color:var(--accent);margin:14px 0 20px;font-size:clamp(1.8r
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,280px));gap:14px;justify-content:start;align-content:start}
 .order{width:280px;max-width:280px;background:linear-gradient(180deg,#f9f9fb,#eeeeef);color:#1e1e1e;border-radius:14px;padding:12px;border:1px solid #e8e8ea;box-shadow:0 8px 18px rgba(0,0,0,.14);aspect-ratio:1/1;display:flex;flex-direction:column;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}
 .order:hover{transform:translateY(-2px);box-shadow:0 12px 22px rgba(0,0,0,.2)}
+.order.readonly{cursor:default}.order.readonly:hover{transform:none;box-shadow:0 8px 18px rgba(0,0,0,.14)}
 .order-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
 .order-title{margin:0;font-size:1.15rem}
 .meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 10px;font-size:.93rem}
@@ -120,7 +128,7 @@ ul{padding-left:18px;margin:8px 0 0;flex:1;overflow:auto}
 <div class="grid">
 <?php if (!empty($pedidosConDetalle)) { ?>
     <?php foreach ($pedidosConDetalle as $pedido) { ?>
-        <form method="post" class="order js-touch-form" data-order-id="<?php echo (int) $pedido['id_pedido']; ?>" data-current="<?php echo h($pedido['estado']); ?>" tabindex="0" role="button" aria-label="Cambiar estado del pedido <?php echo (int) $pedido['id_pedido']; ?>">
+        <form method="post" class="order<?php echo $soloLectura ? ' readonly' : ' js-touch-form'; ?>" data-order-id="<?php echo (int) $pedido['id_pedido']; ?>" data-current="<?php echo h($pedido['estado']); ?>"<?php if (!$soloLectura) { ?> tabindex="0" role="button" aria-label="Cambiar estado del pedido <?php echo (int) $pedido['id_pedido']; ?>"<?php } ?>>
             <?php echo csrf_field(); ?>
             <input type="hidden" name="id_pedido" value="<?php echo (int) $pedido['id_pedido']; ?>">
             <input type="hidden" name="accion_estado" value="1">
@@ -147,18 +155,24 @@ ul{padding-left:18px;margin:8px 0 0;flex:1;overflow:auto}
                 <?php } ?>
             </ul>
 
+            <?php if (!$soloLectura) { ?>
             <div class="order-actions">
                 <button type="button" class="delete-btn js-delete-btn" aria-label="Eliminar pedido">Eliminar</button>
             </div>
 
             <div class="touch-hint">Toca la tarjeta para cambiar estado</div>
+            <?php } else { ?>
+            <div class="touch-hint">Solo lectura · se actualiza automáticamente</div>
+            <?php } ?>
         </form>
 
+        <?php if (!$soloLectura) { ?>
         <form method="post" class="js-delete-form" style="display:none">
             <?php echo csrf_field(); ?>
             <input type="hidden" name="id_pedido" value="<?php echo (int) $pedido['id_pedido']; ?>">
             <input type="hidden" name="accion_eliminar" value="1">
         </form>
+        <?php } ?>
     <?php } ?>
 <?php } else { ?>
     <div class="card empty">No hay pedidos para cocina.</div>

@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/app_bootstrap.php';
 
-app_require_login('Login.php');
+app_require_login('Login.php', ['1', '5']);
 
 function cliente_h($value)
 {
@@ -376,6 +376,24 @@ textarea{min-height:76px;resize:vertical}
   font-size:1.18rem;font-weight:800;
 }
 .empty{padding:22px 10px;text-align:center;color:var(--muted);font-size:.88rem}
+/* ===== Cabecera y portada ===== */
+.site-header{position:sticky;top:0;z-index:50;background:rgba(16,18,24,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.site-header-in{max-width:1280px;margin:0 auto;padding:12px 22px;display:flex;align-items:center;justify-content:space-between;gap:18px}
+.brand{display:flex;align-items:center;gap:10px;color:var(--text);text-decoration:none;font-weight:800;letter-spacing:.3px}
+.brand img{width:36px;height:36px;border-radius:10px;object-fit:cover}
+.site-nav{display:flex;gap:4px;flex-wrap:wrap}
+.site-nav a{color:var(--muted);text-decoration:none;font-weight:600;font-size:.9rem;padding:8px 14px;border-radius:999px;transition:background .15s,color .15s}
+.site-nav a:hover{background:rgba(255,45,111,.14);color:var(--text)}
+.site-user{display:flex;align-items:center;gap:10px}
+.hero{padding:54px 22px 40px;text-align:center}
+.hero-in{max-width:760px;margin:0 auto}
+.eyebrow{margin:0 0 10px;color:var(--accent-2);font-weight:700;letter-spacing:.4px;text-transform:uppercase;font-size:.8rem}
+.hero h1{max-width:none;margin:0 0 12px;padding:0;font-size:clamp(2rem,5vw,3.2rem);line-height:1.1}
+.hero-sub{margin:0 auto 24px;color:var(--muted);font-size:1.05rem;line-height:1.5}
+.hero-cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.hero-cta .btn{width:auto;min-width:190px}
+section[id],form[id],div[id]{scroll-margin-top:80px}
+@media(max-width:900px){.site-nav{display:none}}
 /* ===== Responsive ===== */
 @media(max-width:1050px){
   .reservation-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -397,13 +415,31 @@ textarea{min-height:76px;resize:vertical}
 </style>
 </head>
 <body>
-<div class="top"><a class="btn back" href="<?php echo cliente_h(app_url($clienteVolver)); ?>">← Volver</a><span class="user">Bienvenido, <?php echo cliente_h($_SESSION['ClienteNombre'] ?? $_SESSION['Usuario']); ?></span><a class="btn back" href="<?php echo cliente_h(app_url('Salir.php')); ?>">Salir</a></div>
-<h1>Arma tu pedido</h1>
+<header class="site-header">
+  <div class="site-header-in">
+    <a class="brand" href="#inicio"><img src="<?php echo cliente_h(app_url('img/logonuevo.jpeg')); ?>" alt=""><span>RESTAURANTE-UY</span></a>
+    <nav class="site-nav" aria-label="Secciones">
+      <a href="#menu">Carta y pedido</a>
+      <a href="#seguimiento">Mis pedidos</a>
+      <a href="#reservar">Reservar mesa</a>
+      <a href="#mesa-estado">Mi mesa</a>
+    </nav>
+    <div class="site-user"><span class="user"><?php echo cliente_h($_SESSION['ClienteNombre'] ?? $_SESSION['Usuario']); ?></span><?php if ((string) ($_SESSION['Rol'] ?? '') !== '5') { ?><a class="btn back" href="<?php echo cliente_h(app_url($clienteVolver)); ?>">← Volver</a><?php } ?><a class="btn back" href="<?php echo cliente_h(app_url('Salir.php')); ?>">Salir</a></div>
+  </div>
+</header>
+<section class="hero" id="inicio">
+  <div class="hero-in">
+    <p class="eyebrow">Bienvenido, <?php echo cliente_h($_SESSION['ClienteNombre'] ?? $_SESSION['Usuario']); ?></p>
+    <h1>Tu mesa, tu pedido, a tu ritmo</h1>
+    <p class="hero-sub">Elige de nuestra carta, sigue tu pedido en tiempo real y reserva tu próxima visita.</p>
+    <div class="hero-cta"><a class="btn primary" href="#menu">Hacer un pedido</a><a class="btn back" href="#reservar">Reservar mesa</a></div>
+  </div>
+</section>
 <?php if ($mensaje !== '') { ?><div class="alert <?php echo cliente_h($tipoMensaje); ?>"><?php echo cliente_h($mensaje); ?></div><?php } ?>
-<form class="panel reservation-panel" method="post"><h2>Reservar mesa</h2><p class="note">Elige una mesa, una fecha y un horario disponible de 90 minutos.</p><?php echo csrf_field(); ?><input type="hidden" name="crear_reserva" value="1"><input type="hidden" id="hora_inicio_reserva" name="hora_inicio_reserva"><div class="reservation-grid"><div><label for="id_mesa_reserva">Mesa</label><select id="id_mesa_reserva" name="id_mesa_reserva" required><option value="">Selecciona una mesa</option><?php foreach ($mesas as $mesa) { ?><option value="<?php echo (int) $mesa['id_mesa']; ?>">Mesa <?php echo (int) $mesa['numero']; ?> · Capacidad <?php echo (int) ($mesa['capacidad'] ?: 4); ?></option><?php } ?></select></div><div><label for="cantidad_personas">Personas</label><input id="cantidad_personas" name="cantidad_personas" type="number" min="1" max="50" required></div><div><label for="nombre_reserva">Nombre reservado</label><input id="nombre_reserva" name="nombre_reserva" maxlength="100" required value="<?php echo cliente_h($_SESSION['ClienteNombre'] ?? ''); ?>"></div><div><label for="fecha_reserva">Fecha</label><input id="fecha_reserva" type="date" required value="<?php echo date('Y-m-d'); ?>" min="<?php echo date('Y-m-d'); ?>"></div><div><label for="horario_reserva">Horarios disponibles</label><select id="horario_reserva" required disabled><option>Selecciona una mesa</option></select></div><div><label for="telefono_reserva">Telefono</label><input id="telefono_reserva" name="telefono_reserva" maxlength="20" inputmode="tel"></div><div><label for="notas_reserva">Notas</label><input id="notas_reserva" name="notas_reserva" maxlength="500"></div></div><button class="btn primary reservation-submit" type="submit">Reservar mesa</button></form>
-<section class="panel tracking-panel"><h2>Seguimiento de mis pedidos</h2><div id="order-tracking" class="tracking-list"><?php if (!$pedidosCliente) { ?><p class="empty">Todavia no tienes pedidos realizados.</p><?php } else { foreach ($pedidosCliente as $pedido) { ?><article class="tracking-item"><div><strong>Pedido #<?php echo (int) $pedido['id_pedido']; ?></strong><span class="tracking-status <?php echo cliente_h(cliente_estado_clase($pedido['estado'])); ?>"><?php echo cliente_h($pedido['estado']); ?></span></div><p><?php echo cliente_h(cliente_demora($pedido['estado'])); ?> · <?php echo cliente_h($pedido['fecha']); ?></p><p><?php echo count($pedido['productos']); ?> producto(s) · Total $<?php echo number_format((float) $pedido['total'], 2, ',', '.'); ?></p></article><?php } } ?></div></section>
-<section class="panel table-live-panel"><h2>Estado actual de la mesa</h2><label for="mesa_supervisada">Mesa a consultar</label><select id="mesa_supervisada"><option value="">Selecciona una mesa</option><?php foreach ($mesasTodas as $mesa) { ?><option value="<?php echo (int) $mesa['id_mesa']; ?>">Mesa <?php echo (int) $mesa['numero']; ?> · <?php echo cliente_h($mesa['estado']); ?></option><?php } ?></select><div id="table-live"><p class="empty">Selecciona una mesa para ver quién está allí y qué está pidiendo.</p></div></section>
-<div class="layout">
+<form class="panel reservation-panel" id="reservar" method="post"><h2>Reservar mesa</h2><p class="note">Elige una mesa, una fecha y un horario disponible de 90 minutos.</p><?php echo csrf_field(); ?><input type="hidden" name="crear_reserva" value="1"><input type="hidden" id="hora_inicio_reserva" name="hora_inicio_reserva"><div class="reservation-grid"><div><label for="id_mesa_reserva">Mesa</label><select id="id_mesa_reserva" name="id_mesa_reserva" required><option value="">Selecciona una mesa</option><?php foreach ($mesas as $mesa) { ?><option value="<?php echo (int) $mesa['id_mesa']; ?>">Mesa <?php echo (int) $mesa['numero']; ?> · Capacidad <?php echo (int) ($mesa['capacidad'] ?: 4); ?></option><?php } ?></select></div><div><label for="cantidad_personas">Personas</label><input id="cantidad_personas" name="cantidad_personas" type="number" min="1" max="50" required></div><div><label for="nombre_reserva">Nombre reservado</label><input id="nombre_reserva" name="nombre_reserva" maxlength="100" required value="<?php echo cliente_h($_SESSION['ClienteNombre'] ?? ''); ?>"></div><div><label for="fecha_reserva">Fecha</label><input id="fecha_reserva" type="date" required value="<?php echo date('Y-m-d'); ?>" min="<?php echo date('Y-m-d'); ?>"></div><div><label for="horario_reserva">Horarios disponibles</label><select id="horario_reserva" required disabled><option>Selecciona una mesa</option></select></div><div><label for="telefono_reserva">Telefono</label><input id="telefono_reserva" name="telefono_reserva" maxlength="20" inputmode="tel"></div><div><label for="notas_reserva">Notas</label><input id="notas_reserva" name="notas_reserva" maxlength="500"></div></div><button class="btn primary reservation-submit" type="submit">Reservar mesa</button></form>
+<section class="panel tracking-panel" id="seguimiento"><h2>Seguimiento de mis pedidos</h2><div id="order-tracking" class="tracking-list"><?php if (!$pedidosCliente) { ?><p class="empty">Todavia no tienes pedidos realizados.</p><?php } else { foreach ($pedidosCliente as $pedido) { ?><article class="tracking-item"><div><strong>Pedido #<?php echo (int) $pedido['id_pedido']; ?></strong><span class="tracking-status <?php echo cliente_h(cliente_estado_clase($pedido['estado'])); ?>"><?php echo cliente_h($pedido['estado']); ?></span></div><p><?php echo cliente_h(cliente_demora($pedido['estado'])); ?> · <?php echo cliente_h($pedido['fecha']); ?></p><p><?php echo count($pedido['productos']); ?> producto(s) · Total $<?php echo number_format((float) $pedido['total'], 2, ',', '.'); ?></p></article><?php } } ?></div></section>
+<section class="panel table-live-panel" id="mesa-estado"><h2>Estado actual de la mesa</h2><label for="mesa_supervisada">Mesa a consultar</label><select id="mesa_supervisada"><option value="">Selecciona una mesa</option><?php foreach ($mesasTodas as $mesa) { ?><option value="<?php echo (int) $mesa['id_mesa']; ?>">Mesa <?php echo (int) $mesa['numero']; ?> · <?php echo cliente_h($mesa['estado']); ?></option><?php } ?></select><div id="table-live"><p class="empty">Selecciona una mesa para ver quién está allí y qué está pidiendo.</p></div></section>
+<div class="layout" id="menu">
 <section class="panel"><h2>Menu disponible</h2><div class="products">
 <?php foreach ($productos as $producto) { $disponible = (int) ($producto['stock'] ?? 0) > 0; ?><article class="product"><img src="<?php echo cliente_h(app_url(cliente_imagen($producto))); ?>" alt="<?php echo cliente_h($producto['nombre']); ?>"><div class="product-info"><h3><?php echo cliente_h($producto['nombre']); ?></h3><p><?php echo cliente_h($producto['descripcion']); ?></p><span class="availability<?php echo $disponible ? '' : ' unavailable'; ?>"><?php echo $disponible ? 'Disponible' : 'Agotado'; ?></span><div class="product-bottom"><span class="price">$<?php echo number_format((float) $producto['precio'], 2, ',', '.'); ?></span><button class="add" type="button" data-id="<?php echo (int) $producto['id_producto']; ?>" data-name="<?php echo cliente_h($producto['nombre']); ?>" data-price="<?php echo cliente_h($producto['precio']); ?>"<?php echo $disponible ? '' : ' disabled'; ?>><?php echo $disponible ? 'Agregar' : 'Agotado'; ?></button></div></div></article><?php } ?>
 <?php if (!$productos) { ?><p class="empty">No hay productos disponibles en este momento.</p><?php } ?>

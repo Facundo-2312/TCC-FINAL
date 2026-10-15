@@ -80,9 +80,9 @@ if ($res !== null) {
     } elseif ($Rol == 2) {
         app_redirect("caja.php"); // Caja
     } elseif ($Rol == 3) {
-        app_redirect("pedidos.php"); // Mozo
+        app_redirect("inicio_rol.php"); // Mozo
     } elseif ($Rol == 4) {
-        app_redirect("cocina.php"); // Cocina
+        app_redirect("inicio_rol.php"); // Cocina
     } elseif ($Rol == 5) {
         app_redirect("cliente.php"); // Cliente
     } else {

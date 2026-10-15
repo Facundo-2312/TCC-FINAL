@@ -489,6 +489,24 @@ footer {
   }
 }
 
+/* Grupos Restaurante / Cliente */
+.grupo-titulo {
+  grid-column: 1 / -1;
+  margin: 14px 0 2px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  font-size: 1.15rem;
+  color: #fff;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.grupo-titulo:first-child { margin-top: 0; }
+.grupo-titulo i { color: #ff2e78; }
+.grupo-titulo small { font-size: 0.78rem; font-weight: 400; color: #a9adba; }
+
 /* Chatbot widget */
 .chatbot-toggle {
   position: fixed;

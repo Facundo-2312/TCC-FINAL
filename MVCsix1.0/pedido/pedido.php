@@ -32,7 +32,7 @@ $Rol = $_SESSION['Rol'] ?? null;
 if ($Rol== "Admin"){
 
 ?>
-<a class="Atras" href="<?php echo htmlspecialchars(app_url('Principal.php'), ENT_QUOTES, 'UTF-8'); ?>">
+<a class="Atras" href="<?php echo htmlspecialchars(app_url((string) ($_SESSION['Rol'] ?? '') === '1' ? 'Principal.php' : 'inicio_rol.php'), ENT_QUOTES, 'UTF-8'); ?>">
 <i class="fas fa-arrow-circle-left" style="margin-left: 5px;"></i>
 </a> 
 <h1 class="titulo-pedido">Haga su pedido</h1> 
