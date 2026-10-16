@@ -14,7 +14,6 @@ if (!$conexion) {
 }
 
 $catalogo = array(
-    array('Hamburguesa Clasica', 'Hamburguesa de carne, queso y vegetales', 350, 50, 'Comidas', 'hamburguesa-clasica.jpg', array('Hamburguesa')),
     array('Pizza Muzzarella', 'Pizza de muzzarella con salsa de tomate', 400, 40, 'Comidas', 'pizza-muzzarella.jpg', array('Pizza')),
     array('Pasta al Pesto', 'Pasta con salsa pesto casera', 400, 40, 'Comidas', 'pasta-pesto.jpg', array()),
     array('Pasta Bolognesa', 'Pasta con salsa bolognesa', 420, 35, 'Comidas', 'pasta-bolognesa.jpg', array()),
