@@ -7,12 +7,6 @@ if (PHP_SAPI !== 'cli') {
 
 require_once __DIR__ . '/../app_bootstrap.php';
 
-$conexion = app_db_connect();
-if (!$conexion) {
-    fwrite(STDERR, 'No se pudo conectar a la base de datos.' . PHP_EOL);
-    exit(1);
-}
-
 $catalogo = array(
     array('Pizza Muzzarella', 'Pizza de muzzarella con salsa de tomate', 400, 40, 'Comidas', 'pizza-muzzarella.jpg', array('Pizza')),
     array('Pasta al Pesto', 'Pasta con salsa pesto casera', 400, 40, 'Comidas', 'pasta-pesto.jpg', array()),
@@ -55,6 +49,43 @@ $catalogo = array(
     array('Brownie con Helado', 'Brownie tibio con helado', 260, 30, 'Postres', 'brownie-helado.jpg', array()),
     array('Ensalada de Frutas', 'Ensalada de frutas frescas', 200, 30, 'Postres', 'ensalada-frutas.jpg', array()),
 );
+
+if (PHP_SAPI === 'cli' && isset($argv[1]) && $argv[1] === '--export-infinityfree-sql') {
+    $sql = "-- Catalogo de 40 productos para importar despues de install_infinityfree.sql.\n";
+    $categorias = array();
+    foreach ($catalogo as $producto) {
+        $categorias[$producto[4]] = true;
+    }
+    foreach (array_keys($categorias) as $categoria) {
+        $valor = str_replace("'", "''", $categoria);
+        $sql .= "INSERT INTO categorias (nombre) SELECT '" . $valor . "' WHERE NOT EXISTS (SELECT 1 FROM categorias WHERE nombre = '" . $valor . "');\n";
+    }
+    foreach ($catalogo as $producto) {
+        list($nombre, $descripcion, $precio, $stock, $categoria, $archivoImagen) = $producto;
+        $valores = array($nombre, $descripcion, 'img/catalogo/' . $archivoImagen, $categoria);
+        foreach ($valores as &$valor) {
+            $valor = "'" . str_replace("'", "''", (string) $valor) . "'";
+        }
+        unset($valor);
+        $sql .= "INSERT INTO productos (nombre, descripcion, precio, stock, img, id_categoria, estado) "
+            . "SELECT " . $valores[0] . ", " . $valores[1] . ", " . (float) $precio . ", " . (int) $stock . ", "
+            . $valores[2] . ", (SELECT id_categoria FROM categorias WHERE nombre = " . $valores[3] . " LIMIT 1), 'Activo' "
+            . "WHERE NOT EXISTS (SELECT 1 FROM productos WHERE nombre = " . $valores[0] . ");\n";
+    }
+    $outputPath = __DIR__ . '/../SQL/catalogo_infinityfree.sql';
+    if (file_put_contents($outputPath, $sql) === false) {
+        fwrite(STDERR, 'Could not write SQL/catalogo_infinityfree.sql.' . PHP_EOL);
+        exit(1);
+    }
+    echo 'Created SQL/catalogo_infinityfree.sql with ' . count($catalogo) . " products.\n";
+    exit(0);
+}
+
+$conexion = app_db_connect();
+if (!$conexion) {
+    fwrite(STDERR, 'No se pudo conectar a la base de datos.' . PHP_EOL);
+    exit(1);
+}
 
 function obtenerCategoria($conexion, $nombre)
 {

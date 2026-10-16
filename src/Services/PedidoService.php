@@ -84,6 +84,12 @@ class PedidoService
         return $this->cambiarEstado($idPedido, 'ArchivadoCocina');
     }
 
+    private function descontarStockSiCorresponde($idProducto, $cantidad)
+    {
+        return getenv('APP_DB_STOCK_TRIGGERS') !== '0'
+            || $this->repositorio->descontarStockProducto($idProducto, $cantidad);
+    }
+
     public function crearPedidoRapido($mesa, $productoManual, $precio, $cantidad, $usuario)
     {
         $mesa = (int) $mesa;
@@ -96,11 +102,14 @@ class PedidoService
         mysqli_begin_transaction($connection);
         try {
             $idUsuario = $this->repositorio->buscarIdUsuario($usuario);
+            if ($idUsuario <= 0) throw new \RuntimeException();
             $idProducto = $this->repositorio->buscarProductoPorNombre($productoManual);
             if (!$idProducto) $idProducto = $this->repositorio->crearProductoManual($productoManual, $precio);
             $subtotal = $precio * $cantidad;
             $idPedido = $this->repositorio->crearPedido($mesa, $idUsuario, $subtotal);
-            if ($idPedido <= 0 || !$this->repositorio->ocuparMesa($mesa) || !$this->repositorio->agregarDetalle($idPedido, $idProducto, $cantidad, $precio, $subtotal)) throw new \RuntimeException();
+            if ($idPedido <= 0 || !$this->repositorio->ocuparMesa($mesa)
+                || !$this->descontarStockSiCorresponde($idProducto, $cantidad)
+                || !$this->repositorio->agregarDetalle($idPedido, $idProducto, $cantidad, $precio, $subtotal)) throw new \RuntimeException();
             mysqli_commit($connection);
             return $idPedido;
         } catch (\Throwable $exception) {
@@ -165,7 +174,8 @@ class PedidoService
                 $subtotal = $precio * $cantidad;
                 $sin = substr(trim((string) ($item['sinIngredientes'] ?? '')), 0, 255);
                 $extra = substr(trim((string) ($item['extraIngredientes'] ?? '')), 0, 255);
-                if (!$this->repositorio->agregarDetallePersonalizado($idPedido, $idProducto, $cantidad, $precio, $subtotal, $sin, $extra)) throw new \RuntimeException();
+                if (!$this->descontarStockSiCorresponde($idProducto, $cantidad)
+                    || !$this->repositorio->agregarDetallePersonalizado($idPedido, $idProducto, $cantidad, $precio, $subtotal, $sin, $extra)) throw new \RuntimeException();
                 $total += $subtotal;
             }
 
@@ -207,7 +217,19 @@ class PedidoService
         $producto = $this->repositorio->buscarProductoParaPedido($idProducto);
         if (!$producto) return false;
         $precio = (float) $producto['precio'];
-        $ok = $this->repositorio->agregarDetallePersonalizado($idPedido, $idProducto, $cantidad, $precio, $precio * $cantidad, substr(trim((string) $sinIngredientes), 0, 255), substr(trim((string) $extraIngredientes), 0, 255));
-        return $ok && $this->repositorio->sumarTotalDetalle($idPedido);
+        $connection = $this->repositorio->connection();
+        mysqli_begin_transaction($connection);
+        try {
+            if (!$this->descontarStockSiCorresponde($idProducto, $cantidad)
+                || !$this->repositorio->agregarDetallePersonalizado($idPedido, $idProducto, $cantidad, $precio, $precio * $cantidad, substr(trim((string) $sinIngredientes), 0, 255), substr(trim((string) $extraIngredientes), 0, 255))
+                || !$this->repositorio->sumarTotalDetalle($idPedido)) {
+                throw new \RuntimeException('No se pudo agregar el detalle del pedido.');
+            }
+            mysqli_commit($connection);
+            return true;
+        } catch (\Throwable $exception) {
+            mysqli_rollback($connection);
+            return false;
+        }
     }
 }

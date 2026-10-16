@@ -172,6 +172,40 @@ class PedidoRepository
         return $row ? (string) $row['estado'] : null;
     }
 
+    public function descontarStockProducto($idProducto, $cantidad)
+    {
+        $stmt = mysqli_prepare(
+            $this->connection,
+            'UPDATE productos SET stock = stock - ? WHERE id_producto = ? AND estado = "Activo" AND stock >= ?'
+        );
+        mysqli_stmt_bind_param($stmt, 'iii', $cantidad, $idProducto, $cantidad);
+        $ok = mysqli_stmt_execute($stmt) && mysqli_stmt_affected_rows($stmt) === 1;
+        mysqli_stmt_close($stmt);
+        return $ok;
+    }
+
+    private function reponerStockDePedido($idPedido)
+    {
+        $stmt = mysqli_prepare($this->connection, 'SELECT id_producto, cantidad FROM detalle_pedido WHERE id_pedido = ? FOR UPDATE');
+        mysqli_stmt_bind_param($stmt, 'i', $idPedido);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $detalles = $result ? mysqli_fetch_all($result, MYSQLI_ASSOC) : array();
+        mysqli_stmt_close($stmt);
+
+        foreach ($detalles as $detalle) {
+            $idProducto = (int) $detalle['id_producto'];
+            $cantidad = (int) $detalle['cantidad'];
+            $update = mysqli_prepare($this->connection, 'UPDATE productos SET stock = stock + ? WHERE id_producto = ?');
+            mysqli_stmt_bind_param($update, 'ii', $cantidad, $idProducto);
+            $ok = mysqli_stmt_execute($update);
+            mysqli_stmt_close($update);
+            if (!$ok) {
+                throw new \RuntimeException('No se pudo reponer el stock del pedido.');
+            }
+        }
+    }
+
     public function buscarProductoParaPedido($idProducto)
     {
         $stmt = mysqli_prepare($this->connection, "SELECT id_producto, precio FROM productos WHERE id_producto = ? AND estado = 'Activo' LIMIT 1");
@@ -301,6 +335,10 @@ class PedidoRepository
                 if (!$ok) throw new \RuntimeException('No se pudo archivar el pedido cobrado.');
                 mysqli_commit($this->connection);
                 return true;
+            }
+
+            if (getenv('APP_DB_STOCK_TRIGGERS') === '0') {
+                $this->reponerStockDePedido($idPedido);
             }
 
             $stmt = mysqli_prepare($this->connection, 'DELETE FROM detalle_pedido WHERE id_pedido = ?');
