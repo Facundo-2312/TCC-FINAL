@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Repositories\PedidoRepository;
+use App\Repositories\ReservaRepository;
 
 // Business rules for pedidos: valid states and transitions, reused by every entrypoint.
 class PedidoService
@@ -110,6 +111,20 @@ class PedidoService
 
     public function crearPedidoMozo($numeroMesa, $usuario, $observaciones, array $items)
     {
+        return $this->procesarPedidoMozo($numeroMesa, $usuario, $observaciones, $items, null);
+    }
+
+    public function crearPedidoCliente($numeroMesa, $usuario, $observaciones, array $items, $idUsuarioCliente)
+    {
+        $autorizacionCliente = array(
+            'id_usuario' => (int) $idUsuarioCliente
+        );
+        if ($autorizacionCliente['id_usuario'] <= 0) return false;
+        return $this->procesarPedidoMozo($numeroMesa, $usuario, $observaciones, $items, $autorizacionCliente);
+    }
+
+    private function procesarPedidoMozo($numeroMesa, $usuario, $observaciones, array $items, $autorizacionCliente)
+    {
         $numeroMesa = (int) $numeroMesa;
         $usuario = trim((string) $usuario);
         $observaciones = trim((string) $observaciones);
@@ -120,8 +135,22 @@ class PedidoService
         try {
             $idUsuario = $this->repositorio->buscarIdUsuario($usuario);
             if ($idUsuario <= 0) throw new \RuntimeException();
+            if ($autorizacionCliente !== null && $idUsuario !== $autorizacionCliente['id_usuario']) throw new \RuntimeException();
             $idMesa = $this->repositorio->buscarMesaPorNumeroParaActualizar($numeroMesa);
             if (!$idMesa) throw new \RuntimeException();
+            if ($autorizacionCliente !== null) {
+                $estadoMesa = $this->repositorio->obtenerEstadoMesa($idMesa);
+                if ($estadoMesa !== 'Libre') {
+                    if (!in_array($estadoMesa, array('Reservada', 'Ocupada'), true)) throw new \RuntimeException();
+                    $reservas = new ReservaRepository($connection);
+                    if (!$reservas->bloquearReservaActivaDelCliente(
+                        $idMesa,
+                        $autorizacionCliente['id_usuario']
+                    )) {
+                        throw new \RuntimeException();
+                    }
+                }
+            }
             $idPedido = $this->repositorio->crearPedidoMozo($idMesa, $idUsuario, substr($observaciones, 0, 500));
             if ($idPedido <= 0 || !$this->repositorio->ocuparMesa($idMesa)) throw new \RuntimeException();
 

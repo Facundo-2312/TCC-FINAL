@@ -23,7 +23,11 @@ $vistaMesas = (new App\Controllers\MesaController())->listar();
 $reservas = (new App\Services\ReservaService())->listarActivas();
 $reservasPorMesa = array();
 foreach ($reservas as $reserva) {
-    $reservasPorMesa[(int) $reserva['id_mesa']] = array(
+    $idMesa = (int)$reserva['id_mesa'];
+    if (isset($reservasPorMesa[$idMesa])) {
+        continue;
+    }
+    $reservasPorMesa[$idMesa] = array(
         'nombre_cliente' => $reserva['nombre_cliente'],
         'cantidad_personas' => (int) $reserva['cantidad_personas'],
         'hora_inicio' => $reserva['hora_inicio'],

@@ -21,10 +21,14 @@ $datos = array(
     'hora_fin' => trim($_POST['hora_fin'] ?? ''),
     'telefono' => trim($_POST['telefono'] ?? ''),
     'notas' => trim($_POST['notas'] ?? ''),
-    'id_usuario' => $_SESSION['IdUsuario'] ?? null
+    'id_usuario' => null,
+    'usuario' => (string)($_SESSION['Usuario'] ?? 'sistema')
 );
 
-$usuarioAccion = (string) ($_SESSION['Usuario'] ?? 'sistema');
+$cuentaUsuario = (new App\Repositories\UsuarioRepository())->buscarAcceso((string) ($_SESSION['Usuario'] ?? ''));
+if ($cuentaUsuario) {
+    $datos['id_usuario'] = (int)$cuentaUsuario['id_usuario'];
+}
 $servicio = new App\Services\ReservaService();
 $resultado = $servicio->crear($datos);
 

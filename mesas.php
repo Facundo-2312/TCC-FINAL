@@ -124,6 +124,14 @@ $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
             background: rgba(255, 214, 10, 0.1);
         }
 
+        .mesa-card.reservada {
+            border-color: #a78bfa;
+        }
+
+        .mesa-card.reservada:hover {
+            background: rgba(167, 139, 250, 0.1);
+        }
+
         .mesa-head {
             display: flex;
             justify-content: space-between;
@@ -160,6 +168,10 @@ $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
         .badge.limpieza {
             background: #ffd60a;
             color: #000;
+        }
+
+        .badge.reservada {
+            background: #8b5cf6;
         }
 
         .mesa-info {
@@ -216,6 +228,12 @@ $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
 
         .btn-mesa:hover {
             transform: scale(1.05);
+        }
+
+        .btn-mesa:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .btn-reservar {
@@ -590,6 +608,10 @@ $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
             <div class="stat-value" id="statOcupada"><?php echo $ocupadas; ?></div>
         </div>
         <div class="stat-box">
+            <div class="stat-label">Mesas Reservadas</div>
+            <div class="stat-value" id="statReservada"><?php echo $vistaMesas['stats']['Reservada']; ?></div>
+        </div>
+        <div class="stat-box">
             <div class="stat-label">En Limpieza</div>
             <div class="stat-value" id="statLimpieza"><?php echo $limpieza; ?></div>
         </div>
@@ -607,6 +629,7 @@ $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
                 <option value="">Todos</option>
                 <option value="Libre">Libre</option>
                 <option value="Ocupada">Ocupada</option>
+                <option value="Reservada">Reservada</option>
                 <option value="Limpieza">Limpieza</option>
             </select>
         </div>
@@ -668,9 +691,9 @@ $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
                 </div>
 
                 <div class="mesa-actions">
-                    <?php if ($estado === 'Libre') { ?>
+                    <?php if (in_array($estado, array('Libre', 'Reservada'), true)) { ?>
                         <button class="btn-mesa btn-reservar" onclick="abrirModalReserva(<?php echo $idMesa; ?>)">
-                            📅 HACER RESERVA
+                            📅 <?php echo $estado === 'Reservada' ? 'OTRO HORARIO' : 'HACER RESERVA'; ?>
                         </button>
                     <?php } else { ?>
                         <button class="btn-mesa btn-reservar" disabled title="La mesa debe estar libre para reservar" style="opacity: 0.5; cursor: not-allowed;">
@@ -684,7 +707,7 @@ $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
                             <input type="hidden" name="accion_mesa" value="1">
                             <input type="hidden" name="id_mesa" value="<?php echo $idMesa; ?>">
                             <input type="hidden" name="estado" value="Ocupada">
-                            <button type="submit" class="btn-mesa btn-ocupar">✓ OCUPAR</button>
+                            <button type="submit" class="btn-mesa btn-ocupar"<?php echo in_array($estado, array('Libre', 'Reservada'), true) ? '' : ' disabled'; ?>>✓ OCUPAR</button>
                         </form>
                     </div>
 
@@ -694,7 +717,7 @@ $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
                             <input type="hidden" name="accion_mesa" value="1">
                             <input type="hidden" name="id_mesa" value="<?php echo $idMesa; ?>">
                             <input type="hidden" name="estado" value="Limpieza">
-                            <button type="submit" class="btn-mesa btn-limpiar">🧹 LIMPIAR</button>
+                            <button type="submit" class="btn-mesa btn-limpiar"<?php echo $estado === 'Ocupada' ? '' : ' disabled'; ?>>🧹 LIMPIAR</button>
                         </form>
 
                         <form method="post">
@@ -702,7 +725,7 @@ $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
                             <input type="hidden" name="accion_mesa" value="1">
                             <input type="hidden" name="id_mesa" value="<?php echo $idMesa; ?>">
                             <input type="hidden" name="estado" value="Libre">
-                            <button type="submit" class="btn-mesa btn-liberar">✔ LIBERAR</button>
+                            <button type="submit" class="btn-mesa btn-liberar"<?php echo $estado === 'Reservada' ? ' disabled title="La mesa tiene reservas activas"' : ''; ?>>✔ LIBERAR</button>
                         </form>
                     </div>
                 </div>
@@ -814,7 +837,7 @@ function cargarHorarios(idMesa) {
 
             if (!data.mesa_libre) {
                 select.innerHTML = '<option value="">Mesa no disponible</option>';
-                ayuda.textContent = 'Esta mesa ya está ocupada o reservada.';
+                ayuda.textContent = 'Esta mesa está ocupada o en limpieza.';
                 return;
             }
 
@@ -835,7 +858,7 @@ function cargarHorarios(idMesa) {
             if (!hayDisponibles) {
                 ayuda.textContent = 'No quedan turnos disponibles por hoy para esta mesa.';
             } else {
-                ayuda.textContent = 'La mesa quedará marcada como Ocupada hasta que se libere.';
+                ayuda.textContent = 'La mesa quedará marcada como Reservada hasta el horario elegido.';
                 select.disabled = false;
                 btnGuardar.disabled = false;
             }
@@ -968,6 +991,7 @@ window.onclick = function(e) {
         if (data.stats) {
             document.getElementById('statLibre').textContent = data.stats.Libre || 0;
             document.getElementById('statOcupada').textContent = data.stats.Ocupada || 0;
+            document.getElementById('statReservada').textContent = data.stats.Reservada || 0;
             document.getElementById('statLimpieza').textContent = data.stats.Limpieza || 0;
         }
 

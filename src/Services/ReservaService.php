@@ -31,11 +31,13 @@ class ReservaService
         $horaInicio = (string)($datos['hora_inicio'] ?? '');
         $horaFin = (string)($datos['hora_fin'] ?? '');
 
-        if (!strtotime($horaInicio) || !strtotime($horaFin)) {
+        $inicioTimestamp = strtotime($horaInicio);
+        $finTimestamp = strtotime($horaFin);
+        if ($inicioTimestamp === false || $finTimestamp === false || $inicioTimestamp <= time()) {
             return array('ok' => false, 'error' => 'Horarios inválidos');
         }
 
-        if (strtotime($horaFin) <= strtotime($horaInicio)) {
+        if ($finTimestamp <= $inicioTimestamp) {
             return array('ok' => false, 'error' => 'La hora fin debe ser después de la hora inicio');
         }
 
@@ -106,9 +108,7 @@ class ReservaService
      */
     public function completarPorMesa($idMesa)
     {
-        $reservas = $this->repositorio->listarPorMesa($idMesa);
-        foreach ($reservas as $reserva) {
-            $this->repositorio->marcarCompletada((int) $reserva['id_reserva']);
-        }
+        $this->repositorio->completarEnCursoPorMesa((int)$idMesa);
+        $this->repositorio->sincronizarEstadoMesa((int)$idMesa);
     }
 }

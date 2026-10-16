@@ -161,6 +161,17 @@ class PedidoRepository
         return $row ? (int) $row['id_mesa'] : null;
     }
 
+    public function obtenerEstadoMesa($idMesa)
+    {
+        $stmt = mysqli_prepare($this->connection, 'SELECT estado FROM mesas WHERE id_mesa = ? LIMIT 1');
+        mysqli_stmt_bind_param($stmt, 'i', $idMesa);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $row = $result ? mysqli_fetch_assoc($result) : null;
+        mysqli_stmt_close($stmt);
+        return $row ? (string) $row['estado'] : null;
+    }
+
     public function buscarProductoParaPedido($idProducto)
     {
         $stmt = mysqli_prepare($this->connection, "SELECT id_producto, precio FROM productos WHERE id_producto = ? AND estado = 'Activo' LIMIT 1");

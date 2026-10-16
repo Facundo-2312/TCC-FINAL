@@ -29,7 +29,7 @@ class MesaService
     public function listarConResumen()
     {
         $mesas = $this->conZona($this->repositorio->listar());
-        $stats = array('Libre' => 0, 'Ocupada' => 0, 'Limpieza' => 0);
+        $stats = array('Libre' => 0, 'Ocupada' => 0, 'Reservada' => 0, 'Limpieza' => 0);
         foreach ($mesas as $mesa) {
             if (isset($stats[$mesa['estado']])) $stats[$mesa['estado']]++;
         }
@@ -51,7 +51,7 @@ class MesaService
                 return array('ok' => false, 'codigo' => 'no_encontrada');
             }
 
-            if ($estado === 'Ocupada' && $mesa['estado'] !== 'Libre') {
+            if ($estado === 'Ocupada' && !in_array($mesa['estado'], array('Libre', 'Reservada'), true)) {
                 mysqli_rollback($connection);
                 return array('ok' => false, 'codigo' => 'occupied');
             }

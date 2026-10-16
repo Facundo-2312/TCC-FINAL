@@ -30,8 +30,8 @@ if (!$mesaActual) {
     exit;
 }
 
-// Si la mesa ya está ocupada o en limpieza, no hay turnos disponibles hoy
-$mesaLibre = $mesaActual['estado'] === 'Libre';
+// Una mesa ya reservada puede ofrecer otros turnos que no se superpongan.
+$mesaLibre = in_array($mesaActual['estado'], array('Libre', 'Reservada'), true);
 
 $duracionMinutos = 90;
 $horaAperturaJornada = '18:00';
@@ -50,6 +50,7 @@ for ($actual = $inicioJornada; $actual < $finJornada; $actual += 30 * 60) {
     $horaFin = date('Y-m-d\TH:i', $finTurno);
 
     $disponible = $mesaLibre
+        && $actual > time()
         && $servicioReserva->disponible($idMesa, date('Y-m-d H:i:s', $actual), date('Y-m-d H:i:s', $finTurno));
 
     $slots[] = [

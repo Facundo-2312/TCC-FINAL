@@ -77,7 +77,12 @@ function cliente_imagen($producto)
 $productoController = new App\Controllers\ProductoController();
 $pedidoController = new App\Controllers\PedidoController();
 $reservaService = new App\Services\ReservaService();
+$reservaRepository = new App\Repositories\ReservaRepository();
 $mesaRepository = new App\Repositories\MesaRepository();
+$usuarioRepository = new App\Repositories\UsuarioRepository();
+$cuentaCliente = $usuarioRepository->buscarAcceso((string)$_SESSION['Usuario']);
+$idUsuarioCliente = $cuentaCliente ? (int)$cuentaCliente['id_usuario'] : 0;
+$nombreCliente = (string)($_SESSION['ClienteNombre'] ?? $cuentaCliente['nombre'] ?? $_SESSION['Usuario']);
 $flash = app_get_flash();
 $mensaje = (string) ($flash['message'] ?? '');
 $tipoMensaje = (string) ($flash['type'] ?? '');
@@ -112,12 +117,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear_reserva'])) {
         $tipoMensaje = 'error';
     } else {
         $idUsuarioReserva = null;
-        $usuarioReserva = new App\Repositories\UsuarioRepository();
-        $cuentaReserva = $usuarioReserva->buscarAcceso((string) $_SESSION['Usuario']);
+        $cuentaReserva = $cuentaCliente;
         if ($cuentaReserva) $idUsuarioReserva = (int) $cuentaReserva['id_usuario'];
-        $resultadoReserva = $reservaService->crear(array('id_mesa' => $idMesaReserva, 'nombre_cliente' => $nombreReserva, 'cantidad_personas' => $cantidadPersonas, 'hora_inicio' => date('Y-m-d H:i:s', $horaInicioTimestamp), 'hora_fin' => $horaFinReserva, 'telefono' => $telefonoReserva, 'notas' => $notasReserva, 'id_usuario' => $idUsuarioReserva));
-        $mensaje = $resultadoReserva['ok'] ? 'Reserva realizada con éxito.' : $resultadoReserva['error'];
-        $tipoMensaje = $resultadoReserva['ok'] ? 'success' : 'error';
+        $resultadoReserva = $reservaService->crear(array('id_mesa' => $idMesaReserva, 'nombre_cliente' => $nombreReserva, 'cantidad_personas' => $cantidadPersonas, 'hora_inicio' => date('Y-m-d H:i:s', $horaInicioTimestamp), 'hora_fin' => $horaFinReserva, 'telefono' => $telefonoReserva, 'notas' => $notasReserva, 'id_usuario' => $idUsuarioReserva, 'usuario' => (string)$_SESSION['Usuario']));
+        if ($resultadoReserva['ok']) {
+            app_set_flash('success', 'Reserva realizada con éxito.');
+            app_redirect('cliente.php#reservar');
+        }
+        $mensaje = $resultadoReserva['error'];
+        $tipoMensaje = 'error';
     }
 }
 
@@ -143,8 +151,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear_pedido'])) {
     } elseif (strlen($observaciones) > 500) {
         $mensaje = 'Las observaciones no pueden superar los 500 caracteres.';
         $tipoMensaje = 'error';
+    } elseif ($idUsuarioCliente <= 0 || !$reservaRepository->clientePuedePedirEnMesa($mesa, $idUsuarioCliente)) {
+        $mensaje = 'Solo puedes pedir desde una mesa libre o desde una mesa reservada a tu cuenta.';
+        $tipoMensaje = 'error';
     } else {
-        $idPedido = $pedidoController->crearPedidoMozo($mesa, $_SESSION['Usuario'], $observaciones, $items);
+        $idPedido = $pedidoController->crearPedidoCliente($mesa, $_SESSION['Usuario'], $observaciones, $items, $idUsuarioCliente);
         if ($idPedido) {
             unset($_SESSION['cliente_pedido_token']);
             app_set_flash('success', 'Pedido realizado con éxito.');
@@ -174,13 +185,13 @@ function cliente_demora($estado)
     return 'Aproximadamente 20 minutos';
 }
 
-$conexion = app_db_connect();
-$mesas = array();
+$mesasReserva = array();
 $mesasTodas = $mesaRepository->listar();
-if ($conexion) {
-    foreach ($mesasTodas as $mesa) {
-        if (($mesa['estado'] ?? '') === 'Libre') $mesas[] = $mesa;
-    }
+$mesasPedido = $idUsuarioCliente > 0
+    ? $reservaRepository->mesasParaPedidoCliente($idUsuarioCliente)
+    : array();
+foreach ($mesasTodas as $mesa) {
+    if (in_array(($mesa['estado'] ?? ''), array('Libre', 'Reservada'), true)) $mesasReserva[] = $mesa;
 }
 
 ?>
@@ -436,15 +447,15 @@ section[id],form[id],div[id]{scroll-margin-top:80px}
   </div>
 </section>
 <?php if ($mensaje !== '') { ?><div class="alert <?php echo cliente_h($tipoMensaje); ?>"><?php echo cliente_h($mensaje); ?></div><?php } ?>
-<form class="panel reservation-panel" id="reservar" method="post"><h2>Reservar mesa</h2><p class="note">Elige una mesa, una fecha y un horario disponible de 90 minutos.</p><?php echo csrf_field(); ?><input type="hidden" name="crear_reserva" value="1"><input type="hidden" id="hora_inicio_reserva" name="hora_inicio_reserva"><div class="reservation-grid"><div><label for="id_mesa_reserva">Mesa</label><select id="id_mesa_reserva" name="id_mesa_reserva" required><option value="">Selecciona una mesa</option><?php foreach ($mesas as $mesa) { ?><option value="<?php echo (int) $mesa['id_mesa']; ?>">Mesa <?php echo (int) $mesa['numero']; ?> · Capacidad <?php echo (int) ($mesa['capacidad'] ?: 4); ?></option><?php } ?></select></div><div><label for="cantidad_personas">Personas</label><input id="cantidad_personas" name="cantidad_personas" type="number" min="1" max="50" required></div><div><label for="nombre_reserva">Nombre reservado</label><input id="nombre_reserva" name="nombre_reserva" maxlength="100" required value="<?php echo cliente_h($_SESSION['ClienteNombre'] ?? ''); ?>"></div><div><label for="fecha_reserva">Fecha</label><input id="fecha_reserva" type="date" required value="<?php echo date('Y-m-d'); ?>" min="<?php echo date('Y-m-d'); ?>"></div><div><label for="horario_reserva">Horarios disponibles</label><select id="horario_reserva" required disabled><option>Selecciona una mesa</option></select></div><div><label for="telefono_reserva">Telefono</label><input id="telefono_reserva" name="telefono_reserva" maxlength="20" inputmode="tel"></div><div><label for="notas_reserva">Notas</label><input id="notas_reserva" name="notas_reserva" maxlength="500"></div></div><button class="btn primary reservation-submit" type="submit">Reservar mesa</button></form>
+<form class="panel reservation-panel" id="reservar" method="post"><h2>Reservar mesa</h2><p class="note">Elige una mesa, una fecha y un horario disponible de 90 minutos.</p><?php echo csrf_field(); ?><input type="hidden" name="crear_reserva" value="1"><input type="hidden" id="hora_inicio_reserva" name="hora_inicio_reserva"><div class="reservation-grid"><div><label for="id_mesa_reserva">Mesa</label><select id="id_mesa_reserva" name="id_mesa_reserva" required><option value="">Selecciona una mesa</option><?php foreach ($mesasReserva as $mesa) { ?><option value="<?php echo (int) $mesa['id_mesa']; ?>">Mesa <?php echo (int) $mesa['numero']; ?> · Capacidad <?php echo (int) ($mesa['capacidad'] ?: 4); ?><?php echo $mesa['estado'] === 'Reservada' ? ' · Consultar horarios' : ''; ?></option><?php } ?></select></div><div><label for="cantidad_personas">Personas</label><input id="cantidad_personas" name="cantidad_personas" type="number" min="1" max="50" required></div><div><label for="nombre_reserva">Nombre reservado</label><input id="nombre_reserva" name="nombre_reserva" maxlength="100" required value="<?php echo cliente_h($_SESSION['ClienteNombre'] ?? ''); ?>"></div><div><label for="fecha_reserva">Fecha</label><input id="fecha_reserva" type="date" required value="<?php echo date('Y-m-d'); ?>" min="<?php echo date('Y-m-d'); ?>"></div><div><label for="horario_reserva">Horarios disponibles</label><select id="horario_reserva" required disabled><option>Selecciona una mesa</option></select></div><div><label for="telefono_reserva">Telefono</label><input id="telefono_reserva" name="telefono_reserva" maxlength="20" inputmode="tel"></div><div><label for="notas_reserva">Notas</label><input id="notas_reserva" name="notas_reserva" maxlength="500"></div></div><button class="btn primary reservation-submit" type="submit">Reservar mesa</button></form>
 <section class="panel tracking-panel" id="seguimiento"><h2>Seguimiento de mis pedidos</h2><div id="order-tracking" class="tracking-list"><?php if (!$pedidosCliente) { ?><p class="empty">Todavia no tienes pedidos realizados.</p><?php } else { foreach ($pedidosCliente as $pedido) { ?><article class="tracking-item"><div><strong>Pedido #<?php echo (int) $pedido['id_pedido']; ?></strong><span class="tracking-status <?php echo cliente_h(cliente_estado_clase($pedido['estado'])); ?>"><?php echo cliente_h($pedido['estado']); ?></span></div><p><?php echo cliente_h(cliente_demora($pedido['estado'])); ?> · <?php echo cliente_h($pedido['fecha']); ?></p><p><?php echo count($pedido['productos']); ?> producto(s) · Total $<?php echo number_format((float) $pedido['total'], 2, ',', '.'); ?></p></article><?php } } ?></div></section>
-<section class="panel table-live-panel" id="mesa-estado"><h2>Estado actual de la mesa</h2><label for="mesa_supervisada">Mesa a consultar</label><select id="mesa_supervisada"><option value="">Selecciona una mesa</option><?php foreach ($mesasTodas as $mesa) { ?><option value="<?php echo (int) $mesa['id_mesa']; ?>">Mesa <?php echo (int) $mesa['numero']; ?> · <?php echo cliente_h($mesa['estado']); ?></option><?php } ?></select><div id="table-live"><p class="empty">Selecciona una mesa para ver quién está allí y qué está pidiendo.</p></div></section>
+<section class="panel table-live-panel" id="mesa-estado"><h2>Estado actual de la mesa</h2><label for="mesa_supervisada">Mesa a consultar</label><select id="mesa_supervisada"><option value="">Selecciona una mesa</option><?php foreach ($mesasTodas as $mesa) { ?><option value="<?php echo (int) $mesa['id_mesa']; ?>" data-numero="<?php echo (int) $mesa['numero']; ?>">Mesa <?php echo (int) $mesa['numero']; ?> · <?php echo cliente_h($mesa['estado']); ?></option><?php } ?></select><p class="note" id="mesa-order-message" role="status" aria-live="polite"></p><div id="table-live"><p class="empty">Selecciona una mesa para ver quién está allí y qué está pidiendo.</p></div></section>
 <div class="layout" id="menu">
 <section class="panel"><h2>Menu disponible</h2><div class="products">
 <?php foreach ($productos as $producto) { $disponible = (int) ($producto['stock'] ?? 0) > 0; ?><article class="product"><img src="<?php echo cliente_h(app_url(cliente_imagen($producto))); ?>" alt="<?php echo cliente_h($producto['nombre']); ?>"><div class="product-info"><h3><?php echo cliente_h($producto['nombre']); ?></h3><p><?php echo cliente_h($producto['descripcion']); ?></p><span class="availability<?php echo $disponible ? '' : ' unavailable'; ?>"><?php echo $disponible ? 'Disponible' : 'Agotado'; ?></span><div class="product-bottom"><span class="price">$<?php echo number_format((float) $producto['precio'], 2, ',', '.'); ?></span><button class="add" type="button" data-id="<?php echo (int) $producto['id_producto']; ?>" data-name="<?php echo cliente_h($producto['nombre']); ?>" data-price="<?php echo cliente_h($producto['precio']); ?>"<?php echo $disponible ? '' : ' disabled'; ?>><?php echo $disponible ? 'Agregar' : 'Agotado'; ?></button></div></div></article><?php } ?>
 <?php if (!$productos) { ?><p class="empty">No hay productos disponibles en este momento.</p><?php } ?>
 </div></section>
-<form class="panel order-panel" method="post" id="order-form"><?php echo csrf_field(); ?><input type="hidden" name="pedido_token" value="<?php echo cliente_h($_SESSION['cliente_pedido_token']); ?>"><input type="hidden" name="items" id="items"><h2>Pedido actual</h2><label for="mesa">Mesa</label><select id="mesa" name="mesa" required><option value="">Selecciona una mesa</option><?php foreach ($mesas as $mesa) { ?><option value="<?php echo (int) $mesa['numero']; ?>">Mesa <?php echo (int) $mesa['numero']; ?></option><?php } ?></select><label for="observaciones">Notas para cocina</label><textarea id="observaciones" name="observaciones" maxlength="500" placeholder="Sin cebolla, extra salsa..."></textarea><div id="cart" class="cart"><div class="empty">Agrega productos desde el menu.</div></div><div class="total"><span>Total</span><span id="total">$0,00</span></div><button class="btn primary" type="submit" name="crear_pedido">Realizar pedido</button><p class="note">El total se verifica nuevamente al confirmar y el pedido se envía al mismo panel que utiliza cocina.</p></form>
+<form class="panel order-panel" method="post" id="order-form"><?php echo csrf_field(); ?><input type="hidden" name="pedido_token" value="<?php echo cliente_h($_SESSION['cliente_pedido_token']); ?>"><input type="hidden" name="items" id="items"><h2>Pedido actual</h2><label for="mesa">Mesa</label><select id="mesa" name="mesa" required><option value="">Selecciona una mesa</option><?php foreach ($mesasPedido as $mesa) { ?><option value="<?php echo (int) $mesa['numero']; ?>" data-reserva-inicio="<?php echo cliente_h($mesa['reserva_inicio'] ?? ''); ?>">Mesa <?php echo (int) $mesa['numero']; ?><?php if ($mesa['estado'] !== 'Libre') { ?> · Reservada para ti<?php if (!empty($mesa['reserva_inicio'])) { ?> · <?php echo date('d/m H:i', strtotime($mesa['reserva_inicio'])); ?><?php } } ?></option><?php } ?></select><p class="note">Puedes ocupar tu mesa reservada y hacer pedidos sin esperar el horario. Solo el titular de la reserva puede usarla.</p><label for="observaciones">Notas para cocina</label><textarea id="observaciones" name="observaciones" maxlength="500" placeholder="Sin cebolla, extra salsa..."></textarea><div id="cart" class="cart"><div class="empty">Agrega productos desde el menu.</div></div><div class="total"><span>Total</span><span id="total">$0,00</span></div><button class="btn primary" type="submit" name="crear_pedido">Realizar pedido</button><p class="note">El total se verifica nuevamente al confirmar y el pedido se envía al mismo panel que utiliza cocina.</p></form>
 </div>
 <script>
 const cart = new Map();
@@ -479,7 +490,7 @@ async function loadTableLive() {
         tableLive.innerHTML = '<p class="empty">No se pudo actualizar el estado de la mesa.</p>';
     }
 }
-const mesaNumeroAId = <?php echo json_encode(array_column($mesas, 'id_mesa', 'numero')); ?>;
+const mesaNumeroAId = <?php echo json_encode(array_column($mesasPedido, 'id_mesa', 'numero')); ?>;
 Array.from(orderTable.options).forEach(option => { if (mesaNumeroAId[option.value]) option.dataset.id = mesaNumeroAId[option.value]; });
 monitoredTable.addEventListener('change', loadTableLive);
 async function loadReservationSlots() {
@@ -527,6 +538,26 @@ function saveDraft() {
         observaciones: observaciones ? observaciones.value : ''
     }));
 }
+monitoredTable.addEventListener('change', () => {
+    const message = document.getElementById('mesa-order-message');
+    const selectedOption = monitoredTable.options[monitoredTable.selectedIndex];
+    if (!selectedOption || !selectedOption.value) {
+        message.textContent = '';
+        return;
+    }
+
+    const orderOption = Array.from(orderTable.options).find(option => option.dataset.id === selectedOption.value);
+    if (orderOption) {
+        orderTable.value = orderOption.value;
+        orderTable.dispatchEvent(new Event('change'));
+        message.textContent = 'Mesa ' + selectedOption.dataset.numero + ' seleccionada para tu pedido.';
+    } else {
+        orderTable.value = '';
+        orderTable.dispatchEvent(new Event('change'));
+        message.textContent = 'La mesa ' + selectedOption.dataset.numero + ' no está disponible para pedidos en este momento. Si tienes una reserva, podrás pedir cuando comience su horario.';
+    }
+    document.getElementById('order-form').scrollIntoView({behavior: 'smooth', block: 'center'});
+});
 function restoreDraft() {
     try {
         const draft = JSON.parse(localStorage.getItem(draftKey) || '{}');
