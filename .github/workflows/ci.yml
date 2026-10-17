@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  php-syntax:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ["8.0", "8.2"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mysqli, mbstring, fileinfo, json
+      - name: php -l en todos los archivos PHP
+        run: |
+          status=0
+          while IFS= read -r -d '' f; do
+            php -l "$f" >/dev/null || { echo "Error de sintaxis: $f"; status=1; }
+          done < <(find . -name '*.php' -not -path './.git/*' -print0)
+          exit $status
+
+  no-secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Archivos sensibles versionados
+        run: |
+          bad=$(git ls-files | grep -E '(^|/)\.env$|\.sql\.bak$|backup_.*\.sql$|security\.log$' || true)
+          if [ -n "$bad" ]; then echo "Archivos sensibles en el repo:"; echo "$bad"; exit 1; fi
+
+  schema:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ci-only-throwaway
+          MYSQL_DATABASE: ci_test
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -pci-only-throwaway"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Importar esquema y catálogo en una BD efímera
+        env:
+          MYSQL_PWD: ci-only-throwaway
+        run: |
+          mysql -h127.0.0.1 -uroot ci_test < SQL/install_infinityfree.sql
+          mysql -h127.0.0.1 -uroot ci_test < SQL/catalogo_infinityfree.sql
+          mysql -h127.0.0.1 -uroot ci_test -N -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='ci_test'"
+
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Construir imagen (sin publicar)
+        run: docker build -t restaurante-ci .
