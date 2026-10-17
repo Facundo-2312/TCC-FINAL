@@ -4,7 +4,12 @@ Options -Indexes
     Require all denied
 </FilesMatch>
 
+# Documentacion, scripts de instalacion/escritorio y logs no deben servirse por web.
+<FilesMatch "(?i)\.(md|sql|ps1|bat|iss|vbs|log)$">
+    Require all denied
+</FilesMatch>
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteRule ^(?:SQL|database|storage/logs|\.git)(?:/|$) - [F,L,NC]
+    RewriteRule ^(?:SQL|database|desktop|src|storage|\.vscode|\.git)(?:/|$) - [F,L,NC]
 </IfModule>

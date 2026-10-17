@@ -10,7 +10,8 @@ class Auth
     public static function startSession()
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {
-            $isHttps = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+            $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+                || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower((string) $_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https');
 
             session_set_cookie_params(array(
                 'lifetime' => 0,

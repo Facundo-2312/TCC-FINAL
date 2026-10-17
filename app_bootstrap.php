@@ -8,6 +8,7 @@ require_once __DIR__ . '/src/Support/Autoload.php';
 
 App\Support\Env::load(__DIR__ . '/.env');
 App\Support\ErrorHandler::register();
+App\Support\Database::applyTimezone();
 
 if (!function_exists('app_start_session')) {
     function app_start_session()

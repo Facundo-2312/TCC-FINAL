@@ -10,7 +10,7 @@ function h($value)
 
 $conexion = app_db_connect();
 if (!$conexion) {
-    die('Error de conexión: ' . mysqli_connect_error());
+    App\Support\Db::fail('No se pudo conectar con la base de datos.', 'ListaPedido.php: ' . mysqli_connect_error());
 }
 
 $desde = $_GET['desde'] ?? date('Y-m-d');

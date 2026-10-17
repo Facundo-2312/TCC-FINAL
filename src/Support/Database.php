@@ -9,12 +9,14 @@ class Database
 
     public static function config(array $overrides = array())
     {
+        // APP_DB_* tiene prioridad; MYSQL* son las variables que inyectan Railway y otros PaaS.
         $config = array(
-            'host' => getenv('APP_DB_HOST') ?: 'localhost',
-            'user' => getenv('APP_DB_USER') ?: 'root',
-            'password' => getenv('APP_DB_PASSWORD') ?: '',
-            'database' => getenv('APP_DB_NAME') ?: 'ProyectoMagnus',
+            'host' => self::env('APP_DB_HOST', 'MYSQLHOST') ?: 'localhost',
+            'user' => self::env('APP_DB_USER', 'MYSQLUSER') ?: 'root',
+            'password' => self::env('APP_DB_PASSWORD', 'MYSQLPASSWORD') ?: '',
+            'database' => self::env('APP_DB_NAME', 'MYSQLDATABASE') ?: 'ProyectoMagnus',
             'charset' => getenv('APP_DB_CHARSET') ?: 'utf8mb4',
+            'port' => (int) (self::env('APP_DB_PORT', 'MYSQLPORT') ?: 3306),
         );
 
         foreach ($overrides as $key => $value) {
@@ -41,6 +43,27 @@ class Database
         return self::$connection;
     }
 
+    public static function timezoneName()
+    {
+        $tz = getenv('APP_TIMEZONE') ?: 'America/Montevideo';
+        return in_array($tz, \DateTimeZone::listIdentifiers(), true) ? $tz : 'America/Montevideo';
+    }
+
+    public static function applyTimezone()
+    {
+        date_default_timezone_set(self::timezoneName());
+    }
+
+    private static function env($primary, $fallback)
+    {
+        $value = getenv($primary);
+        if ($value === false || $value === '') {
+            $value = getenv($fallback);
+        }
+
+        return $value === false ? '' : $value;
+    }
+
     private static function createConnection(array $overrides)
     {
         $config = self::config($overrides);
@@ -49,11 +72,18 @@ class Database
             (string) $config['host'],
             (string) $config['user'],
             (string) $config['password'],
-            (string) $config['database']
+            (string) $config['database'],
+            (int) $config['port']
         );
 
         if ($connection && !empty($config['charset'])) {
             mysqli_set_charset($connection, (string) $config['charset']);
+        }
+
+        if ($connection) {
+            // Misma zona que PHP, como desfase fijo (no requiere tablas de zonas cargadas en MySQL).
+            $offset = (new \DateTime('now', new \DateTimeZone(self::timezoneName())))->format('P');
+            mysqli_query($connection, "SET time_zone = '" . $offset . "'");
         }
 
         return $connection;

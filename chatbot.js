@@ -55,7 +55,7 @@
     input.value = '';
 
     try {
-      var response = await fetch((typeof chatbotApiUrl !== 'undefined' ? chatbotApiUrl : '/proj/chatbot_api.php'), {
+      var response = await fetch((typeof chatbotApiUrl !== 'undefined' ? chatbotApiUrl : 'chatbot_api.php'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: question })

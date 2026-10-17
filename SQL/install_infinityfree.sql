@@ -18,7 +18,21 @@ INSERT INTO roles (nombre) VALUES
 ('Cliente');
 
 -- =========================
--- USUARIOS: crear una cuenta de prueba segura despues de importar este esquema.
+-- USUARIOS (acceso al sistema). Sin cuentas demo: crear una cuenta segura despues de importar.
+-- =========================
+CREATE TABLE usuarios (
+    id_usuario INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    usuario VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    id_rol INT NOT NULL,
+    estado ENUM('Activo','Inactivo') NOT NULL DEFAULT 'Activo',
+    fecha_creacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_usuarios_rol FOREIGN KEY (id_rol) REFERENCES roles(id_rol)
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+    INDEX idx_usuarios_id_rol (id_rol)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- CATEGORIAS
 -- =========================

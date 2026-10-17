@@ -70,7 +70,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $reserva['telefono'] = $telefono;
                 $reserva['notas'] = $notas;
             } else {
-                $mensaje = 'Error al actualizar: ' . mysqli_error($conexion);
+                App\Support\SecurityLog::log('error_bd', array('detalle' => 'editar_reserva.php: ' . mysqli_error($conexion)));
+                $mensaje = 'Error al actualizar la reserva. Intenta nuevamente.';
                 $tipo_mensaje = 'error';
             }
 

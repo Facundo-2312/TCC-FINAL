@@ -1,0 +1,5 @@
+# Carpeta de imagenes subidas: nunca ejecutar scripts aqui.
+Options -Indexes -ExecCGI
+<FilesMatch "(?i)\.(php[0-9]?|phtml|phar|pl|py|cgi|sh)$">
+    Require all denied
+</FilesMatch>

@@ -1,0 +1,22 @@
+.git
+.gitignore
+.vscode
+.env
+.env.*
+!.env.example
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Privado / solo local
+SQL
+database
+desktop
+storage/logs/*
+!storage/logs/.gitkeep
+*.sql
+*.md
+cmd-probe.txt
+
+# Pagina web guardada, sin referencias en el codigo
+MVCsix1.0/img/fondo3_files

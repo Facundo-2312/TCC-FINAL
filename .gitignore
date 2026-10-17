@@ -4,4 +4,8 @@ desktop/**/build/
 desktop/**/run/
 cmd-probe.txt
 .env
+.env.*
+!.env.example
 storage/logs/*.log
+storage/logs/*.sql
+*.sql.bak

@@ -1,0 +1,31 @@
+# Prueba local de la imagen de produccion (no se usa en Railway).
+# Uso: docker compose up --build  ->  http://localhost:8080
+# Credenciales solo de prueba local. MySQL inicializa el esquema/catalogo al crear un volumen vacio.
+services:
+  web:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      APP_ENV: production
+      APP_DB_HOST: db
+      APP_DB_USER: root
+      APP_DB_PASSWORD: local-test-only
+      APP_DB_NAME: restaurante
+      APP_DB_STOCK_TRIGGERS: "0"
+    volumes:
+      - uploads:/var/www/html/MVCsix1.0/files
+    depends_on:
+      - db
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: local-test-only
+      MYSQL_DATABASE: restaurante
+    volumes:
+      - dbdata:/var/lib/mysql
+      - ./SQL/install_infinityfree.sql:/docker-entrypoint-initdb.d/01-install.sql:ro
+      - ./SQL/catalogo_infinityfree.sql:/docker-entrypoint-initdb.d/02-catalogo.sql:ro
+volumes:
+  uploads:
+  dbdata:

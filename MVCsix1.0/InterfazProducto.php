@@ -315,7 +315,7 @@ function guardarImagenProducto($campo, $imagenActual = null)
 
     $directorio = __DIR__ . '/files';
     if (!is_dir($directorio)) {
-        mkdir($directorio, 0777, true);
+        mkdir($directorio, 0755, true);
     }
 
     $nombreArchivo = uniqid('prod_', true) . '.' . $extension;
