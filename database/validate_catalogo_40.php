@@ -21,11 +21,13 @@ if (!$result) {
 
 $productos = mysqli_fetch_all($result, MYSQLI_ASSOC);
 $faltantes = array();
+$noSonFotos = array();
 $catalogoEncontrado = 0;
 foreach ($productos as $producto) {
     $imagen = trim((string) ($producto['img'] ?? ''));
     $normalizada = ltrim(str_replace('\\', '/', $imagen), '/');
-    if (strpos($normalizada, 'img/catalogo/') === 0) {
+    $esImagenCatalogo = strpos($normalizada, 'img/catalogo/') === 0;
+    if ($esImagenCatalogo && basename($normalizada) !== 'hamburguesa-clasica.jpg') {
         $catalogoEncontrado++;
     }
     $candidatas = array(
@@ -39,6 +41,14 @@ foreach ($productos as $producto) {
     foreach ($candidatas as $candidata) {
         if ($normalizada !== '' && strpos($normalizada, '..') === false && is_file($candidata)) {
             $encontrada = true;
+            if ($esImagenCatalogo) {
+                $detalleImagen = @getimagesize($candidata);
+                if (strtolower(pathinfo($normalizada, PATHINFO_EXTENSION)) !== 'jpg'
+                    || $detalleImagen === false
+                    || ($detalleImagen['mime'] ?? '') !== 'image/jpeg') {
+                    $noSonFotos[] = (string) $producto['nombre'] . ' => ' . $imagen;
+                }
+            }
             break;
         }
     }
@@ -51,10 +61,14 @@ foreach ($productos as $producto) {
 echo 'Productos en la base: ' . count($productos) . PHP_EOL;
 echo 'Productos del catalogo de 40: ' . $catalogoEncontrado . PHP_EOL;
 echo 'Productos con imagen faltante: ' . count($faltantes) . PHP_EOL;
+echo 'Productos con imagen que no es foto JPEG: ' . count($noSonFotos) . PHP_EOL;
 foreach ($faltantes as $faltante) {
     echo $faltante . PHP_EOL;
 }
+foreach ($noSonFotos as $productoSinFoto) {
+    echo $productoSinFoto . PHP_EOL;
+}
 
-if ($catalogoEncontrado !== 40 || !empty($faltantes)) {
+if ($catalogoEncontrado !== 40 || !empty($faltantes) || !empty($noSonFotos)) {
     exit(1);
 }
