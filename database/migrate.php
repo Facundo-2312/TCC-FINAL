@@ -38,6 +38,16 @@ if ($argument === '--status') {
     exit(0);
 }
 
+if ($argument === '--dry-run') {
+    foreach ($files as $file) {
+        $version = basename($file);
+        if (!isset($applied[$version])) {
+            echo '[pendiente] ' . $version . PHP_EOL;
+        }
+    }
+    exit(0);
+}
+
 function migrationStatements($sql)
 {
     $delimiter = ';';
@@ -68,11 +78,6 @@ function migrationStatements($sql)
 foreach ($files as $file) {
     $version = basename($file);
     if (isset($applied[$version])) {
-        continue;
-    }
-
-    if ($argument === '--dry-run') {
-        echo '[pendiente] ' . $version . PHP_EOL;
         continue;
     }
 
