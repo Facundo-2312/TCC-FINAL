@@ -2,7 +2,8 @@ FROM php:8.2-apache
 
 # mbstring, fileinfo, json y session ya vienen compilados en la imagen oficial; solo falta mysqli.
 RUN docker-php-ext-install mysqli \
-    && a2enmod rewrite headers \
+    && rm -f /etc/apache2/mods-enabled/mpm_*.load /etc/apache2/mods-enabled/mpm_*.conf \
+    && a2enmod mpm_prefork rewrite headers \
     && mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
 COPY docker/apache.conf /etc/apache2/conf-available/app.conf

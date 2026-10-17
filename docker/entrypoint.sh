@@ -1,6 +1,10 @@
 #!/bin/sh
 set -e
 
+# mod_php exige un unico MPM (prefork); evita "More than one MPM loaded".
+rm -f /etc/apache2/mods-enabled/mpm_event.* /etc/apache2/mods-enabled/mpm_worker.*
+a2enmod mpm_prefork >/dev/null 2>&1 || true
+
 # Railway inyecta PORT; en local se usa 8080 por defecto.
 PORT="${PORT:-8080}"
 sed -ri "s/Listen [0-9]+/Listen ${PORT}/" /etc/apache2/ports.conf
