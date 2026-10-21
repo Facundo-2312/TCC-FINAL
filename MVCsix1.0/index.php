@@ -16,6 +16,10 @@ function h($value)
 
 function resolverRutaImagen($ruta, $nombreProducto = '')
 {
+  $catalogo = App\Support\ProductImage::catalogPath($nombreProducto);
+  if ($catalogo !== null) {
+    return app_url($catalogo . '?v=' . filemtime(__DIR__ . '/../' . $catalogo));
+  }
   $ruta = trim((string) $ruta);
   if (preg_match('/^(https?:)?\\/\\//i', $ruta) || strpos($ruta, 'data:image/') === 0) {
     return $ruta;

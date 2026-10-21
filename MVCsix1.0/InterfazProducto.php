@@ -116,6 +116,10 @@ function imagenesProductoConContenidoIncorrecto()
 
 function resolverImagenProducto($nombreProducto, $rutaImagen)
 {
+    $catalogo = App\Support\ProductImage::catalogPath($nombreProducto);
+    if ($catalogo !== null) {
+        return app_url($catalogo . '?v=' . filemtime(__DIR__ . '/../' . $catalogo));
+    }
     $ruta = trim((string) $rutaImagen);
 
     if ($ruta !== '' && preg_match('/^(https?:)?\\/\\//i', $ruta)) {

@@ -11,6 +11,10 @@ function pc_h($value)
 
 function pc_imagen($producto)
 {
+    $catalogo = App\Support\ProductImage::catalogPath($producto['nombre'] ?? '');
+    if ($catalogo !== null) {
+        return $catalogo;
+    }
     $normalizada = ltrim(str_replace('\\', '/', trim((string) ($producto['img'] ?? ''))), '/');
     $base = basename($normalizada);
     $candidatas = array($normalizada, 'MVCsix1.0/' . $normalizada, 'MVCsix1.0/img/' . $base, 'MVCsix1.0/files/' . $base);
@@ -86,7 +90,8 @@ h1{margin:0 0 6px;font-size:clamp(1.6rem,3vw,2.2rem)}
         $etiqueta = !$activo ? 'Inactivo' : ($stock > 0 ? 'Stock: ' . $stock : 'Agotado');
     ?>
         <article class="product" data-estado="<?php echo $estado; ?>" data-nombre="<?php echo pc_h(mb_strtolower((string) $p['nombre'], 'UTF-8')); ?>">
-            <img src="<?php echo pc_h(app_url(pc_imagen($p))); ?>" alt="<?php echo pc_h($p['nombre']); ?>">
+            <?php $imagen = pc_imagen($p); $version = filemtime(__DIR__ . '/' . $imagen); ?>
+            <img src="<?php echo pc_h(app_url($imagen . '?v=' . $version)); ?>" alt="<?php echo pc_h($p['nombre']); ?>">
             <div class="info">
                 <h3><?php echo pc_h($p['nombre']); ?></h3>
                 <p><?php echo pc_h($p['descripcion'] ?? ''); ?></p>

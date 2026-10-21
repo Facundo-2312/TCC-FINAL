@@ -93,6 +93,17 @@ Pruebas aisladas: `C:\xampp\php\php.exe database\tests\cocina_test.php`.
 
 ## Notas de compatibilidad
 
+Las fotos conocidas del catalogo se resuelven en `src/Support/ProductImage.php`
+para cliente, consulta de cocina/mozo y administracion. Esto evita reutilizar
+fotos antiguas cuyo contenido no corresponde al producto. No requiere migracion.
+Las URLs incluyen la fecha de modificacion para invalidar la cache.
+Las cuatro fotos base son archivos locales versionados en Git, no imagenes
+aleatorias ni servicios externos. La prueba verifica sus huellas SHA-256 para
+detectar reemplazos accidentales; cambiar la ruta antigua en la BD no las sustituye.
+Prueba: `C:\xampp\php\php.exe database\tests\product_images_test.php`.
+Con la base local disponible, agregar `consulta`, `cliente` o `admin` verifica
+tambien las imagenes versionadas en el HTML de cada pantalla.
+
 - Todas las columnas nuevas son aditivas (con `DEFAULT`), no cambian el comportamiento
   de `SELECT *` usado en varias vistas (PHP accede por nombre de columna, no por índice
   posicional).
