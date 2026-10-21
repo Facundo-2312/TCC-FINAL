@@ -53,6 +53,7 @@ class PedidoController
     }
 
     public function listarCocina() { return $this->servicio->listarCocina(); }
+    public function cambiarEstadoCocina($idPedido, $anterior, $nuevo) { return $this->servicio->cambiarEstadoCocina($idPedido, $anterior, $nuevo); }
     public function listarRecientes($limite = 30) { return $this->servicio->listarRecientes($limite); }
     public function listarDelUsuario($usuario, $limite = 10) { return $this->servicio->listarDelUsuario($usuario, $limite); }
     public function ocultarDeCocina($idPedido) { return $this->servicio->ocultarDeCocina($idPedido); }

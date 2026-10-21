@@ -22,7 +22,7 @@ class PagoRepository
     {
         $stmt = mysqli_prepare(
             $this->connection,
-            'SELECT id_pedido, id_mesa, total, estado FROM pedidos WHERE id_pedido = ? LIMIT 1 FOR UPDATE'
+            'SELECT id_pedido, id_mesa, id_usuario, total, estado FROM pedidos WHERE id_pedido = ? LIMIT 1 FOR UPDATE'
         );
         mysqli_stmt_bind_param($stmt, 'i', $idPedido);
         mysqli_stmt_execute($stmt);
@@ -43,6 +43,21 @@ class PagoRepository
         mysqli_stmt_close($stmt);
 
         return $pago !== null;
+    }
+
+    public function solicitarCobro($idPedido, $metodoPago)
+    {
+        $stmt = mysqli_prepare($this->connection,
+            'INSERT INTO solicitudes_cobro (id_pedido, metodo_pago) VALUES (?, ?)
+             ON DUPLICATE KEY UPDATE metodo_pago = VALUES(metodo_pago)'
+        );
+        if (!$stmt) {
+            throw new \RuntimeException(mysqli_error($this->connection));
+        }
+        mysqli_stmt_bind_param($stmt, 'is', $idPedido, $metodoPago);
+        $ok = mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+        return $ok;
     }
 
     public function crearPago($idPedido, $metodoPago, $monto, $propina)

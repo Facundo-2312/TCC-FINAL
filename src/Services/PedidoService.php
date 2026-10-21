@@ -36,6 +36,16 @@ class PedidoService
         return $this->repositorio->listarConDetalle(null, $limite);
     }
 
+    public function cambiarEstadoCocina($idPedido, $estadoAnterior, $estadoNuevo)
+    {
+        $siguientes = array('Pendiente' => 'Preparando', 'Preparando' => 'Entregado', 'Entregado' => 'Pendiente');
+        if ((int) $idPedido <= 0 || !isset($siguientes[$estadoAnterior])
+            || ($estadoNuevo !== $siguientes[$estadoAnterior] && $estadoNuevo !== 'ArchivadoCocina')) {
+            return false;
+        }
+        return $this->repositorio->cambiarEstadoCocina((int) $idPedido, $estadoAnterior, $estadoNuevo);
+    }
+
     public function listarDelUsuario($usuario, $limite = 10)
     {
         return $this->repositorio->listarDelUsuario(trim((string) $usuario), $limite);

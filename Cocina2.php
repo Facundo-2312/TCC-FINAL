@@ -2,272 +2,227 @@
 require_once __DIR__ . '/app_bootstrap.php';
 
 app_require_login('Login.php', ['1', '3', '4']);
-
-// El mozo (rol 3) solo consulta lo que emite la cocina.
 $soloLectura = (string) ($_SESSION['Rol'] ?? '') === '3';
-if ($soloLectura && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    app_redirect('Cocina2.php');
-}
-
-$conexion = app_db_connect();
-if (!$conexion) {
-    App\Support\Db::fail('No se pudo conectar con la base de datos.', 'Cocina2.php: ' . mysqli_connect_error());
-}
 $pedidoController = new App\Controllers\PedidoController();
-
-$toastMessage = '';
-$toastKind = '';
-if (isset($_GET['msg']) && $_GET['msg'] === 'deleted') {
-    $toastMessage = 'Pedido eliminado';
-    $toastKind = 'success';
-}
-if (isset($_GET['msg']) && $_GET['msg'] === 'hidden') {
-    $toastMessage = 'Pedido retirado de cocina';
-    $toastKind = 'success';
-}
 
 function h($value)
 {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 }
 
-function estadoClass($estado)
-{
-    $e = strtolower((string) $estado);
-    if ($e === 'entregado') return 'entregado';
-    if ($e === 'preparando') return 'preparando';
-    if ($e === 'cancelado') return 'cancelado';
-    return 'pendiente';
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion_estado'])) {
-    csrf_verify_or_die('Cocina2.php');
-
-    $idPedido = (int) ($_POST['id_pedido'] ?? 0);
-    $nuevoEstado = trim($_POST['estado'] ?? '');
-    $pedidoController->cambiarEstado($idPedido, $nuevoEstado);
-
-    app_redirect('Cocina2.php');
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion_eliminar'])) {
-    csrf_verify_or_die('Cocina2.php');
-
-    $idPedidoEliminar = (int) ($_POST['id_pedido'] ?? 0);
-
-    if ($idPedidoEliminar > 0 && $pedidoController->ocultarDeCocina($idPedidoEliminar)) {
-        app_redirect('Cocina2.php?msg=hidden');
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $esJson = strpos($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json') !== false;
+    $mensaje = '';
+    $codigo = 200;
+    if ($soloLectura) {
+        $codigo = 403;
+        $mensaje = 'Tu rol solo permite consultar los pedidos.';
+    } elseif (!App\Support\Csrf::verify($_POST['_csrf'] ?? '')) {
+        App\Support\SecurityLog::log('csrf_rechazado', array('uri' => $_SERVER['REQUEST_URI'] ?? ''));
+        $codigo = 403;
+        $mensaje = 'El formulario expiro. Recarga la pagina antes de intentar nuevamente.';
+    } else {
+        try {
+            $ok = $pedidoController->cambiarEstadoCocina(
+                (int) ($_POST['id_pedido'] ?? 0),
+                (string) ($_POST['estado_anterior'] ?? ''),
+                (string) ($_POST['estado'] ?? '')
+            );
+            $codigo = $ok ? 200 : 409;
+            $mensaje = $ok ? 'Pedido actualizado correctamente.' : 'El pedido cambio en otra pantalla o la accion no es valida. Revisa su estado actual.';
+        } catch (Throwable $exception) {
+            App\Support\ErrorHandler::log($exception);
+            $codigo = 500;
+            $mensaje = 'No se pudo actualizar el pedido. Intenta nuevamente.';
+        }
     }
-
+    if ($esJson) {
+        http_response_code($codigo);
+        header('Content-Type: application/json; charset=utf-8');
+        header('Cache-Control: no-store');
+        echo json_encode(array('ok' => $codigo === 200, 'message' => $mensaje), JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    app_set_flash($codigo === 200 ? 'success' : 'error', $mensaje);
     app_redirect('Cocina2.php');
 }
 
 $vistaCocina = $pedidoController->listarCocina();
-$pedidosConDetalle = $vistaCocina['pedidos'];
-$pendientes = $vistaCocina['resumen']['Pendiente'];
-$preparando = $vistaCocina['resumen']['Preparando'];
-$entregados = $vistaCocina['resumen']['Entregado'];
-
+$resumen = $vistaCocina['resumen'];
+if (isset($_GET['actualizar'])) {
+    $tarjetas = array();
+    foreach ($vistaCocina['pedidos'] as $pedido) {
+        ob_start();
+        require __DIR__ . '/src/Views/cocina_pedido.php';
+        $tarjetas[] = array('id_pedido' => (int) $pedido['id_pedido'], 'estado' => $pedido['estado'], 'html' => ob_get_clean());
+    }
+    header('Content-Type: application/json; charset=utf-8');
+    header('Cache-Control: no-store');
+    echo json_encode(array('resumen' => $resumen, 'tarjetas' => $tarjetas), JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+    exit;
+}
+$flash = app_get_flash();
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cocina</title>
-<?php if ($soloLectura) { ?><meta http-equiv="refresh" content="15"><?php } ?>
-<script src="<?php echo htmlspecialchars(app_url('no-popups.js'), ENT_QUOTES, 'UTF-8'); ?>"></script>
+<title>Panel de Cocina</title>
+<script src="<?php echo h(app_url('no-popups.js')); ?>"></script>
 <style>
-:root{--bg:#171717;--panel:#242424;--panel-soft:#2c2c2c;--accent:#ff0055;--text:#f4f4f4;--muted:#bdbdbd;--line:rgba(255,255,255,.08)}
+:root{--bg:#0d0f14;--panel:#161922;--soft:#1d212c;--accent:#ff2d6f;--text:#f3f4f8;--muted:#a9adba;--line:rgba(255,255,255,.1)}
 *{box-sizing:border-box}
-body{margin:0;padding:20px;background:radial-gradient(circle at top left, rgba(255,0,85,.15), transparent 28%),var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
-.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;text-decoration:none;font-weight:700;border:0;cursor:pointer}
-.back{background:#3a3a3a;color:#fff}.salir{background:var(--accent);color:#fff}
-h1{text-align:center;color:var(--accent);margin:14px 0 20px;font-size:clamp(1.8rem,3vw,2.6rem)}
-.summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:16px}
-.card{background:linear-gradient(180deg,var(--panel),var(--panel-soft));border:1px solid var(--line);border-radius:14px;padding:14px}
-.label{color:var(--muted);font-size:.9rem}.value{font-size:1.7rem;font-weight:800;margin-top:6px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,280px));gap:14px;justify-content:start;align-content:start}
-.order{width:280px;max-width:280px;background:linear-gradient(180deg,#f9f9fb,#eeeeef);color:#1e1e1e;border-radius:14px;padding:12px;border:1px solid #e8e8ea;box-shadow:0 8px 18px rgba(0,0,0,.14);aspect-ratio:1/1;display:flex;flex-direction:column;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}
-.order:hover{transform:translateY(-2px);box-shadow:0 12px 22px rgba(0,0,0,.2)}
-.order.readonly{cursor:default}.order.readonly:hover{transform:none;box-shadow:0 8px 18px rgba(0,0,0,.14)}
-.order-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
-.order-title{margin:0;font-size:1.15rem}
-.meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 10px;font-size:.93rem}
-.meta strong{color:#141414}
-.badge{display:inline-block;padding:5px 10px;border-radius:999px;color:#fff;font-size:.82rem;font-weight:700}
-.badge.entregado{background:#1f9d55}.badge.preparando{background:#2563eb}.badge.cancelado{background:#dc2626}.badge.pendiente{background:#f59e0b}
-ul{padding-left:18px;margin:8px 0 0;flex:1;overflow:auto}
-.touch-hint{margin-top:8px;padding-top:8px;border-top:1px solid rgba(0,0,0,.08);font-size:.8rem;color:#525252}
-.order-actions{display:flex;justify-content:flex-end;margin-top:8px}
-.delete-btn{border:0;border-radius:8px;padding:7px 10px;background:#dc2626;color:#fff;font-size:.8rem;font-weight:700;cursor:pointer}
-.delete-btn:hover{filter:brightness(1.07)}
-.mini-toast{position:fixed;right:20px;bottom:20px;background:#111;color:#fff;border:1px solid rgba(255,255,255,.2);padding:10px 14px;border-radius:10px;font-size:.9rem;font-weight:700;opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .25s ease,transform .25s ease;z-index:9999;box-shadow:0 10px 20px rgba(0,0,0,.35)}
-.mini-toast.success{background:#14532d;border-color:#1f7a43}
-.mini-toast.show{opacity:1;transform:translateY(0)}
-.empty{color:var(--muted)}
-@media (max-width:900px){.summary{grid-template-columns:1fr}.grid{grid-template-columns:1fr;justify-items:start}.order{width:min(92vw,320px);max-width:min(92vw,320px)}.meta{grid-template-columns:1fr}}
+body{margin:0;padding:24px;background:radial-gradient(ellipse at top left,rgba(255,45,111,.13),transparent 45%),var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-serif}
+main{max-width:1540px;margin:auto}
+.top,.order-head,.column-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.btn{display:inline-flex;padding:10px 16px;border-radius:10px;text-decoration:none;font-weight:700;color:var(--text);background:var(--soft);border:1px solid var(--line)}
+.logout{background:var(--accent);border-color:var(--accent)}
+h1{margin:28px 0 8px;font-size:clamp(1.8rem,3vw,2.6rem)}
+.subtitle{color:var(--muted);line-height:1.5;margin:0 0 24px}
+.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:26px}
+.metric{padding:20px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(160deg,var(--panel),var(--soft))}
+.metric p{margin:0;color:var(--muted);font-size:.88rem}.metric strong{display:block;font-size:2rem;margin:8px 0}.metric small{color:var(--muted)}
+.board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;align-items:start}
+.column{min-width:0;background:rgba(22,25,34,.65);border:1px solid var(--line);border-radius:16px;padding:16px}
+.column-head{margin-bottom:6px}.column h2{font-size:1.05rem;margin:0}.column-head span{padding:4px 10px;border-radius:8px;background:var(--soft);font-weight:700}
+.column-note{font-size:.8rem;color:var(--muted);margin:0 0 18px}
+.order{border:1px solid var(--line);border-top:3px solid #f5a623;border-radius:12px;background:linear-gradient(160deg,var(--panel),var(--soft));padding:18px;margin-bottom:16px}
+.order.preparando{border-top-color:#619bff}.order.entregado{border-top-color:#2fbf71}
+h3{font-size:1rem;margin:0}.badge{font-size:.72rem;font-weight:700;border-radius:99px;padding:5px 9px;white-space:nowrap}
+.badge.pendiente{background:rgba(245,166,35,.15);color:#ffd187}.badge.preparando{background:rgba(59,130,246,.17);color:#a7c7ff}.badge.entregado{background:rgba(47,191,113,.15);color:#7ee2a8}
+.mesa{font-weight:700;margin:14px 0 6px}
+.order-meta,.order-note{color:var(--muted);font-size:.8rem;line-height:1.5}
+.waiting{color:#ffd187}.products{padding:0;list-style:none;margin:16px 0}.products li{padding:10px 0;border-top:1px solid var(--line);line-height:1.45}
+.quantity{color:#ff8eb1}.customization{margin:6px 0 0 22px;color:#ffd187;font-size:.85rem}
+.kitchen-notes{border:1px solid rgba(245,166,35,.25);border-radius:10px;padding:12px;background:rgba(245,166,35,.06);font-size:.85rem;overflow-wrap:anywhere}
+.kitchen-notes strong{color:#ffd187}.kitchen-notes p{margin:6px 0 0;white-space:normal}
+.kitchen-action{display:flex;gap:10px;flex-wrap:wrap}
+button{font:inherit;font-weight:700;cursor:pointer;border:1px solid var(--line);border-radius:9px;padding:11px 12px;width:100%}
+.action-btn{background:var(--accent);color:white}.action-btn.secondary,.archive-btn{background:transparent;color:var(--muted)}.archive-btn{font-size:.8rem}
+button:hover{filter:brightness(1.15)}button:disabled{opacity:.5;cursor:wait}
+button:focus-visible,a:focus-visible{outline:2px solid #ff8eb1;outline-offset:3px}
+.empty{color:var(--muted);padding:24px 12px;text-align:center;border:1px dashed var(--line);border-radius:10px;font-size:.85rem}
+.flash{padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--soft)}
+#kitchen-status{min-height:22px;color:var(--muted);font-size:.85rem}#kitchen-message{color:#ffd187;line-height:1.5}
+@media(max-width:1100px){.summary{grid-template-columns:repeat(2,minmax(0,1fr))}.board{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){body{padding:16px}.board{grid-template-columns:1fr}.metric{padding:16px}.metric strong{font-size:1.6rem}}
+@media(max-width:380px){.summary{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-
-<div class="top">
-    <a class="btn back" href="<?php echo htmlspecialchars(app_url('inicio_rol.php'), ENT_QUOTES, 'UTF-8'); ?>">← Volver</a>
-    <a class="btn salir" href="<?php echo htmlspecialchars(app_url('Salir.php'), ENT_QUOTES, 'UTF-8'); ?>">Salir</a>
-</div>
-
+<main>
+<nav class="top" aria-label="Navegacion"><a class="btn" href="<?php echo h(app_url('inicio_rol.php')); ?>">← Volver</a><a class="btn logout" href="<?php echo h(app_url('Salir.php')); ?>">Salir</a></nav>
 <h1>Panel de Cocina</h1>
-
+<p class="subtitle">Preparacion y entrega de pedidos · <?php echo date('d/m/Y'); ?> · Actualizacion automatica cada 5 segundos<?php echo $soloLectura ? ' · Modo solo lectura' : ''; ?></p>
+<?php if ($flash) { ?><p class="flash" role="status"><?php echo h($flash['message']); ?></p><?php } ?>
 <div class="summary">
-    <div class="card"><div class="label">Pendientes</div><div class="value"><?php echo $pendientes; ?></div></div>
-    <div class="card"><div class="label">Preparando</div><div class="value"><?php echo $preparando; ?></div></div>
-    <div class="card"><div class="label">Entregados</div><div class="value"><?php echo $entregados; ?></div></div>
+    <div class="metric"><p>En cocina</p><strong id="kitchen-active"><?php echo $resumen['Pendiente'] + $resumen['Preparando']; ?></strong><small>Pendientes y en preparacion</small></div>
+    <div class="metric"><p>Pendientes</p><strong id="kitchen-Pendiente"><?php echo $resumen['Pendiente']; ?></strong><small>Por comenzar</small></div>
+    <div class="metric"><p>Preparando</p><strong id="kitchen-Preparando"><?php echo $resumen['Preparando']; ?></strong><small>En elaboracion</small></div>
+    <div class="metric"><p>Entregados</p><strong id="kitchen-Entregado"><?php echo $resumen['Entregado']; ?></strong><small>Visibles hasta retirarlos del panel</small></div>
 </div>
-
-<div class="grid">
-<?php if (!empty($pedidosConDetalle)) { ?>
-    <?php foreach ($pedidosConDetalle as $pedido) { ?>
-        <form method="post" class="order<?php echo $soloLectura ? ' readonly' : ' js-touch-form'; ?>" data-order-id="<?php echo (int) $pedido['id_pedido']; ?>" data-current="<?php echo h($pedido['estado']); ?>"<?php if (!$soloLectura) { ?> tabindex="0" role="button" aria-label="Cambiar estado del pedido <?php echo (int) $pedido['id_pedido']; ?>"<?php } ?>>
-            <?php echo csrf_field(); ?>
-            <input type="hidden" name="id_pedido" value="<?php echo (int) $pedido['id_pedido']; ?>">
-            <input type="hidden" name="accion_estado" value="1">
-            <input type="hidden" name="estado" class="js-next-state" value="<?php echo h($pedido['estado']); ?>">
-
-            <div class="order-head">
-                <h3 class="order-title">Pedido #<?php echo (int) $pedido['id_pedido']; ?></h3>
-                <span class="badge <?php echo h(estadoClass($pedido['estado'])); ?>"><?php echo h($pedido['estado']); ?></span>
-            </div>
-
-            <div class="meta">
-                <div><strong>Mesa:</strong> <?php echo (int) $pedido['id_mesa']; ?></div>
-                <div><strong>Total:</strong> $<?php echo number_format((float) $pedido['total'], 2, ',', '.'); ?></div>
-                <div style="grid-column:1 / -1"><strong>Fecha:</strong> <?php echo h($pedido['fecha']); ?></div>
-            </div>
-
-            <ul>
-                <?php if (!empty($pedido['productos'])) { ?>
-                    <?php foreach ($pedido['productos'] as $prod) { ?>
-                        <li><?php echo (int) $prod['cantidad']; ?> x <?php echo h($prod['nombre']); ?></li>
-                    <?php } ?>
-                <?php } else { ?>
-                    <li class="empty">Sin productos</li>
-                <?php } ?>
-            </ul>
-
-            <?php if (!$soloLectura) { ?>
-            <div class="order-actions">
-                <button type="button" class="delete-btn js-delete-btn" aria-label="Eliminar pedido">Eliminar</button>
-            </div>
-
-            <div class="touch-hint">Toca la tarjeta para cambiar estado</div>
-            <?php } else { ?>
-            <div class="touch-hint">Solo lectura · se actualiza automáticamente</div>
-            <?php } ?>
-        </form>
-
-        <?php if (!$soloLectura) { ?>
-        <form method="post" class="js-delete-form" style="display:none">
-            <?php echo csrf_field(); ?>
-            <input type="hidden" name="id_pedido" value="<?php echo (int) $pedido['id_pedido']; ?>">
-            <input type="hidden" name="accion_eliminar" value="1">
-        </form>
-        <?php } ?>
-    <?php } ?>
-<?php } else { ?>
-    <div class="card empty">No hay pedidos para cocina.</div>
+<p id="kitchen-status" role="status">Conectado al panel de pedidos.</p>
+<p id="kitchen-message" role="status" aria-live="polite"></p>
+<div class="board" id="kitchen-board">
+<?php
+$columnas = array('Pendiente' => 'Pendientes', 'Preparando' => 'Preparando', 'Entregado' => 'Entregados');
+foreach ($columnas as $estadoColumna => $titulo) {
+?>
+<section class="column" aria-labelledby="title-<?php echo $estadoColumna; ?>">
+    <div class="column-head"><h2 id="title-<?php echo $estadoColumna; ?>"><?php echo $titulo; ?></h2><span id="count-<?php echo $estadoColumna; ?>"><?php echo $resumen[$estadoColumna]; ?></span></div>
+    <p class="column-note">Pedidos mas antiguos primero</p>
+    <div id="orders-<?php echo $estadoColumna; ?>">
+    <?php foreach ($vistaCocina['pedidos'] as $pedido) {
+        if ($pedido['estado'] === $estadoColumna) require __DIR__ . '/src/Views/cocina_pedido.php';
+    } ?>
+    <p class="empty" id="empty-<?php echo $estadoColumna; ?>"<?php echo $resumen[$estadoColumna] ? ' hidden' : ''; ?>>No hay pedidos en este estado.</p>
+    </div>
+</section>
 <?php } ?>
 </div>
-
-<div id="miniToast" class="mini-toast" data-init-message="<?php echo h($toastMessage); ?>" data-init-kind="<?php echo h($toastKind); ?>">Pedido entregado</div>
-
+</main>
 <script>
-(function () {
-    var nextByState = {
-        'Pendiente': 'Preparando',
-        'Preparando': 'Entregado',
-        'Entregado': 'Pendiente'
-    };
-
-    var toastEl = document.getElementById('miniToast');
-    var toastTimer = null;
-
-    function showToast(text, kind) {
-        if (!toastEl) return;
-        toastEl.textContent = text;
-        toastEl.classList.remove('success');
-        if (kind === 'success') {
-            toastEl.classList.add('success');
-        }
-        toastEl.classList.add('show');
-        if (toastTimer) clearTimeout(toastTimer);
-        toastTimer = setTimeout(function () {
-            toastEl.classList.remove('show');
-        }, 1300);
+const board = document.getElementById('kitchen-board');
+const statusEl = document.getElementById('kitchen-status');
+const messageEl = document.getElementById('kitchen-message');
+const estados = ['Pendiente', 'Preparando', 'Entregado'];
+const htmlAnterior = new Map();
+let actualizando = false;
+let enviando = false;
+async function actualizarCocina() {
+    if (actualizando || enviando || document.hidden) return;
+    actualizando = true;
+    try {
+        const response = await fetch(<?php echo json_encode(app_url('Cocina2.php?actualizar=1')); ?>, {cache: 'no-store', credentials: 'same-origin'});
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        const data = await response.json();
+        if (!Array.isArray(data.tarjetas) || !data.resumen) throw new Error('Respuesta invalida');
+        // A response started before a click must not replace its form while the POST is pending.
+        if (enviando) return;
+        const ids = new Set(data.tarjetas.map(tarjeta => String(tarjeta.id_pedido)));
+        board.querySelectorAll('[data-order-id]').forEach(card => {
+            if (!ids.has(card.dataset.orderId)) { htmlAnterior.delete(card.dataset.orderId); card.remove(); }
+        });
+        data.tarjetas.forEach(tarjeta => {
+            if (!estados.includes(tarjeta.estado)) throw new Error('Estado invalido');
+            const id = String(Number(tarjeta.id_pedido));
+            let card = board.querySelector('[data-order-id="' + id + '"]');
+            const column = document.getElementById('orders-' + tarjeta.estado);
+            const empty = document.getElementById('empty-' + tarjeta.estado);
+            if (!card || card.dataset.state !== tarjeta.estado || (!card.contains(document.activeElement) && htmlAnterior.get(id) !== tarjeta.html)) {
+                const template = document.createElement('template');
+                template.innerHTML = tarjeta.html.trim();
+                const nueva = template.content.firstElementChild;
+                if (!nueva || nueva.dataset.orderId !== id) throw new Error('Pedido invalido');
+                if (card) card.replaceWith(nueva);
+                card = nueva;
+                htmlAnterior.set(id, tarjeta.html);
+            }
+            if (card.parentElement !== column || !board.contains(document.activeElement)) column.insertBefore(card, empty);
+            else if (!card.parentElement) column.insertBefore(card, empty);
+        });
+        estados.forEach(estado => {
+            document.getElementById('kitchen-' + estado).textContent = data.resumen[estado];
+            document.getElementById('count-' + estado).textContent = data.resumen[estado];
+            document.getElementById('empty-' + estado).hidden = data.resumen[estado] > 0;
+        });
+        document.getElementById('kitchen-active').textContent = Number(data.resumen.Pendiente) + Number(data.resumen.Preparando);
+        statusEl.textContent = 'Actualizado a las ' + new Date().toLocaleTimeString('es-UY');
+    } catch (error) {
+        statusEl.textContent = 'No se pudo actualizar Cocina. Se reintentara automaticamente.';
+    } finally {
+        actualizando = false;
     }
-
-    var initMessage = toastEl ? (toastEl.getAttribute('data-init-message') || '') : '';
-    var initKind = toastEl ? (toastEl.getAttribute('data-init-kind') || '') : '';
-    if (initMessage) {
-        showToast(initMessage, initKind);
+}
+board.addEventListener('submit', async event => {
+    const form = event.target.closest('.kitchen-action');
+    if (!form) return;
+    event.preventDefault();
+    if (enviando) return;
+    const button = event.submitter;
+    if (!button) { messageEl.textContent = 'Selecciona una accion para el pedido.'; return; }
+    const datos = new FormData(form);
+    datos.set(button.name, button.value);
+    enviando = true;
+    board.querySelectorAll('button').forEach(item => { item.disabled = true; });
+    messageEl.textContent = 'Actualizando pedido...';
+    try {
+        const response = await fetch(form.action, {method: 'POST', body: datos, credentials: 'same-origin', headers: {'Accept': 'application/json'}});
+        const data = await response.json();
+        if (typeof data.message !== 'string') throw new Error('Respuesta invalida');
+        messageEl.textContent = data.message;
+        if (response.ok && data.ok && document.activeElement && form.contains(document.activeElement)) document.activeElement.blur();
+    } catch (error) {
+        messageEl.textContent = 'No se pudo confirmar el cambio. Revisa el estado actualizado antes de reintentar.';
+    } finally {
+        enviando = false;
+        board.querySelectorAll('button').forEach(item => { item.disabled = false; });
+        await actualizarCocina();
     }
-
-    document.querySelectorAll('.js-touch-form').forEach(function (form) {
-        function submitNextState() {
-            var orderId = form.getAttribute('data-order-id') || '0';
-            var storageKey = 'kitchen_clicks_' + orderId;
-            var clickCount = parseInt(sessionStorage.getItem(storageKey) || '0', 10) + 1;
-            sessionStorage.setItem(storageKey, String(clickCount));
-
-            var current = form.getAttribute('data-current') || 'Pendiente';
-            var next = nextByState[current] || 'Pendiente';
-            var input = form.querySelector('.js-next-state');
-            if (input) {
-                if (clickCount >= 4) {
-                    next = 'Entregado';
-                    sessionStorage.setItem(storageKey, '0');
-                    input.value = next;
-                    showToast('Pedido entregado');
-                    setTimeout(function () {
-                        form.submit();
-                    }, 500);
-                    return;
-                }
-
-                input.value = next;
-                form.submit();
-            }
-        }
-
-        form.addEventListener('click', function (event) {
-            if (event.target.closest('button,input,select,a,textarea,label')) return;
-            submitNextState();
-        });
-
-        form.addEventListener('keydown', function (event) {
-            if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                submitNextState();
-            }
-        });
-    });
-
-    document.querySelectorAll('.js-delete-btn').forEach(function (button) {
-        button.addEventListener('click', function (event) {
-            event.preventDefault();
-            event.stopPropagation();
-
-            var cardForm = button.closest('.js-touch-form');
-            if (!cardForm) return;
-
-            var deleteForm = cardForm.nextElementSibling;
-            if (deleteForm && deleteForm.classList.contains('js-delete-form')) {
-                deleteForm.submit();
-            }
-        });
-    });
-})();
+});
+document.addEventListener('visibilitychange', () => { if (!document.hidden) actualizarCocina(); });
+setInterval(actualizarCocina, 5000);
 </script>
-
 </body>
 </html>

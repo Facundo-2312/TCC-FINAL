@@ -157,6 +157,20 @@ $flash = app_get_flash();
 $mensaje = (string) ($flash['message'] ?? '');
 $tipoMensaje = (string) ($flash['type'] ?? '');
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['solicitar_cobro'])) {
+    $cuentaUrl = app_url('cliente.php') . '#cuenta';
+    csrf_verify_or_die($cuentaUrl);
+    $resultadoCobro = (new App\Services\PagoService())->solicitarCobro(
+        (int) ($_POST['id_pedido'] ?? 0),
+        $idUsuarioCliente,
+        (string) ($_POST['metodo_pago'] ?? '')
+    );
+    app_set_flash($resultadoCobro['ok'] ? 'success' : 'error', $resultadoCobro['ok']
+        ? 'Solicitud enviada a Caja. El pago se confirmara cuando se reciba el dinero.'
+        : $resultadoCobro['error']);
+    app_redirect($cuentaUrl);
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear_reserva'])) {
     csrf_verify_or_die('cliente.php');
     $idMesaReserva = (int) ($_POST['id_mesa_reserva'] ?? 0);
@@ -249,7 +263,7 @@ function cliente_estado_clase($estado)
 
 function cliente_demora($estado)
 {
-    if ($estado === 'Entregado') return 'Listo para retirar';
+    if (in_array($estado, array('Entregado', 'ArchivadoCocina'), true)) return 'Listo para retirar';
     if ($estado === 'Cancelado') return 'Pedido cancelado';
     if ($estado === 'Preparando') return 'Aproximadamente 10 minutos';
     return 'Aproximadamente 20 minutos';
@@ -502,6 +516,7 @@ section[id],form[id],div[id]{scroll-margin-top:80px}
     <nav class="site-nav" aria-label="Secciones">
       <a href="#menu">Carta y pedido</a>
       <a href="#seguimiento">Mis pedidos</a>
+      <a href="#cuenta">Mi cuenta / Pagar</a>
       <a href="#reservar">Reservar mesa</a>
       <a href="#mesa-estado">Mi mesa</a>
     </nav>
@@ -518,7 +533,12 @@ section[id],form[id],div[id]{scroll-margin-top:80px}
 </section>
 <?php if ($mensaje !== '') { ?><div class="alert <?php echo cliente_h($tipoMensaje); ?>"><?php echo cliente_h($mensaje); ?></div><?php } ?>
 <form class="panel reservation-panel" id="reservar" method="post"><h2>Reservar mesa</h2><p class="note">Elige una mesa, una fecha y un horario disponible de 90 minutos.</p><?php echo csrf_field(); ?><input type="hidden" name="crear_reserva" value="1"><input type="hidden" id="hora_inicio_reserva" name="hora_inicio_reserva"><div class="reservation-grid"><div><label for="id_mesa_reserva">Mesa</label><select id="id_mesa_reserva" name="id_mesa_reserva" required><option value="">Selecciona una mesa</option><?php foreach ($mesasReserva as $mesa) { ?><option value="<?php echo (int) $mesa['id_mesa']; ?>">Mesa <?php echo (int) $mesa['numero']; ?> · Capacidad <?php echo (int) ($mesa['capacidad'] ?: 4); ?><?php echo $mesa['estado'] === 'Reservada' ? ' · Consultar horarios' : ''; ?></option><?php } ?></select></div><div><label for="cantidad_personas">Personas</label><input id="cantidad_personas" name="cantidad_personas" type="number" min="1" max="50" required></div><div><label for="nombre_reserva">Nombre reservado</label><input id="nombre_reserva" name="nombre_reserva" maxlength="100" required value="<?php echo cliente_h($_SESSION['ClienteNombre'] ?? ''); ?>"></div><div><label for="fecha_reserva">Fecha</label><input id="fecha_reserva" type="date" required value="<?php echo date('Y-m-d'); ?>" min="<?php echo date('Y-m-d'); ?>"></div><div><label for="horario_reserva">Horarios disponibles</label><select id="horario_reserva" required disabled><option>Selecciona una mesa</option></select></div><div><label for="telefono_reserva">Telefono</label><input id="telefono_reserva" name="telefono_reserva" maxlength="20" inputmode="tel"></div><div><label for="notas_reserva">Notas</label><input id="notas_reserva" name="notas_reserva" maxlength="500"></div></div><button class="btn primary reservation-submit" type="submit">Reservar mesa</button></form>
-<section class="panel tracking-panel" id="seguimiento"><h2>Seguimiento de mis pedidos</h2><div id="order-tracking" class="tracking-list"><?php if (!$pedidosCliente) { ?><p class="empty">Todavia no tienes pedidos realizados.</p><?php } else { foreach ($pedidosCliente as $pedido) { ?><article class="tracking-item"><div><strong>Pedido #<?php echo (int) $pedido['id_pedido']; ?></strong><span class="tracking-status <?php echo cliente_h(cliente_estado_clase($pedido['estado'])); ?>"><?php echo cliente_h($pedido['estado']); ?></span></div><p><?php echo cliente_h(cliente_demora($pedido['estado'])); ?> · <?php echo cliente_h($pedido['fecha']); ?></p><p><?php echo count($pedido['productos']); ?> producto(s) · Total $<?php echo number_format((float) $pedido['total'], 2, ',', '.'); ?></p></article><?php } } ?></div></section>
+<section class="panel tracking-panel" id="seguimiento"><h2>Seguimiento de mis pedidos</h2><div id="order-tracking" class="tracking-list"><?php if (!$pedidosCliente) { ?><p class="empty">Todavia no tienes pedidos realizados.</p><?php } else { foreach ($pedidosCliente as $pedido) { ?><article class="tracking-item"><div><strong>Pedido #<?php echo (int) $pedido['id_pedido']; ?></strong><span class="tracking-status <?php echo cliente_h(cliente_estado_clase($pedido['estado'])); ?>"><?php echo cliente_h($pedido['estado']); ?></span></div><p><?php echo cliente_h(cliente_demora($pedido['estado'])); ?> · <?php echo cliente_h($pedido['fecha']); ?></p><p><?php echo count($pedido['productos']); ?> producto(s) · Total $<?php echo number_format((float) $pedido['total'], 2, ',', '.'); ?></p></article><?php } } ?></div><p class="note" id="tracking-refresh-status" role="status" aria-live="polite"></p></section>
+<section class="panel tracking-panel" id="cuenta">
+    <h2>Mi cuenta / Pagar pedido</h2>
+    <p class="note">Ultimos 10 pedidos. Solicitar el cobro no realiza un pago online. Caja confirmara la recepcion del dinero por el total del pedido, sin cargos adicionales.</p>
+    <div id="customer-account" class="tracking-list"><?php require __DIR__ . '/src/Views/cliente_cuenta.php'; ?></div>
+</section>
 <section class="panel table-live-panel" id="mesa-estado"><h2>Estado actual de la mesa</h2><label for="mesa_supervisada">Mesa a consultar</label><select id="mesa_supervisada"><option value="">Selecciona una mesa</option><?php foreach ($mesasTodas as $mesa) { ?><option value="<?php echo (int) $mesa['id_mesa']; ?>" data-numero="<?php echo (int) $mesa['numero']; ?>">Mesa <?php echo (int) $mesa['numero']; ?> · <?php echo cliente_h($mesa['estado']); ?></option><?php } ?></select><p class="note" id="mesa-order-message" role="status" aria-live="polite"></p><div id="table-live"><p class="empty">Selecciona una mesa para ver quién está allí y qué está pidiendo.</p></div></section>
 <div class="layout" id="menu">
 <section class="panel"><h2>Menu disponible</h2><div class="products">
@@ -536,6 +556,61 @@ const reservationStart = document.getElementById('hora_inicio_reserva');
 const orderTable = document.getElementById('mesa');
 const monitoredTable = document.getElementById('mesa_supervisada');
 const tableLive = document.getElementById('table-live');
+const orderTracking = document.getElementById('order-tracking');
+const trackingRefreshStatus = document.getElementById('tracking-refresh-status');
+const customerAccount = document.getElementById('customer-account');
+let customerAccountHtml = '';
+let customerOrdersRequestPending = false;
+function renderCustomerOrders(pedidos) {
+    if (!pedidos.length) {
+        orderTracking.innerHTML = '<p class="empty">Todavia no tienes pedidos realizados.</p>';
+        return;
+    }
+
+    orderTracking.innerHTML = pedidos.map(pedido => {
+        const estado = String(pedido.estado || '');
+        const estadoClase = estado.replace(/[^a-zA-Z]/g, '').toLowerCase();
+        const demora = estado === 'Entregado' || estado === 'ArchivadoCocina'
+            ? 'Listo para retirar'
+            : estado === 'Cancelado'
+                ? 'Pedido cancelado'
+                : estado === 'Preparando'
+                    ? 'Aproximadamente 10 minutos'
+                    : 'Aproximadamente 20 minutos';
+        const total = Number(pedido.total || 0).toLocaleString('es-UY', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        const productos = Array.isArray(pedido.productos) ? pedido.productos.length : 0;
+
+        return '<article class="tracking-item"><div><strong>Pedido #' + Number(pedido.id_pedido) +
+            '</strong><span class="tracking-status ' + estadoClase + '">' + escapeHtml(estado) +
+            '</span></div><p>' + demora + ' · ' + escapeHtml(pedido.fecha || '') +
+            '</p><p>' + productos + ' producto(s) · Total $' + total + '</p></article>';
+    }).join('');
+}
+async function loadCustomerOrders() {
+    if (customerOrdersRequestPending || document.visibilityState === 'hidden') return;
+    customerOrdersRequestPending = true;
+    try {
+        const response = await fetch('<?php echo cliente_h(app_url('pedidos_cliente_estado.php')); ?>', {
+            credentials: 'same-origin',
+            cache: 'no-store',
+            headers: {'Accept': 'application/json'}
+        });
+        if (!response.ok) throw new Error('Respuesta HTTP ' + response.status);
+        const data = await response.json();
+        if (!data.ok || !Array.isArray(data.pedidos)) throw new Error('Respuesta de seguimiento inválida');
+        renderCustomerOrders(data.pedidos);
+        if (typeof data.cuenta_html !== 'string') throw new Error('Respuesta de cuenta invalida');
+        if (data.cuenta_html !== customerAccountHtml && !customerAccount.contains(document.activeElement)) {
+            customerAccount.innerHTML = data.cuenta_html;
+            customerAccountHtml = data.cuenta_html;
+        }
+        trackingRefreshStatus.textContent = '';
+    } catch (error) {
+        trackingRefreshStatus.textContent = 'No se pudo actualizar el seguimiento. Se volverá a intentar automáticamente.';
+    } finally {
+        customerOrdersRequestPending = false;
+    }
+}
 function renderTableLive(data) {
     let html = '<p><strong>Mesa ' + data.mesa.numero + '</strong> · Estado: ' + data.mesa.estado + '</p>';
     if (data.reserva) {
@@ -663,6 +738,8 @@ document.getElementById('order-form').addEventListener('submit', event => { if (
 if (pedidoConfirmado) localStorage.removeItem(draftKey);
 else restoreDraft();
 renderCart(false);
+loadCustomerOrders();
+setInterval(loadCustomerOrders, 5000);
 setInterval(loadTableLive, 15000);
 </script>
 </body>

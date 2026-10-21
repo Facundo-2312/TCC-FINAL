@@ -37,14 +37,18 @@ class PedidoRepository
         $where = $condiciones ? ' WHERE ' . implode(' AND ', $condiciones) : '';
 
         $orden = $ordenCocina
-            ? "ORDER BY FIELD(p.estado,'Pendiente','Preparando','Entregado'), p.fecha ASC"
+            ? "ORDER BY FIELD(p.estado,'Pendiente','Preparando','Entregado'), p.fecha ASC, p.id_pedido ASC"
             : 'ORDER BY p.fecha DESC';
-        $sql = 'SELECT p.id_pedido, p.id_mesa, p.id_usuario, p.fecha, p.estado, p.total, dp.cantidad, dp.precio, dp.subtotal, dp.sin_ingredientes, dp.extra_ingredientes, pr.nombre AS producto_nombre
+        $sql = 'SELECT p.id_pedido, p.id_mesa, m.numero AS mesa_numero, p.id_usuario, p.fecha, p.estado, p.total, p.observaciones, dp.cantidad, dp.precio, dp.subtotal, dp.sin_ingredientes, dp.extra_ingredientes, pr.nombre AS producto_nombre,
+                       pa.id_pago, pa.metodo_pago AS pago_metodo, sc.metodo_pago AS cobro_metodo
                 FROM pedidos p
+                LEFT JOIN mesas m ON m.id_mesa = p.id_mesa
+                LEFT JOIN pagos pa ON pa.id_pedido = p.id_pedido
+                LEFT JOIN solicitudes_cobro sc ON sc.id_pedido = p.id_pedido
                 LEFT JOIN detalle_pedido dp ON dp.id_pedido = p.id_pedido
                 LEFT JOIN productos pr ON pr.id_producto = dp.id_producto' . $where . ' ' . $orden;
         $result = mysqli_query($this->connection, $sql);
-        if (!$result) return array();
+        if (!$result) throw new \RuntimeException(mysqli_error($this->connection));
 
         $pedidos = array();
         while ($row = mysqli_fetch_assoc($result)) {
@@ -52,7 +56,10 @@ class PedidoRepository
             if (!isset($pedidos[$idPedido])) {
                 $pedidos[$idPedido] = array(
                     'id_pedido' => $idPedido, 'id_mesa' => $row['id_mesa'], 'id_usuario' => $row['id_usuario'],
-                    'fecha' => $row['fecha'], 'estado' => $row['estado'], 'total' => $row['total'], 'productos' => array()
+                    'fecha' => $row['fecha'], 'estado' => $row['estado'], 'total' => $row['total'], 'productos' => array(),
+                    'pagado' => $row['id_pago'] !== null, 'pago_metodo' => $row['pago_metodo'],
+                    'cobro_metodo' => $row['cobro_metodo'],
+                    'mesa_numero' => $row['mesa_numero'], 'observaciones' => $row['observaciones']
                 );
             }
             if ($row['cantidad'] !== null) {
@@ -126,6 +133,23 @@ class PedidoRepository
         mysqli_stmt_close($stmt);
 
         return $ok;
+    }
+
+    public function cambiarEstadoCocina($idPedido, $estadoAnterior, $estadoNuevo)
+    {
+        $stmt = mysqli_prepare($this->connection,
+            'UPDATE pedidos SET estado = ? WHERE id_pedido = ? AND estado = ?'
+        );
+        if (!$stmt) {
+            throw new \RuntimeException(mysqli_error($this->connection));
+        }
+        mysqli_stmt_bind_param($stmt, 'sis', $estadoNuevo, $idPedido, $estadoAnterior);
+        if (!mysqli_stmt_execute($stmt)) {
+            throw new \RuntimeException(mysqli_stmt_error($stmt));
+        }
+        $cambiado = mysqli_stmt_affected_rows($stmt) === 1;
+        mysqli_stmt_close($stmt);
+        return $cambiado;
     }
 
     public function buscarIdUsuario($usuario)

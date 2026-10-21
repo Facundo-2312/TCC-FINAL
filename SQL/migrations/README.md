@@ -53,6 +53,43 @@ migraciones: usar directamente `SQL/install.sql`, que ya incluye todas estas mej
 | `008_optimizacion_pagos.sql` | Columna generada `pagos.fecha_dia` + índice, para que los reportes diarios no dependan de `DATE(fecha)=CURDATE()` (no usa índice). |
 | `009_intentos_login.sql` | Formaliza la tabla de rate-limiting de login (ya se creaba en runtime desde PHP). |
 | `010_pedido_mozo_personalizacion.sql` | Añade observaciones por pedido y personalizaciones de ingredientes por línea, preservando el flujo de mozo legacy en el esquema central. |
+| `014_solicitudes_cobro.sql` | Guarda solicitudes de cobro del cliente sin registrar pagos; Caja confirma el dinero recibido. Incluida en los esquemas de instalacion nuevos. |
+
+## Solicitar el cobro desde el cliente
+
+En **Mi cuenta / Pagar**, el cliente ve sus ultimos 10 pedidos con detalle y total.
+Puede solicitar o actualizar el medio de pago de un pedido propio entregado y no
+pagado (Efectivo, Tarjeta o Transferencia). Una solicitud no mueve dinero, no
+registra un pago y no libera la mesa. Caja ve la solicitud automaticamente cada
+5 segundos y confirma el dinero recibido mediante el circuito de facturacion
+existente. Caja muestra el monto a cobrar calculado automaticamente desde el
+total del pedido, no editable y sin propina adicional en este formulario.
+El servidor obtiene el importe de la base de datos, no del navegador.
+El panel no muestra propinas; conserva los registros historicos sin modificarlos.
+El resumen incluye cobrado hoy, total de pedidos entregados pendientes de cobro,
+solicitudes de clientes pendientes y cantidad de pagos de hoy. Las solicitudes
+aparecen primero y se muestra el historial de los ultimos 10 pagos de hoy.
+Resumen, tarjetas de pedidos e historial se actualizan cada 5 segundos sin
+recargar formularios; se preserva el medio elegido manualmente por el cajero.
+El cliente ve la confirmacion automaticamente.
+No se solicitan datos de tarjeta ni comprobantes bancarios en esta modalidad.
+
+Validacion aislada (usa tablas temporales, sin cambiar pedidos ni pagos reales):
+`C:\xampp\php\php.exe database\tests\solicitudes_cobro_test.php`.
+
+## Panel de Cocina
+
+El panel organiza los pedidos por estado, con los mas antiguos primero, numero
+de mesa, tiempo desde la creacion, notas y personalizaciones de ingredientes.
+Las tarjetas y contadores se actualizan cada 5 segundos sin recargar.
+El mozo conserva acceso solo de lectura; administrador y cocina pueden usar
+botones explicitos para preparar, entregar, volver a pendientes o retirar.
+Retirar archiva el pedido: no lo elimina ni confirma pagos.
+Las acciones verifican CSRF y el estado anterior para evitar cambios repetidos
+o sobrescribir una actualizacion de otra pantalla. No se cambia el estado al
+tocar accidentalmente una tarjeta.
+
+Pruebas aisladas: `C:\xampp\php\php.exe database\tests\cocina_test.php`.
 
 ## Notas de compatibilidad
 
