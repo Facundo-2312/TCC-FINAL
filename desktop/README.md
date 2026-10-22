@@ -14,6 +14,8 @@ Esta carpeta convierte la aplicación PHP en una experiencia de escritorio liger
 - `start-desktop.bat`: inicia la app desktop
 - `stop-desktop.bat`: detiene el servidor local
 - `start-hidden.vbs`: inicia la app sin mostrar consola
+- `start-xampp-hidden.vbs`: inicia Apache y MySQL al entrar a Windows
+- `start-xampp.ps1`: espera los puertos de XAMPP y comprueba la aplicacion
 - `create-shortcut.ps1`: crea un acceso directo en el escritorio
 
 ## Requisitos
@@ -21,6 +23,26 @@ Esta carpeta convierte la aplicación PHP en una experiencia de escritorio liger
 - XAMPP instalado en `C:\xampp`
 - Proyecto ubicado en `C:\xampp\htdocs\proj`
 - Base de datos disponible en MySQL/MariaDB
+
+## Inicio automático de XAMPP al iniciar sesión
+
+Para que el sitio habitual `http://localhost/proj/` quede disponible sin instalar
+servicios de Windows ni pedir permisos de administrador, copia
+`start-xampp-hidden.vbs` a la carpeta de Inicio del usuario actual. El script
+inicia MySQL y Apache de XAMPP ocultos, evita lanzar una segunda instancia si
+sus puertos ya están activos y verifica que la pantalla de inicio responda.
+Los resultados y errores quedan en `desktop/run/xampp-startup.log`.
+
+En PowerShell, ejecuta:
+
+```powershell
+$startup = [Environment]::GetFolderPath('Startup')
+Copy-Item 'C:\xampp\htdocs\proj\desktop\start-xampp-hidden.vbs' `
+    (Join-Path $startup 'Restaurante-UY XAMPP.vbs') -Force
+```
+
+El inicio ocurre al entrar a la cuenta de Windows. Para apagar el equipo,
+permite que Windows cierre Apache y MySQL normalmente antes de desconectarlo.
 
 ## Uso rápido
 
