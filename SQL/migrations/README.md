@@ -22,6 +22,47 @@ C:\xampp\php\php.exe database\migrate.php
 El archivo `SQL/install.sql` sigue siendo exclusivamente para una instalación
 nueva y limpia. Para actualizar una base de datos existente, usar este runner.
 
+### XAMPP: errores al volver a abrir el proyecto
+
+Los botones **Mesas**, **Centro de Reservas**, **Pedido del cliente** y
+**Reserva (opcion cliente)** necesitan el esquema actualizado. Una base antigua
+puede permitir iniciar sesion y abrir el menu, pero fallar en esos cuatro accesos:
+faltan `mesas_historial`, `reservas`, `solicitudes_cobro` o columnas como
+`mesas.capacidad`. El detalle aparece en `C:\xampp\apache\logs\error.log`.
+
+Antes de actualizar, respalda la base con `mysqldump`. Luego ejecuta el runner
+anterior. Comprueba con `--status` que todas las migraciones 000 a 014 figuren
+como aplicadas y que `--dry-run` no muestre pendientes. Esto actualiza el
+esquema de la base existente sin importar ni reemplazar datos con `SQL/BD.sql`.
+
+Las migraciones aplicadas quedan registradas en `schema_migrations` dentro de
+MySQL y los datos permanecen en el directorio `xampp\mysql\data` al apagar el
+equipo normalmente. Para apagar, detén Apache y MySQL desde XAMPP Control Panel,
+espera a que ambos indiquen que se detuvieron y luego apaga Windows. Al volver a
+encender, inicia MySQL y Apache desde XAMPP antes de abrir el proyecto. Si XAMPP
+los instala como servicios de Windows, también se pueden configurar para iniciar
+automáticamente.
+
+No reimportes `SQL/BD.sql`, `SQL/install.sql` ni un respaldo antiguo al arrancar.
+Restaurar una base antigua puede quitar tablas nuevas y datos posteriores al
+respaldo. Si necesitas restaurar, revisa y aplica de nuevo las migraciones.
+La aplicacion debe seguir usando la misma instancia, puerto y base de datos
+configurados en `.env`; cambiar a otra instancia puede hacer parecer que los
+cambios desaparecieron.
+
+Prueba de lectura de los cuatro accesos, cada uno en un proceso y sesion nuevos
+(requiere una cuenta administradora existente; no crea ni modifica datos):
+
+```powershell
+foreach ($pantalla in 'mesas', 'reservas', 'cliente', 'reserva-cliente') {
+    C:\xampp\php\php.exe database\tests\principal_modulos_test.php $pantalla
+    if ($LASTEXITCODE -ne 0) { throw "Fallo al abrir $pantalla" }
+}
+```
+
+Repite esta prueba despues de cerrar y volver a iniciar XAMPP para comprobar
+tambien la persistencia tras reiniciar MySQL.
+
 ### Método manual
 
 Ejecutar en orden (0 primero) contra una base de datos existente:
@@ -53,6 +94,9 @@ migraciones: usar directamente `SQL/install.sql`, que ya incluye todas estas mej
 | `008_optimizacion_pagos.sql` | Columna generada `pagos.fecha_dia` + índice, para que los reportes diarios no dependan de `DATE(fecha)=CURDATE()` (no usa índice). |
 | `009_intentos_login.sql` | Formaliza la tabla de rate-limiting de login (ya se creaba en runtime desde PHP). |
 | `010_pedido_mozo_personalizacion.sql` | Añade observaciones por pedido y personalizaciones de ingredientes por línea, preservando el flujo de mozo legacy en el esquema central. |
+| `011_sistema_reservas.sql` | Añade capacidad de mesas y reservas con horarios. |
+| `012_rol_cliente.sql` | Añade el rol de cliente si todavia no existe. |
+| `013_catalogo_fotos_reales.sql` | Actualiza referencias de imagen SVG del catalogo a JPG. |
 | `014_solicitudes_cobro.sql` | Guarda solicitudes de cobro del cliente sin registrar pagos; Caja confirma el dinero recibido. Incluida en los esquemas de instalacion nuevos. |
 
 ## Solicitar el cobro desde el cliente
