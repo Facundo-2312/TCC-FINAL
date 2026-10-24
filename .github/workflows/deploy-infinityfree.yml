@@ -1,0 +1,94 @@
+name: Deploy PHP to InfinityFree (FTPS)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: infinityfree-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: infinityfree
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check required FTPS configuration
+        env:
+          FTP_USER: ${{ secrets.INFINITY_FTP_USERNAME }}
+          FTP_PASS: ${{ secrets.INFINITY_FTP_PASSWORD }}
+          FTP_DIR: ${{ vars.INFINITY_FTP_REMOTE_DIR }}
+        run: |
+          set -euo pipefail
+          test -n "$FTP_USER" || { echo "::error::Missing INFINITY_FTP_USERNAME secret"; exit 1; }
+          test -n "$FTP_PASS" || { echo "::error::Missing INFINITY_FTP_PASSWORD secret"; exit 1; }
+          test -n "$FTP_DIR" || { echo "::error::Missing INFINITY_FTP_REMOTE_DIR environment variable"; exit 1; }
+          case "$FTP_DIR" in
+            */htdocs/|*/htdocs) ;;
+            *) echo "::error::Remote directory must end in /htdocs/"; exit 1 ;;
+          esac
+
+      - name: Validate PHP syntax
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' f; do php -l "$f" >/dev/null; done < <(find . -type f -name '*.php' -not -path './.git/*' -print0)
+
+      - name: Stage only application files
+        run: |
+          set -euo pipefail
+          mkdir -p deploy
+          # Root PHP, JavaScript and CSS entrypoints.
+          find . -maxdepth 1 -type f \( -name '*.php' -o -name '*.js' -o -name '*.css' -o -name '.htaccess' \) -exec cp -t deploy/ {} +
+          # Application assets and PHP source, excluding private/runtime content.
+          for dir in Bootstrap-4-4.6.0 DataTables-1.13.7 MVCsix1.0 datatables estilos img jQuery-3.7.0 src; do
+            test ! -d "$dir" || cp -a "$dir" deploy/
+          done
+          rm -rf deploy/MVCsix1.0/files
+          mkdir -p deploy/MVCsix1.0/files seed-images
+          cp MVCsix1.0/files/.htaccess deploy/MVCsix1.0/files/
+          find MVCsix1.0/files -maxdepth 1 -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' -o -iname '*.gif' \) -exec cp -t seed-images/ {} +
+          # No hidden files, secrets, SQL dumps, logs or development artifacts anywhere in staged tree.
+          find deploy -mindepth 1 -name '.*' ! -name '.htaccess' -exec rm -rf {} +
+          find deploy -type f \( -iname '*.sql' -o -iname '*.log' -o -iname '*.md' -o -iname '*.bak' -o -iname '*.env*' -o -iname '*.pem' -o -iname '*.key' \) -delete
+          test -f deploy/Login.php
+          test -f deploy/app_bootstrap.php
+          test -f deploy/index.php
+          if find deploy -type f \( -name '*.sql' -o -name '.env' \) | grep -q .; then
+            echo "::error::Unsafe file found in staging"; exit 1
+          fi
+          echo "Prepared $(find deploy -type f | wc -l) application files"
+
+      - name: Install FTPS client
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+
+      - name: Upload over verified FTPS without deleting remote files
+        env:
+          FTP_HOST: ${{ vars.INFINITY_FTP_HOST }}
+          FTP_USER: ${{ secrets.INFINITY_FTP_USERNAME }}
+          FTP_PASS: ${{ secrets.INFINITY_FTP_PASSWORD }}
+          FTP_DIR: ${{ vars.INFINITY_FTP_REMOTE_DIR }}
+        run: |
+          set -euo pipefail
+          export LFTP_PASSWORD="$FTP_PASS"
+          host="${FTP_HOST:-ftpupload.net}"
+          # Avoid printing connection strings or secrets in logs.
+          lftp -u "$FTP_USER","$LFTP_PASSWORD" "ftp://$host" <<EOF
+          set cmd:fail-exit yes
+          set ssl:verify-certificate yes
+          set ftp:ssl-allow yes
+          set ftp:ssl-force yes
+          set ftp:ssl-protect-data yes
+          set net:max-retries 2
+          set net:timeout 30
+          mirror --reverse --verbose=0 --parallel=2 --no-perms --exclude-glob '*.sql' --exclude-glob '.env*' deploy/ "$FTP_DIR"
+          mirror --reverse --only-missing --verbose=0 --parallel=2 --no-perms seed-images/ "${FTP_DIR%/}/MVCsix1.0/files/"
+          bye
+          EOF
+          unset LFTP_PASSWORD
