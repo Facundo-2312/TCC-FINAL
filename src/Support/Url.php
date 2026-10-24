@@ -54,6 +54,13 @@ class Url
             return $path;
         }
 
+        $fragment = '';
+        $fragmentAt = strpos($path, '#');
+        if ($fragmentAt !== false) {
+            $fragment = substr($path, $fragmentAt);
+            $path = substr($path, 0, $fragmentAt);
+        }
+
         $basePath = self::basePath();
         $url = ($basePath !== '' ? $basePath : '') . '/' . ltrim($path, '/');
         if (class_exists('App\\Support\\Auth') && session_status() === PHP_SESSION_ACTIVE) {
@@ -63,7 +70,7 @@ class Url
                 $url .= $separator . 'ctx=' . rawurlencode($context);
             }
         }
-        return $url;
+        return $url . $fragment;
     }
 
     public static function redirect($path)
@@ -72,3 +79,4 @@ class Url
         exit();
     }
 }
+

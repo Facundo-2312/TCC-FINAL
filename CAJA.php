@@ -14,7 +14,7 @@ function h($value)
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['facturar'])) {
-    csrf_verify_or_die('caja.php');
+    csrf_verify_or_die('CAJA.php');
 
     $idPedido = (int) ($_POST['id_pedido'] ?? 0);
     $metodo = trim($_POST['metodo_pago'] ?? '');
@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['facturar'])) {
         ? 'Pago confirmado correctamente.'
         : 'No se pudo confirmar el pago. Verifica que el pedido no este ya pagado e intenta nuevamente.');
 
-    app_redirect('caja.php');
+    app_redirect('CAJA.php');
     exit();
 }
 
@@ -288,3 +288,4 @@ setInterval(actualizarSolicitudesCobro, 5000);
 </script>
 </body>
 </html>
+

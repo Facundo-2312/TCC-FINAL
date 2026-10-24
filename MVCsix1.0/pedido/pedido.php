@@ -27,36 +27,8 @@ $Rol = $_SESSION['Rol'] ?? null;
 <body>
   
   <header>
-  <?php 
-
-if ($Rol== "Admin"){
-
-?>
-<a class="Atras" href="<?php echo htmlspecialchars(app_url((string) ($_SESSION['Rol'] ?? '') === '1' ? 'Principal.php' : 'inicio_rol.php'), ENT_QUOTES, 'UTF-8'); ?>">
-<i class="fas fa-arrow-circle-left" style="margin-left: 5px;"></i>
-</a> 
-<h1 class="titulo-pedido">Haga su pedido</h1> 
-
-<?php 
-
-}
-
-?>
-
-<?php 
-
-if ($Rol== "Mozo"){
-
-?>
- <h1 class="titulo-pedido titulo-pedido-mozo">Haga su pedido</h1> 
-
-<?php 
-
-}
-
-?>
-  
-  
+  <a class="Atras" href="<?php echo htmlspecialchars(app_url((string) $Rol === '1' ? 'Principal.php' : 'inicio_rol.php'), ENT_QUOTES, 'UTF-8'); ?>" aria-label="Volver al inicio">← Volver</a>
+  <h1 class="titulo-pedido">Haga su pedido</h1>
     <a class="salir" href="<?php echo htmlspecialchars(app_url('Salir.php'), ENT_QUOTES, 'UTF-8'); ?>"><b>Salir</b> <i class="fas fa-sign-out-alt" style="margin-left: 5px;"></i></a>
    
   </header>
@@ -103,7 +75,7 @@ if ($Rol== "Mozo"){
     const cedula = <?php echo json_encode($_SESSION["CI"] ?? null); ?>;
     const csrfToken = <?php echo json_encode(App\Support\Csrf::token()); ?>;
     const contextId = <?php echo json_encode(App\Support\Auth::contextId()); ?>;
-    console.log(cedula);
 
 </script>
 <script src="script.js"></script>
+

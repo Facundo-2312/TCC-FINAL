@@ -12,7 +12,7 @@ $config = array(
         'subtitulo' => 'Cobros, mesas y reservas del salón.',
         'icono' => 'fa-coins',
         'modulos' => array(
-            array('caja.php', 'Caja', 'Cobrar pedidos y registrar pagos', 'fa-coins'),
+            array('CAJA.php', 'Caja', 'Cobrar pedidos y registrar pagos', 'fa-coins'),
             array('mesas.php', 'Mesas', 'Estado del salón en tiempo real', 'fa-chair'),
             array('centro_reservas.php', 'Reservas', 'Reservas del día y resumen', 'fa-calendar-check')
         )
@@ -122,3 +122,4 @@ main{max-width:1100px;margin:0 auto;padding:34px 22px 60px}
 </main>
 </body>
 </html>
+
