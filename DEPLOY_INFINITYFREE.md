@@ -12,6 +12,7 @@ Estos archivos no borran ni crean bases de datos. No importes `SQL/install.sql`:
 ## 2. Subir los archivos
 
 Sube el contenido del proyecto al directorio `htdocs` del subdominio. Incluye `.htaccess`; protege `.env`, SQL, los scripts de preparacion y los logs.
+InfinityFree distingue mayusculas y minusculas en nombres de archivos: conserva exactamente nombres como `CAJA.php`.
 
 ## 3. Configurar la conexion
 
@@ -45,3 +46,7 @@ WHERE usuario = 'USUARIO_ADMIN_DE_PRUEBA';
 4. Para probar la experiencia del cliente, usa el acceso de cliente de la pagina de inicio y registra una segunda cuenta de prueba.
 
 No uses credenciales de produccion. Cuando finalice la evaluacion, elimina la base de pruebas desde el panel si ya no la necesitas.
+
+## 5. Diagnosticar errores HTTP 500
+
+En produccion la aplicacion oculta el detalle del error en pantalla. Si una solicitud falla, consulta `storage/logs/security.log` desde el Administrador de archivos y busca la entrada `event=error_php` mas reciente. Comparte solo esa linea para recibir ayuda; no publiques el archivo de registro, porque puede contener datos de configuracion del servidor. Si no aparece una entrada nueva, revisa el registro de errores PHP que ofrezca el panel del hosting.

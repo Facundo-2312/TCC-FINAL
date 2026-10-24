@@ -78,7 +78,7 @@ if ($res !== null) {
     if ($Rol == 1) {
         app_redirect("Principal.php"); // Admin
     } elseif ($Rol == 2) {
-        app_redirect("caja.php"); // Caja
+        app_redirect("CAJA.php"); // Caja
     } elseif ($Rol == 3) {
         app_redirect("inicio_rol.php"); // Mozo
     } elseif ($Rol == 4) {

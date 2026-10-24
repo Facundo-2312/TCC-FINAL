@@ -74,6 +74,9 @@ function buildImageCandidates(rawPath) {
   if (/^(https?:)?\/\//i.test(raw) || raw.indexOf('data:image/') === 0) {
     return [raw];
   }
+  if (raw.charAt(0) === '/') {
+    return [raw];
+  }
 
   const normalized = raw.replace(/\\/g, '/').replace(/^\/+/, '');
   const cleaned = normalized.replace(/^(\.\.\/)+/, '');
@@ -377,4 +380,3 @@ function enviar(){
   xhr.send(datosJSON);
 
 }
-

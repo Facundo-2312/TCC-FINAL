@@ -47,6 +47,12 @@ class ErrorHandler
     public static function handleException(\Throwable $e)
     {
         self::log($e);
+        SecurityLog::log('error_php', array(
+            'tipo' => get_class($e),
+            'mensaje' => $e->getMessage(),
+            'archivo' => $e->getFile(),
+            'linea' => $e->getLine()
+        ));
 
         if (!headers_sent()) {
             http_response_code(500);
