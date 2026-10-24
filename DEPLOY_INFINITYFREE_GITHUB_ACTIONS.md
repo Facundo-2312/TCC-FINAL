@@ -39,7 +39,7 @@ El `.htaccess` del repositorio bloquea archivos que comienzan con punto; comprob
 - El workflow `Deploy PHP to InfinityFree (FTPS)` se activa con **push a main** después de fusionar el PR; no se ejecuta automáticamente desde el PR.
 - También admite **Actions → Deploy PHP to InfinityFree (FTPS) → Run workflow** para publicación manual (seleccioná `main` una vez fusionado).
 - No usa `--delete` ni sincronización destructiva. Los archivos que se hayan eliminado de Git pueden quedar en el servidor: revisar y retirar manualmente los obsoletos.
-- Por seguridad **excluye `MVCsix1.0/files`**, que puede contener imágenes cargadas por usuarios. Para la primera publicación, copiá manualmente las imágenes iniciales necesarias desde esa carpeta; luego el workflow no las sobrescribe.
+- Conserva las imágenes existentes en `MVCsix1.0/files`. Copia únicamente las imágenes iniciales que faltan mediante `--only-missing` y actualiza el `.htaccess` que impide ejecutar scripts en esa carpeta. No sobrescribe ni elimina imágenes cargadas por usuarios.
 - El punto de entrada raíz `index.php` redirige a `Principal.php`.
 
 ## 5. Pruebas
