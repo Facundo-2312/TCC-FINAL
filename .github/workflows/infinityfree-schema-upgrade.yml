@@ -1,0 +1,48 @@
+name: Legacy InfinityFree schema upgrade
+on:
+  pull_request:
+    paths:
+      - SQL/upgrade_infinityfree_legacy.sql
+      - database/tests/infinityfree_legacy_fixture.sql
+      - .github/workflows/infinityfree-schema-upgrade.yml
+permissions:
+  contents: read
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      mariadb:
+        image: mariadb:11.4
+        env:
+          MARIADB_ROOT_PASSWORD: ci-only-throwaway
+          MARIADB_DATABASE: ci_test
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd="mariadb-admin ping -h 127.0.0.1 -pci-only-throwaway"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install database client
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq mariadb-client
+      - name: Verify additive upgrade and repeatability using synthetic data
+        env:
+          MYSQL_PWD: ci-only-throwaway
+        run: |
+          set -euo pipefail
+          db() { mariadb -h127.0.0.1 -uroot ci_test "$@"; }
+          db < database/tests/infinityfree_legacy_fixture.sql
+          snapshot() {
+            db -N -e "SELECT id_usuario,nombre,usuario,password,id_rol FROM usuarios; SELECT id_producto,nombre,precio,stock FROM productos; SELECT id_caja,fecha_apertura,monto_inicial,estado FROM caja; SELECT id_pedido,total,estado FROM pedidos; SELECT id_detalle,cantidad,precio,subtotal FROM detalle_pedido;"
+          }
+          snapshot > /tmp/upgrade-before.txt
+          db < SQL/upgrade_infinityfree_legacy.sql
+          snapshot > /tmp/upgrade-after.txt
+          diff -u /tmp/upgrade-before.txt /tmp/upgrade-after.txt
+          test "$(db -N -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='ci_test'")" = 15
+          test "$(db -N -e "SELECT COUNT(*) FROM roles WHERE id_rol=5 AND nombre='Cliente'")" = 1
+          db < SQL/upgrade_infinityfree_legacy.sql
+          snapshot > /tmp/upgrade-repeat.txt
+          diff -u /tmp/upgrade-before.txt /tmp/upgrade-repeat.txt
+          test "$(db -N -e "SELECT COUNT(*) FROM roles")" = 5
+          db -e "INSERT INTO reservas(id_mesa,nombre_cliente,cantidad_personas,hora_inicio,hora_fin,id_usuario) VALUES (1,'Synthetic',2,'2026-01-02 12:00:00','2026-01-02 13:00:00',1); INSERT INTO solicitudes_cobro(id_pedido,metodo_pago) VALUES (1,'Efectivo'); UPDATE pedidos SET estado='ArchivadoCocina',observaciones='Synthetic' WHERE id_pedido=1; UPDATE detalle_pedido SET sin_ingredientes='Synthetic' WHERE id_detalle=1;"
