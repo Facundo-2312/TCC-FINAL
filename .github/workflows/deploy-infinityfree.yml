@@ -82,13 +82,16 @@ jobs:
           lftp -u "$FTP_USER","$LFTP_PASSWORD" "ftp://$host" <<EOF
           set cmd:fail-exit yes
           set ssl:verify-certificate yes
+          # Use verified TLS 1.2 for compatibility with the hosting FTP server.
+          set ssl:priority "NORMAL:-VERS-ALL:+VERS-TLS1.2"
+          set net:connection-limit 1
           set ftp:ssl-allow yes
           set ftp:ssl-force yes
           set ftp:ssl-protect-data yes
-          set net:max-retries 2
-          set net:timeout 30
-          mirror --reverse --verbose=0 --parallel=2 --no-perms --exclude-glob '*.sql' --exclude-glob '.env*' deploy/ "$FTP_DIR"
-          mirror --reverse --only-missing --verbose=0 --parallel=2 --no-perms seed-images/ "${FTP_DIR%/}/MVCsix1.0/files/"
+          set net:max-retries 3
+          set net:timeout 45
+          mirror --reverse --verbose=0 --parallel=1 --no-perms --exclude-glob '*.sql' --exclude-glob '.env*' deploy/ "$FTP_DIR"
+          mirror --reverse --only-missing --verbose=0 --parallel=1 --no-perms seed-images/ "${FTP_DIR%/}/MVCsix1.0/files/"
           bye
           EOF
           unset LFTP_PASSWORD
