@@ -112,7 +112,7 @@ th{color:#ff6e99;font-size:.92rem}
 
 <div class="topbar">
     <a href="<?php echo htmlspecialchars(app_url('Principal.php'), ENT_QUOTES, 'UTF-8'); ?>" class="back"><i class="fas fa-arrow-left"></i> Volver</a>
-    <a href="<?php echo htmlspecialchars(app_url('crear.php'), ENT_QUOTES, 'UTF-8'); ?>" class="add-btn"><i class="fas fa-user-plus"></i> Agregar Funcionario</a>
+    <a href="<?php echo htmlspecialchars(app_url('Crear.php'), ENT_QUOTES, 'UTF-8'); ?>" class="add-btn"><i class="fas fa-user-plus"></i> Agregar Funcionario</a>
 </div>
 
 <h1 class="title">Gestión de Funcionarios</h1>
@@ -171,3 +171,4 @@ th{color:#ff6e99;font-size:.92rem}
 
 </body>
 </html>
+
