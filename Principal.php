@@ -72,7 +72,7 @@ $chatbotJsVersion = @filemtime(__DIR__ . '/chatbot.js') ?: time();
         </div>
 
         <div class="Links"> 
-            <a href="<?php echo htmlspecialchars(app_url('caja.php'), ENT_QUOTES, 'UTF-8'); ?>">
+            <a href="<?php echo htmlspecialchars(app_url('CAJA.php'), ENT_QUOTES, 'UTF-8'); ?>">
                 <i class="fas fa-coins" style="margin-right: 5px;"></i>Caja
             </a> 
         </div>
