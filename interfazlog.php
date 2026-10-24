@@ -8,8 +8,6 @@ use App\Support\SecurityLog;
 
 app_start_session();
 
-$authService = new App\Services\AuthService();
-
 if (isset($_POST['cliente_login'])) {
     csrf_verify_or_die('Login.php');
     $nombreCliente = trim((string) ($_POST['nombre_cliente'] ?? ''));
@@ -41,6 +39,8 @@ if (!isset($_POST['Usuario']) || !isset($_POST['Pass'])) {
 }
 
 csrf_verify_or_die('Login.php');
+
+$authService = new App\Services\AuthService();
 
 $Usuario = trim($_POST['Usuario']);
 $Pass = (string) $_POST['Pass'];
