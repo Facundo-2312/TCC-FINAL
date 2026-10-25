@@ -11,6 +11,19 @@ Estos archivos no borran ni crean bases de datos. No importes `SQL/install.sql`:
 
 ### Si ya importaste la base y los usuarios no coinciden con su rol
 
+Comprueba primero los datos reales, sin modificar las cuentas:
+
+```sql
+SELECT u.usuario, u.id_rol, r.nombre AS rol
+FROM usuarios u
+LEFT JOIN roles r ON r.id_rol = u.id_rol
+ORDER BY u.id_usuario;
+```
+
+Si los numeros y nombres ya coinciden, no ejecutes la reparacion ni vuelvas a
+importar la base. Un error HTTP 500 durante el login tambien puede deberse a la
+conexion, no a los roles.
+
 El sistema identifica los roles por numero (1 Administrador, 2 Caja, 3 Mozo, 4 Cocina, 5 Cliente). Las versiones anteriores de `install_infinityfree.sql` dejaban que MySQL numerara los roles y el hosting puede asignar otros numeros (por ejemplo 1, 11, 21...). En ese caso cada cuenta se trata con un rol equivocado o el login responde "Tu usuario no tiene un rol valido".
 
 Ejecuta una vez `SQL/reparar_roles_infinityfree.sql` en phpMyAdmin (pestana **SQL** o **Importar**). Renumera los roles segun su nombre, conserva el rol real de cada usuario y empleado y puede repetirse sin riesgo. La consulta final muestra cada usuario junto a su rol para comprobarlo.
@@ -39,6 +52,16 @@ No subas ni compartas el `.env` real. `APP_DB_STOCK_TRIGGERS=0` activa en PHP el
 
 Deja `APP_BASE_PATH=` vacio: la aplicacion detecta sola si esta en la raiz de `htdocs` o en una subcarpeta. Si lo completas (por ejemplo con `/proj` copiado de tu PC) y la carpeta no existe en el hosting, todos los enlaces apuntaran a una ruta inexistente.
 
+La configuracion se consulta con `App\Support\Env::get()`, que conserva los valores
+de `.env` aunque el hosting no permita modificarlos con `putenv()`. No reemplaces
+estas llamadas por `getenv()`: se perderian la conexion MySQL y el manejo de stock
+sin triggers. Para comprobar esta compatibilidad localmente:
+
+```powershell
+C:\xampp\php\php.exe database\tests\env_url_test.php
+C:\xampp\php\php.exe -d disable_functions=putenv database\tests\env_url_test.php
+```
+
 ## 4. Crear una cuenta administradora de pruebas
 
 1. Abre `https://TU_SUBDOMINIO/registro_cliente.php` y registra una cuenta con una contrasena unica para las pruebas.
@@ -58,3 +81,20 @@ No uses credenciales de produccion. Cuando finalice la evaluacion, elimina la ba
 ## 5. Diagnosticar errores HTTP 500
 
 En produccion la aplicacion oculta el detalle del error en pantalla. Si una solicitud falla, consulta `storage/logs/security.log` desde el Administrador de archivos y busca la entrada `event=error_php` mas reciente. Comparte solo esa linea para recibir ayuda; no publiques el archivo de registro, porque puede contener datos de configuracion del servidor. Si no aparece una entrada nueva, revisa el registro de errores PHP que ofrezca el panel del hosting.
+
+Si el error de MySQL dice `No such file or directory`, comprueba que la aplicacion
+este leyendo `APP_DB_HOST` desde `.env`, en vez de intentar una conexion local.
+Si dice `Access denied`, verifica la contrasena MySQL contra la del panel de la
+cuenta de hosting. No es la contrasena de un usuario del restaurante. No copies
+credenciales al codigo ni al repositorio, y conserva el `.env` del hosting al
+subir futuras actualizaciones.
+
+## 6. Bloqueo 403 del asistente
+
+InfinityFree bloquea las URLs que contienen `chat`; esto afecta a `chatbot.js` y
+`chatbot_api.php`, aunque los archivos existan y el login funcione. Es una
+restriccion del proveedor, no un error de roles o de MySQL. No renombres archivos
+para eludirla. Para habilitar el asistente, consulta con el proveedor una opcion
+permitida o utiliza un alojamiento que admita esta funcionalidad.
+
+Referencia: [explicacion del bloqueo en el foro de InfinityFree](https://forum.infinityfree.com/t/error-403-on-a-single-page/82186).

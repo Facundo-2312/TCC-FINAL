@@ -7,7 +7,7 @@ class SecurityLog
 {
     public static function path()
     {
-        $configured = getenv('APP_SECURITY_LOG_PATH');
+        $configured = Env::get('APP_SECURITY_LOG_PATH');
         return $configured !== false && $configured !== '' ? $configured : (__DIR__ . '/../../storage/logs/security.log');
     }
 

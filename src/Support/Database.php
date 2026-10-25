@@ -15,7 +15,7 @@ class Database
             'user' => self::env('APP_DB_USER', 'MYSQLUSER') ?: 'root',
             'password' => self::env('APP_DB_PASSWORD', 'MYSQLPASSWORD') ?: '',
             'database' => self::env('APP_DB_NAME', 'MYSQLDATABASE') ?: 'ProyectoMagnus',
-            'charset' => getenv('APP_DB_CHARSET') ?: 'utf8mb4',
+            'charset' => Env::get('APP_DB_CHARSET') ?: 'utf8mb4',
             'port' => (int) (self::env('APP_DB_PORT', 'MYSQLPORT') ?: 3306),
         );
 
@@ -45,7 +45,7 @@ class Database
 
     public static function timezoneName()
     {
-        $tz = getenv('APP_TIMEZONE') ?: 'America/Montevideo';
+        $tz = Env::get('APP_TIMEZONE') ?: 'America/Montevideo';
         return in_array($tz, \DateTimeZone::listIdentifiers(), true) ? $tz : 'America/Montevideo';
     }
 
@@ -56,9 +56,9 @@ class Database
 
     private static function env($primary, $fallback)
     {
-        $value = getenv($primary);
+        $value = Env::get($primary);
         if ($value === false || $value === '') {
-            $value = getenv($fallback);
+            $value = Env::get($fallback);
         }
 
         return $value === false ? '' : $value;

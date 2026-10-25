@@ -2,11 +2,17 @@
 
 namespace App\Support;
 
-// Loads KEY=VALUE pairs from a .env file into getenv()/$_ENV without overriding real OS env vars.
+// Loads .env without overriding real OS env vars, including hosts that disable putenv().
 // No external dependency (no Composer) so this stays usable in a plain XAMPP deployment.
 class Env
 {
     private static $loaded = false;
+
+    public static function get($key)
+    {
+        $value = getenv($key);
+        return $value !== false ? $value : ($_ENV[$key] ?? false);
+    }
 
     public static function load($path)
     {
@@ -36,12 +42,14 @@ class Env
             $key = trim($key);
             $value = trim(trim($value), "\"'");
 
-            if ($key === '' || getenv($key) !== false) {
+            if ($key === '' || self::get($key) !== false) {
                 continue;
             }
 
-            putenv($key . '=' . $value);
             $_ENV[$key] = $value;
+            if (function_exists('putenv')) {
+                putenv($key . '=' . $value);
+            }
         }
     }
 }

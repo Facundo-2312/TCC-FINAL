@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Repositories\PedidoRepository;
 use App\Repositories\ReservaRepository;
+use App\Support\Env;
 
 // Business rules for pedidos: valid states and transitions, reused by every entrypoint.
 class PedidoService
@@ -96,7 +97,7 @@ class PedidoService
 
     private function descontarStockSiCorresponde($idProducto, $cantidad)
     {
-        return getenv('APP_DB_STOCK_TRIGGERS') !== '0'
+        return Env::get('APP_DB_STOCK_TRIGGERS') !== '0'
             || $this->repositorio->descontarStockProducto($idProducto, $cantidad);
     }
 

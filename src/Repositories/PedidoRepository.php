@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Support\Database;
+use App\Support\Env;
 
 // Data access for pedidos/detalle_pedido. All queries use prepared statements.
 class PedidoRepository
@@ -361,7 +362,7 @@ class PedidoRepository
                 return true;
             }
 
-            if (getenv('APP_DB_STOCK_TRIGGERS') === '0') {
+            if (Env::get('APP_DB_STOCK_TRIGGERS') === '0') {
                 $this->reponerStockDePedido($idPedido);
             }
 

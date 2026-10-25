@@ -158,7 +158,7 @@ $chatbotJsVersion = @filemtime(__DIR__ . '/chatbot.js') ?: time();
 </section>
 
 <script>var chatbotApiUrl = <?php echo json_encode(app_url('chatbot_api.php')); ?>;</script>
-<script src="<?php echo htmlspecialchars(app_url('chatbot.js'), ENT_QUOTES, 'UTF-8'); ?>?v=<?php echo $chatbotJsVersion; ?>"></script>
+<script src="<?php echo htmlspecialchars(app_url('chatbot.js?v=' . $chatbotJsVersion), ENT_QUOTES, 'UTF-8'); ?>"></script>
 
 </body>
 </html>

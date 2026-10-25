@@ -28,7 +28,7 @@ class ErrorHandler
 
     public static function isProduction()
     {
-        $env = getenv('APP_ENV') ?: 'production';
+        $env = Env::get('APP_ENV') ?: 'production';
         return strtolower($env) !== 'development';
     }
 

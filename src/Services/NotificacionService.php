@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Repositories\ReservaRepository;
+use App\Support\Env;
 
 class NotificacionService
 {
@@ -16,15 +17,15 @@ class NotificacionService
         
         // Configurar desde .env
         $this->configEmail = array(
-            'habilitado' => getenv('NOTIF_EMAIL_ENABLED') === 'true',
-            'de' => getenv('NOTIF_EMAIL_FROM') ?: 'reservas@restaurante.com',
-            'asunto' => getenv('NOTIF_EMAIL_SUBJECT') ?: 'Confirmación de Reserva - Restaurant Magnus'
+            'habilitado' => Env::get('NOTIF_EMAIL_ENABLED') === 'true',
+            'de' => Env::get('NOTIF_EMAIL_FROM') ?: 'reservas@restaurante.com',
+            'asunto' => Env::get('NOTIF_EMAIL_SUBJECT') ?: 'Confirmación de Reserva - Restaurant Magnus'
         );
 
         $this->configSMS = array(
-            'habilitado' => getenv('NOTIF_SMS_ENABLED') === 'true',
-            'provider' => getenv('NOTIF_SMS_PROVIDER') ?: 'twilio',
-            'api_key' => getenv('NOTIF_SMS_API_KEY') ?: ''
+            'habilitado' => Env::get('NOTIF_SMS_ENABLED') === 'true',
+            'provider' => Env::get('NOTIF_SMS_PROVIDER') ?: 'twilio',
+            'api_key' => Env::get('NOTIF_SMS_API_KEY') ?: ''
         );
     }
 
