@@ -15,7 +15,7 @@ Esta carpeta convierte la aplicación PHP en una experiencia de escritorio liger
 - `stop-desktop.bat`: detiene el servidor local
 - `start-hidden.vbs`: inicia la app sin mostrar consola
 - `start-xampp-hidden.vbs`: inicia Apache y MySQL al entrar a Windows
-- `start-xampp.ps1`: espera los puertos de XAMPP y comprueba la aplicacion
+- `start-xampp.ps1`: espera MySQL, aplica migraciones pendientes y comprueba la aplicacion
 - `create-shortcut.ps1`: crea un acceso directo en el escritorio
 
 ## Requisitos
@@ -30,7 +30,9 @@ Para que el sitio habitual `http://localhost/proj/` quede disponible sin instala
 servicios de Windows ni pedir permisos de administrador, copia
 `start-xampp-hidden.vbs` a la carpeta de Inicio del usuario actual. El script
 inicia MySQL y Apache de XAMPP ocultos, evita lanzar una segunda instancia si
-sus puertos ya están activos y verifica que la pantalla de inicio responda.
+sus puertos ya están activos, ejecuta el runner versionado de migraciones y
+verifica que la pantalla de inicio responda. Si una migracion falla, el arranque
+registra el error y no anuncia que la aplicacion esta disponible.
 Los resultados y errores quedan en `desktop/run/xampp-startup.log`.
 
 En PowerShell, ejecuta:
@@ -49,6 +51,12 @@ permite que Windows cierre Apache y MySQL normalmente antes de desconectarlo.
 1. Haz doble clic en `start-desktop.bat` o `start-hidden.vbs`.
 2. Se abrirá la aplicación en una ventana separada.
 3. Para cerrar el servidor local, ejecuta `stop-desktop.bat`.
+
+Ambos arranques esperan a MySQL y ejecutan `database/migrate.php` antes de
+abrir la aplicacion. Las migraciones registradas no se repiten y no se importa
+ningun respaldo ni esquema de instalacion. El modo desktop registra la salida
+del actualizador en `desktop/run/database-migrations.log`. No restaura datos
+eliminados por una importacion antigua: conserva respaldos privados separados.
 
 ## Generar paquete instalable
 

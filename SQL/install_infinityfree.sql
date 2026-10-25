@@ -10,12 +10,13 @@ CREATE TABLE roles (
     UNIQUE KEY uq_roles_nombre (nombre)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO roles (nombre) VALUES
-('Administrador'),
-('Caja'),
-('Mozo'),
-('Cocina'),
-('Cliente');
+-- IDs explicitos: el codigo usa 1..5 y el hosting puede numerar AUTO_INCREMENT de otra forma.
+INSERT INTO roles (id_rol, nombre) VALUES
+(1, 'Administrador'),
+(2, 'Caja'),
+(3, 'Mozo'),
+(4, 'Cocina'),
+(5, 'Cliente');
 
 -- =========================
 -- USUARIOS (acceso al sistema). Sin cuentas demo: crear una cuenta segura despues de importar.

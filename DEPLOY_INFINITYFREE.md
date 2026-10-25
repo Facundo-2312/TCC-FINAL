@@ -9,6 +9,12 @@ En phpMyAdmin, selecciona la base de datos vacia creada en el panel y usa **Impo
 
 Estos archivos no borran ni crean bases de datos. No importes `SQL/install.sql`: es para una instalacion local limpia y contiene sentencias no compatibles con el hosting gratuito.
 
+### Si ya importaste la base y los usuarios no coinciden con su rol
+
+El sistema identifica los roles por numero (1 Administrador, 2 Caja, 3 Mozo, 4 Cocina, 5 Cliente). Las versiones anteriores de `install_infinityfree.sql` dejaban que MySQL numerara los roles y el hosting puede asignar otros numeros (por ejemplo 1, 11, 21...). En ese caso cada cuenta se trata con un rol equivocado o el login responde "Tu usuario no tiene un rol valido".
+
+Ejecuta una vez `SQL/reparar_roles_infinityfree.sql` en phpMyAdmin (pestana **SQL** o **Importar**). Renumera los roles segun su nombre, conserva el rol real de cada usuario y empleado y puede repetirse sin riesgo. La consulta final muestra cada usuario junto a su rol para comprobarlo.
+
 ## 2. Subir los archivos
 
 Sube el contenido del proyecto al directorio `htdocs` del subdominio. Incluye `.htaccess`; protege `.env`, SQL, los scripts de preparacion y los logs.
@@ -30,6 +36,8 @@ APP_DB_STOCK_TRIGGERS=0
 ```
 
 No subas ni compartas el `.env` real. `APP_DB_STOCK_TRIGGERS=0` activa en PHP el descuento y la reposicion de stock, porque InfinityFree gratuito no permite crear triggers.
+
+Deja `APP_BASE_PATH=` vacio: la aplicacion detecta sola si esta en la raiz de `htdocs` o en una subcarpeta. Si lo completas (por ejemplo con `/proj` copiado de tu PC) y la carpeta no existe en el hosting, todos los enlaces apuntaran a una ruta inexistente.
 
 ## 4. Crear una cuenta administradora de pruebas
 

@@ -6,6 +6,8 @@ $logFile = Join-Path $runDir 'xampp-startup.log'
 $mysqlExe = Join-Path $xamppRoot 'mysql\bin\mysqld.exe'
 $mysqlConfig = Join-Path $xamppRoot 'mysql\bin\my.ini'
 $apacheExe = Join-Path $xamppRoot 'apache\bin\httpd.exe'
+$phpExe = Join-Path $xamppRoot 'php\php.exe'
+$migrationScript = Join-Path (Split-Path -Parent $PSScriptRoot) 'database\migrate.php'
 
 if (-not (Test-Path $runDir)) {
     New-Item -ItemType Directory -Path $runDir | Out-Null
@@ -58,6 +60,17 @@ try {
     } else {
         Add-Content -LiteralPath $logFile -Value ("{0} MySQL ya estaba disponible." -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'))
     }
+
+    if (-not (Test-Path $phpExe) -or -not (Test-Path $migrationScript)) {
+        throw 'No se encontro PHP o el actualizador de la base de datos.'
+    }
+    & $phpExe $migrationScript 2>&1 | ForEach-Object {
+        Add-Content -LiteralPath $logFile -Value ([string]$_)
+    }
+    if ($LASTEXITCODE -ne 0) {
+        throw "No se pudo actualizar la base de datos. Revisa $logFile."
+    }
+    Add-Content -LiteralPath $logFile -Value ("{0} Migraciones de base de datos verificadas." -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'))
 
     if (-not (Test-LocalPort -Port 80)) {
         if (-not (Test-Path $apacheExe)) {

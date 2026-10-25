@@ -20,8 +20,9 @@ $pantallas = array(
     'reserva-cliente' => array('cliente.php', 'id="reservar"')
 );
 $pantalla = $argv[1] ?? '';
-if (!isset($pantallas[$pantalla])) {
-    fwrite(STDERR, 'Uso: php database/tests/principal_modulos_test.php [mesas|reservas|cliente|reserva-cliente]' . PHP_EOL);
+$modo = $argv[2] ?? '';
+if (!isset($pantallas[$pantalla]) || !in_array($modo, array('', '--http'), true)) {
+    fwrite(STDERR, 'Uso: php database/tests/principal_modulos_test.php [mesas|reservas|cliente|reserva-cliente] [--http]' . PHP_EOL);
     exit(1);
 }
 
@@ -33,15 +34,34 @@ if (!$administrador) {
 }
 
 ob_start();
+$_SERVER['HTTP_USER_AGENT'] = 'principal-modulos-test';
 app_start_session();
 $_SESSION['Usuario'] = $administrador['usuario'];
 $_SESSION['Rol'] = '1';
 $_SERVER['REQUEST_METHOD'] = 'GET';
 try {
-    require __DIR__ . '/../../' . $pantallas[$pantalla][0];
-    $html = ob_get_contents();
+    if ($modo === '--http') {
+        $cookie = session_name() . '=' . session_id();
+        session_write_close();
+        $context = stream_context_create(array('http' => array(
+            'header' => "Cookie: $cookie\r\nUser-Agent: principal-modulos-test\r\n",
+            'follow_location' => 0,
+            'ignore_errors' => true,
+            'timeout' => 15
+        )));
+        $html = file_get_contents('http://127.0.0.1/proj/' . $pantallas[$pantalla][0], false, $context);
+        if ($html === false || !preg_match('/^HTTP\/\S+ 200\b/', $http_response_header[0] ?? '')) {
+            throw new RuntimeException('La pantalla no respondio HTTP 200: ' . $pantalla);
+        }
+    } else {
+        require __DIR__ . '/../../' . $pantallas[$pantalla][0];
+        $html = ob_get_contents();
+    }
 } finally {
     ob_end_clean();
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
+    }
     session_destroy();
 }
 
@@ -50,4 +70,4 @@ if (http_response_code() >= 400 || strpos($html, $pantallas[$pantalla][1]) === f
     throw new RuntimeException('No se completo la pantalla: ' . $pantalla);
 }
 
-echo 'OK: ' . $pantalla . ' carga con una sesion nueva y el esquema persistente.' . PHP_EOL;
+echo 'OK: ' . $pantalla . ($modo === '--http' ? ' por HTTP 200' : '') . ' carga con una sesion nueva y el esquema persistente.' . PHP_EOL;

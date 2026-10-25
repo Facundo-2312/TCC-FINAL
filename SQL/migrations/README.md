@@ -50,6 +50,14 @@ La aplicacion debe seguir usando la misma instancia, puerto y base de datos
 configurados en `.env`; cambiar a otra instancia puede hacer parecer que los
 cambios desaparecieron.
 
+Los lanzadores `desktop/start-xampp.ps1` (inicio de Windows) y
+`desktop/start-desktop.ps1` esperan a MySQL y ejecutan este runner en cada
+arranque. Solo aplican versiones pendientes; no importan `BD.sql` ni restauran
+datos. Un error de conexion o migracion devuelve un codigo distinto de cero y
+detiene el lanzador, con el detalle en `desktop/run/xampp-startup.log` o
+`desktop/run/database-migrations.log`. Si inicias XAMPP manualmente sin estos
+lanzadores, ejecuta el runner despues de restaurar una base antigua.
+
 Prueba de lectura de los cuatro accesos, cada uno en un proceso y sesion nuevos
 (requiere una cuenta administradora existente; no crea ni modifica datos):
 
@@ -59,6 +67,13 @@ foreach ($pantalla in 'mesas', 'reservas', 'cliente', 'reserva-cliente') {
     if ($LASTEXITCODE -ne 0) { throw "Fallo al abrir $pantalla" }
 }
 ```
+
+Agrega `--http` despues de cada pantalla para comprobar tambien HTTP 200 desde
+Apache en `http://127.0.0.1/proj/`, con una sesion de prueba temporal y sin
+necesitar la contrasena del administrador. No se permite ejecutar la prueba
+desde la web. Para validar creacion, capacidad, solapamientos, historial,
+cancelacion y finalizacion sin modificar reservas reales:
+`C:\xampp\php\php.exe database\tests\reservas_test.php`.
 
 Repite esta prueba despues de cerrar y volver a iniciar XAMPP para comprobar
 tambien la persistencia tras reiniciar MySQL.

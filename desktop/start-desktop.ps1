@@ -122,6 +122,23 @@ if (-not $PhpExe) {
     throw 'No se encontró un ejecutable PHP válido. Configura APP_PHP_EXE o APP_XAMPP_ROOT si usas otra instalación.'
 }
 
+if (-not (Test-PortOpen -TargetHost '127.0.0.1' -TargetPort 3306) -and (Test-Path $MysqlStart)) {
+    Start-Process -FilePath $MysqlStart -WorkingDirectory $XamppRoot -WindowStyle Hidden | Out-Null
+}
+
+$deadline = (Get-Date).AddSeconds(60)
+while (-not (Test-PortOpen -TargetHost '127.0.0.1' -TargetPort 3306)) {
+    if ((Get-Date) -ge $deadline) {
+        throw 'MySQL no estuvo disponible en el puerto 3306 en 60 segundos.'
+    }
+    Start-Sleep -Seconds 1
+}
+
+& $PhpExe (Join-Path $ProjectRoot 'database\migrate.php') 2>&1 | Tee-Object -FilePath (Join-Path $RunDir 'database-migrations.log') -Append
+if ($LASTEXITCODE -ne 0) {
+    throw 'No se pudo actualizar la base de datos. Revisa desktop\run\database-migrations.log.'
+}
+
 $serverProcess = Get-RunningServerProcess
 if (-not $serverProcess) {
     $serverProcess = Start-Process -FilePath $PhpExe -ArgumentList @('-S', "$HostName`:$Port", '-t', $ProjectRoot) -WorkingDirectory $ProjectRoot -RedirectStandardOutput $LogFile -RedirectStandardError $ErrorLogFile -WindowStyle Hidden -PassThru
@@ -129,10 +146,6 @@ if (-not $serverProcess) {
         throw 'No se pudo iniciar el servidor PHP embebido.'
     }
     Set-Content -Path $PidFile -Value $serverProcess.Id -Encoding ASCII
-}
-
-if (-not (Test-PortOpen -TargetHost '127.0.0.1' -TargetPort 3306) -and (Test-Path $MysqlStart)) {
-    Start-Process -FilePath $MysqlStart -WorkingDirectory $XamppRoot -WindowStyle Hidden | Out-Null
 }
 
 if (-not $NoBrowser) {

@@ -8,6 +8,13 @@ if (PHP_SAPI !== 'cli') {
 
 require_once __DIR__ . '/../app_bootstrap.php';
 
+// The web handler deliberately hides details, but a CLI failure must stop startup.
+set_exception_handler(function (Throwable $exception) {
+    fwrite(STDERR, (string) $exception . PHP_EOL);
+    exit(1);
+});
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
 $connection = app_db_connect();
 if (!$connection) {
     fwrite(STDERR, 'No se pudo conectar a la base de datos.' . PHP_EOL);
@@ -81,11 +88,12 @@ foreach ($files as $file) {
         continue;
     }
 
-    foreach (migrationStatements(file_get_contents($file)) as $statement) {
-        if (!mysqli_query($connection, $statement)) {
-            fwrite(STDERR, 'Error en ' . $version . ': ' . mysqli_error($connection) . PHP_EOL);
-            exit(1);
+    try {
+        foreach (migrationStatements(file_get_contents($file)) as $statement) {
+            mysqli_query($connection, $statement);
         }
+    } catch (mysqli_sql_exception $exception) {
+        throw new RuntimeException('Error en ' . $version . ': ' . $exception->getMessage(), 0, $exception);
     }
 
     $stmt = mysqli_prepare($connection, 'INSERT INTO schema_migrations (version) VALUES (?)');

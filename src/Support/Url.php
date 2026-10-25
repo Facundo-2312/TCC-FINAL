@@ -20,12 +20,31 @@ class Url
             return self::$basePath;
         }
 
-        $documentRoot = isset($_SERVER['DOCUMENT_ROOT']) ? realpath((string) $_SERVER['DOCUMENT_ROOT']) : false;
         $appRoot = realpath(__DIR__ . '/../..');
+        $appRootNormalized = $appRoot ? str_replace('\\', '/', $appRoot) : '';
+
+        // Derive the base from the running script: DOCUMENT_ROOT on shared hosts (e.g. InfinityFree)
+        // often points to a different physical path than the files, which breaks the comparison below.
+        $scriptFile = isset($_SERVER['SCRIPT_FILENAME']) ? realpath((string) $_SERVER['SCRIPT_FILENAME']) : false;
+        $scriptName = isset($_SERVER['SCRIPT_NAME']) ? str_replace('\\', '/', (string) $_SERVER['SCRIPT_NAME']) : '';
+        if ($appRootNormalized !== '' && $scriptFile && $scriptName !== '' && PHP_SAPI !== 'cli') {
+            $scriptFile = str_replace('\\', '/', $scriptFile);
+            if (strpos($scriptFile, $appRootNormalized . '/') === 0) {
+                $relativeScript = substr($scriptFile, strlen($appRootNormalized));
+                $suffixLength = strlen($relativeScript);
+                if (strlen($scriptName) >= $suffixLength && strcasecmp(substr($scriptName, -$suffixLength), $relativeScript) === 0) {
+                    $prefix = rtrim(substr($scriptName, 0, -$suffixLength), '/');
+                    self::$basePath = $prefix === '' ? '' : '/' . trim($prefix, '/');
+                    return self::$basePath;
+                }
+            }
+        }
+
+        $documentRoot = isset($_SERVER['DOCUMENT_ROOT']) ? realpath((string) $_SERVER['DOCUMENT_ROOT']) : false;
 
         if ($documentRoot && $appRoot) {
             $documentRoot = str_replace('\\', '/', $documentRoot);
-            $appRoot = str_replace('\\', '/', $appRoot);
+            $appRoot = $appRootNormalized;
 
             if (strpos($appRoot, $documentRoot) === 0) {
                 $relativePath = trim(substr($appRoot, strlen($documentRoot)), '/');
