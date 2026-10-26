@@ -76,12 +76,27 @@ class ProductoRepository
         return $ok;
     }
 
+    // Products already used in orders cannot be deleted (fk_detalle_producto is RESTRICT and the
+    // sales history must keep them), so they are deactivated instead. Returns 'eliminado' or 'desactivado'.
     public function eliminar($idProducto)
     {
-        $stmt = mysqli_prepare($this->connection, 'DELETE FROM productos WHERE id_producto = ?');
+        $stmt = mysqli_prepare($this->connection, 'SELECT 1 FROM detalle_pedido WHERE id_producto = ? LIMIT 1');
+        mysqli_stmt_bind_param($stmt, 'i', $idProducto);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $usado = $result && mysqli_num_rows($result) > 0;
+        mysqli_stmt_close($stmt);
+
+        $sql = $usado
+            ? "UPDATE productos SET estado = 'Inactivo' WHERE id_producto = ?"
+            : 'DELETE FROM productos WHERE id_producto = ?';
+        $stmt = mysqli_prepare($this->connection, $sql);
         mysqli_stmt_bind_param($stmt, 'i', $idProducto);
         $ok = mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
-        return $ok;
+        if (!$ok) {
+            return false;
+        }
+        return $usado ? 'desactivado' : 'eliminado';
     }
 }

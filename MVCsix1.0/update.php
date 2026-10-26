@@ -29,6 +29,12 @@ function h($value)
 
 function resolverRutaImagen($ruta, $nombreProducto = '')
 {
+  // Same priority as the client menu: admin upload, then catalog photo, then legacy rules.
+  foreach (array(App\Support\ProductImage::uploadedPath($ruta), App\Support\ProductImage::catalogPath($nombreProducto)) as $preferida) {
+    if ($preferida !== null) {
+      return substr($preferida, strlen('MVCsix1.0/'));
+    }
+  }
   $ruta = trim((string) $ruta);
   if (preg_match('/^(https?:)?\\/\\//i', $ruta) || strpos($ruta, 'data:image/') === 0) {
     return $ruta;

@@ -6,7 +6,19 @@ app_require_login('Login.php', ['1']);
 if (isset($_GET['ID'])){
 	$CI=intval($_GET['ID']);
 } else {
-	header("location:EmpleadoI.php");
+	app_redirect('EmpleadoI.php');
+}
+
+include ("Empleado.php");
+$Empleado= new Empleado();
+$datos_empleado=$Empleado->BuscarUsuario($CI);
+if (!$datos_empleado) {
+	app_redirect('EmpleadoI.php');
+}
+
+function h($value)
+{
+	return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 }
 
 ?>
@@ -27,7 +39,7 @@ if (isset($_GET['ID'])){
 <body>
 
 <header>
-  <a class="Atras" href="EmpleadoI.php">
+  <a class="Atras" href="<?php echo h(app_url('EmpleadoI.php')); ?>">
   <i class="fas fa-arrow-circle-left" style="margin-left: 5px;"></i>
 </a> 
   <h1>Editar funcionario</h1> 
@@ -40,37 +52,27 @@ if (isset($_GET['ID'])){
                    
                     
                
-			<?php
-				// INCLUIMOS LA CAPA DATOS O SUPERCLASE
-				include ("Empleado.php");
-				
-				//CREAMOS LA INSTANCIA DATOS O SUPERCLASE
-				$Empleado= new Empleado();
-				
-				$datos_empleado=$Empleado->BuscarUsuario($CI);
-				
-			?>
 			<div class="row">
-				<form method="post" action ="InterfazE.php" enctype="multipart/form-data">
+				<form method="post" action ="<?php echo h(app_url('InterfazE.php')); ?>" enctype="multipart/form-data">
 				<?php echo csrf_field(); ?>
 
 				<h2>Agregar Empleado</h2>
 				
 <label></label>
-<input type="text" name="Nombre" id="Nombre" class='texto'placeholder="Nombre" maxlength="100" required value="<?php echo $datos_empleado->Nombre;?>">
-<input type="hidden" name="CI" id="CI" class='texto' maxlength="100" value="<?php echo $datos_empleado->CI; ?>">
+<input type="text" name="Nombre" id="Nombre" class='texto'placeholder="Nombre" maxlength="100" required value="<?php echo h($datos_empleado->Nombre);?>">
+<input type="hidden" name="CI" id="CI" class='texto' maxlength="100" value="<?php echo h($datos_empleado->CI); ?>">
 
 <label></label>
-<input type="text" name="Apellido" id="Apellido" class='texto' placeholder="Apellido" maxlength="100" required value="<?php echo $datos_empleado->Apellido;?>">
+<input type="text" name="Apellido" id="Apellido" class='texto' placeholder="Apellido" maxlength="100" required value="<?php echo h($datos_empleado->Apellido);?>">
 
 <label></label>
-<input type="text" name="Direccion" id="Direccion" class='texto' placeholder="Direccion" maxlength="100" required value="<?php echo $datos_empleado->Direccion;?>">
+<input type="text" name="Direccion" id="Direccion" class='texto' placeholder="Direccion" maxlength="100" required value="<?php echo h($datos_empleado->Direccion);?>">
 
 <label></label>
-<input type="text" name="Rol" id="Rol" class='texto' placeholder="Rol" maxlength="100" required value="<?php echo $datos_empleado->Rol;?>">
+<input type="text" name="Rol" id="Rol" class='texto' placeholder="Rol" maxlength="100" required value="<?php echo h($datos_empleado->Rol);?>">
 
 <label></label>
-<input type="text" name="Usuario" id="Usuario" class='texto' placeholder="Usuario" maxlength="100" required value="<?php echo $datos_empleado->Usuario;?>">
+<input type="text" name="Usuario" id="Usuario" class='texto' placeholder="Usuario" maxlength="100" required value="<?php echo h($datos_empleado->Usuario);?>">
 
 <label></label>
 <input type="password" name="Pass" id="Pass" class='texto' placeholder="Nueva contraseña (opcional)" maxlength="100" value="">

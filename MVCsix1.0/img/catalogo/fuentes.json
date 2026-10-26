@@ -1,0 +1,412 @@
+{
+    "pasta-pesto": {
+        "file": "pasta-pesto.jpg",
+        "title": "File:Pasta al pesto fatto in casa.jpg",
+        "author": "Marco Del Torchio 95",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Pasta_al_pesto_fatto_in_casa.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/d/d0/Pasta_al_pesto_fatto_in_casa.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "b4c151f2f83c15ca4dbf42fca05f5d89f2c1bd20a5cbec0913aa731ad81da6d6"
+    },
+    "pasta-bolognesa": {
+        "file": "pasta-bolognesa.jpg",
+        "title": "File:Spaghetti Bolognese - Figaros, Brighton 2023-10-06.jpg",
+        "author": "Andy Li",
+        "license": "CC0",
+        "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "source": "https://commons.wikimedia.org/wiki/File:Spaghetti_Bolognese_-_Figaros,_Brighton_2023-10-06.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/a/ae/Spaghetti_Bolognese_-_Figaros%2C_Brighton_2023-10-06.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "4b092e7ccd04384eae95ea454214973544ef937a01a3f1f22571312385116f3b"
+    },
+    "lasagna-carne": {
+        "file": "lasagna-carne.jpg",
+        "title": "File:Lasagna with minced meat, Brisbane.jpg",
+        "author": "Chris Olszewski",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Lasagna_with_minced_meat,_Brisbane.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/1/16/Lasagna_with_minced_meat%2C_Brisbane.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "e8410cd56a893a0358366b235c9dbc4d0139ff5d54456cb1f8b63a8033a3050f"
+    },
+    "milanesa-completa": {
+        "file": "milanesa-completa.jpg",
+        "title": "File:Milanesa plated with lemon slices and french fries (in Buenos Aires, Argentina).jpg",
+        "author": "Ben Tavener",
+        "license": "CC BY 2.0",
+        "license_url": "https://creativecommons.org/licenses/by/2.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Milanesa_plated_with_lemon_slices_and_french_fries_(in_Buenos_Aires,_Argentina).jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/a/a5/Milanesa_plated_with_lemon_slices_and_french_fries_%28in_Buenos_Aires%2C_Argentina%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "141bea8da714bd0d27e6691aa002bfda96b44885d46b96cd45ebc31d9c070283"
+    },
+    "chivito-plato": {
+        "file": "chivito-plato.jpg",
+        "title": "File:Chivito al plato.JPG",
+        "author": "Ypsilon from Finland",
+        "license": "CC0",
+        "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "source": "https://commons.wikimedia.org/wiki/File:Chivito_al_plato.JPG",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/1/1c/Chivito_al_plato.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "e3b60832ce27fd61c7e4103759ab28e623bf2c52ad35165604ae1e408bb69c30"
+    },
+    "bife-lomo": {
+        "file": "bife-lomo.jpg",
+        "title": "File:Beef Steak on Sizzling Plate.jpg",
+        "author": "Ceeseven",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Beef_Steak_on_Sizzling_Plate.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/9/9d/Beef_Steak_on_Sizzling_Plate.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "b61da759fa911d45822a3d8d08d825e62645d32e183b9100314c0932484a7536"
+    },
+    "pollo-parrilla": {
+        "file": "pollo-parrilla.jpg",
+        "title": "File:Grilled chicken breast, Santo Domingo, La Palma.jpg",
+        "author": "Gerda Arendt",
+        "license": "CC0",
+        "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "source": "https://commons.wikimedia.org/wiki/File:Grilled_chicken_breast,_Santo_Domingo,_La_Palma.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/b/b0/Grilled_chicken_breast%2C_Santo_Domingo%2C_La_Palma.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "097c89f60e91f668ac7e90db17e3524e3b3de7f7e6256dd85db82ff478e17050"
+    },
+    "pescado-dia": {
+        "file": "pescado-dia.jpg",
+        "title": "File:Seafood in Spain - Gran Canaria grilled fish and seafood plate.jpg",
+        "author": "Marek Ślusarczyk (Tupungato) Photo portfolio",
+        "license": "CC BY 3.0",
+        "license_url": "https://creativecommons.org/licenses/by/3.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Seafood_in_Spain_-_Gran_Canaria_grilled_fish_and_seafood_plate.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/7/7e/Seafood_in_Spain_-_Gran_Canaria_grilled_fish_and_seafood_plate.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "fed7ec2194b000ae91a8e8338371be2a252f4bc56a3ad38a37d0b418b91f7fca"
+    },
+    "risotto-pollo": {
+        "file": "risotto-pollo.jpg",
+        "title": "File:Grilled chicken and risotto.jpg",
+        "author": "Infrogmation of New Orleans",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Grilled_chicken_and_risotto.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/5/53/Grilled_chicken_and_risotto.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "b68394064455a8c29c8edfd31def1f2801e40b6c22718b42ecb2c9931f5c3798"
+    },
+    "coca-cola-zero-600": {
+        "file": "coca-cola-zero-600.jpg",
+        "title": "File:Coca Cola Zero bottle.png",
+        "author": "Jorge Barrios",
+        "license": "Public domain",
+        "license_url": "",
+        "source": "https://commons.wikimedia.org/wiki/File:Coca_Cola_Zero_bottle.png",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/c/ce/Coca_Cola_Zero_bottle.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "40ecd2a15ffff0293f08827c283262f89de4a7056eca058b5242e4cf53e75442"
+    },
+    "sprite-600": {
+        "file": "sprite-600.jpg",
+        "title": "File:Sprite Glass Bottle.jpg",
+        "author": "Ayakln",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Sprite_Glass_Bottle.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/4/44/Sprite_Glass_Bottle.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "89324fa3324dc86284c46b8c62f0966db2f62f66ac3f5f623a82dc3ec3c4b07a"
+    },
+    "fanta-naranja-600": {
+        "file": "fanta-naranja-600.jpg",
+        "title": "File:Fanta Orange Glass Bottle.jpg",
+        "author": "Ayakln",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Fanta_Orange_Glass_Bottle.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/c/cd/Fanta_Orange_Glass_Bottle.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "2876059d68132562b6d8690e62602b7f61edaaa24a88b07603084db42fb2de50"
+    },
+    "agua-gas-500": {
+        "file": "agua-gas-500.jpg",
+        "title": "File:San Pellegrino bottle for sparkling water .jpg",
+        "author": "Jabbyjobber",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "source": "https://commons.wikimedia.org/wiki/File:San_Pellegrino_bottle_for_sparkling_water_.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/7/7e/San_Pellegrino_bottle_for_sparkling_water_.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "617abc02720706d7a8df444ba6952ce9e8f4cdf01a0277443731242b28d7fd57"
+    },
+    "limonada-natural": {
+        "file": "limonada-natural.jpg",
+        "title": "File:Mint lemonade in summer.jpg",
+        "author": "Twilightin",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Mint_lemonade_in_summer.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/a/a1/Mint_lemonade_in_summer.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "7d9f596feebd98b66fda067270572109d463a1ab62e39a22e3c712dd9891aa75"
+    },
+    "jugo-naranja": {
+        "file": "jugo-naranja.jpg",
+        "title": "File:Orange juice 1 edit1.jpg",
+        "author": "Agency of the United States Department of Agriculture\nEdited Version by: Arad",
+        "license": "Public domain",
+        "license_url": "",
+        "source": "https://commons.wikimedia.org/wiki/File:Orange_juice_1_edit1.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/6/67/Orange_juice_1_edit1.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "533e0ef5b96bf10debaed80f6940bdc580318d2d29b41ec4c45de4e5ef2d6bed"
+    },
+    "chocotorta": {
+        "file": "chocotorta.jpg",
+        "title": "File:Chocotorta portion on a plate.jpg",
+        "author": "Nahog",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Chocotorta_portion_on_a_plate.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/1/1d/Chocotorta_portion_on_a_plate.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "f834ab65c0483c9d461f2a9399af22ad013a769cbc26abbd941a0abc1e40764d"
+    },
+    "cheesecake": {
+        "file": "cheesecake.jpg",
+        "title": "File:Cheesecake with slice cut out.jpg",
+        "author": "Martin van Dam",
+        "license": "CC BY 2.0",
+        "license_url": "https://creativecommons.org/licenses/by/2.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Cheesecake_with_slice_cut_out.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/4/44/Cheesecake_with_slice_cut_out.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "109693c650167897e931e8462427315f0ae4b7c8171963fc1d51f1a1bb6a6318"
+    },
+    "brownie-helado": {
+        "file": "brownie-helado.jpg",
+        "title": "File:Brownie ice cream 2.jpg",
+        "author": "JAYASHREESATHIYAMOORTHY",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Brownie_ice_cream_2.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/5/52/Brownie_ice_cream_2.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "2c1792531e0f9c3f06846733dc6d27ad2232fa2fdff859d95626df45fe9381ff"
+    },
+    "ensalada-frutas": {
+        "file": "ensalada-frutas.jpg",
+        "title": "File:Fruit Salad 4.jpg",
+        "author": "Gaurav Dhwaj Khadka",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Fruit_Salad_4.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/7/74/Fruit_Salad_4.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "f5f81b3854db5f350dc7f711279655d7da1afb8e1610746b4e652f43206e1ca3"
+    },
+    "cafe-espresso": {
+        "file": "cafe-espresso.jpg",
+        "title": "File:Crema espresso Akha Ama.jpg",
+        "author": "Takeaway",
+        "license": "CC BY-SA 3.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Crema_espresso_Akha_Ama.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/4/44/Crema_espresso_Akha_Ama.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "a8075fcd0a6f8bbb10135f11a1e4a9c30d4f44f1e0511be38649e40633acd612"
+    },
+    "cafe-leche": {
+        "file": "cafe-leche.jpg",
+        "title": "File:Café con leche - Perch on the Pier 2026-05-07.jpg",
+        "author": "Andy Li",
+        "license": "CC0",
+        "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "source": "https://commons.wikimedia.org/wiki/File:Caf%C3%A9_con_leche_-_Perch_on_the_Pier_2026-05-07.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/8/80/Caf%C3%A9_con_leche_-_Perch_on_the_Pier_2026-05-07.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "13f0c3e1b4f5fcf84fccd575801f513134e9aef62544721b70a4d1986fc523b7"
+    },
+    "papas-fritas": {
+        "file": "papas-fritas.jpg",
+        "title": "File:Cajun fries from Popeyes Louisiana Kitchen, Stratford, Ontario, 2025-08-04.jpg",
+        "author": "Chris Woodrich",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Cajun_fries_from_Popeyes_Louisiana_Kitchen,_Stratford,_Ontario,_2025-08-04.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/1/19/Cajun_fries_from_Popeyes_Louisiana_Kitchen%2C_Stratford%2C_Ontario%2C_2025-08-04.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "9cb40517d5ec0fba2400b360fa3f4f48f3ae384321ca2da623f08cc4067d9488"
+    },
+    "papas-rusticas": {
+        "file": "papas-rusticas.jpg",
+        "title": "File:Potato wedges (164510).jpg",
+        "author": "Moheen Reeyad",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Potato_wedges_(164510).jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/1/1b/Potato_wedges_%28164510%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "f6f9d21982d28b210969788ffb67875d4d884854c9b9b608b66502e34b56789a"
+    },
+    "pure-papas": {
+        "file": "pure-papas.jpg",
+        "title": "File:MashedPotatoes.jpg",
+        "author": "Renee Comet (photographer)",
+        "license": "Public domain",
+        "license_url": "",
+        "source": "https://commons.wikimedia.org/wiki/File:MashedPotatoes.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/3/39/MashedPotatoes.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "d9a65540a0efef99bf373f009fbe9a72b007dc7b9fcbd0d4c40bdf02efc651dd"
+    },
+    "pure-calabaza": {
+        "file": "pure-calabaza.jpg",
+        "title": "File:Pumpkin Puree Drained (4107746280).jpg",
+        "author": "Veganbaking.net from USA",
+        "license": "CC BY-SA 2.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Pumpkin_Puree_Drained_(4107746280).jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/6/65/Pumpkin_Puree_Drained_%284107746280%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "06ff7080ea5b0a82d98b9ed20be9a99648da2ce3b37b64e05966016fd94de8fe"
+    },
+    "arroz-blanco": {
+        "file": "arroz-blanco.jpg",
+        "title": "File:A bowl of rice.jpg",
+        "author": "Douglas Perkins",
+        "license": "CC0",
+        "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "source": "https://commons.wikimedia.org/wiki/File:A_bowl_of_rice.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/d/d6/A_bowl_of_rice.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "d42fe545cc33bd5ed210b3d120843f3c00204736b00944ed26b00db8e67113c9"
+    },
+    "verduras-salteadas": {
+        "file": "verduras-salteadas.jpg",
+        "title": "File:Poriyal.jpg",
+        "author": "VinPrasad",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Poriyal.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/7/7c/Poriyal.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "bce4a70abc3a5c6646b0b118c0c0558e855be7037c36ae22e9c8d01ab94fe47a"
+    },
+    "ensalada-verde": {
+        "file": "ensalada-verde.jpg",
+        "title": "File:Rocket lettuce, Butternut squash, Beetroot, Green beans, whipped cream salad.jpg",
+        "author": "Chris Olszewski",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Rocket_lettuce,_Butternut_squash,_Beetroot,_Green_beans,_whipped_cream_salad.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/a/a4/Rocket_lettuce%2C_Butternut_squash%2C_Beetroot%2C_Green_beans%2C_whipped_cream_salad.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "e12371949bb5aedc3fe2524cb4a9c104a39a2b7b26519d98e35bb8aa8d16f5ae"
+    },
+    "ensalada-mixta": {
+        "file": "ensalada-mixta.jpg",
+        "title": "File:Ensalada mixta marroquí.jpg",
+        "author": "Onetwothreeandfour",
+        "license": "CC0",
+        "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "source": "https://commons.wikimedia.org/wiki/File:Ensalada_mixta_marroqu%C3%AD.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/f/fb/Ensalada_mixta_marroqu%C3%AD.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "7253b04aff3fdd710d1d2767362e96417a43963312a6b9d668ad4e3ce8c9dfbe"
+    },
+    "empanadas": {
+        "file": "empanadas.jpg",
+        "title": "File:Empanada - Stu Spivack.jpg",
+        "author": "stu_spivack",
+        "license": "CC BY-SA 2.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Empanada_-_Stu_Spivack.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/9/97/Empanada_-_Stu_Spivack.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "ca34c321621b472ba10a6073d1c486603a6702d3b3b9cb4b264504ea5e085dd1"
+    },
+    "bastones-mozzarella": {
+        "file": "bastones-mozzarella.jpg",
+        "title": "File:Mozzarella Sticks at Mobtown Ballroom.jpg",
+        "author": "Sdkb",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Mozzarella_Sticks_at_Mobtown_Ballroom.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/a/a2/Mozzarella_Sticks_at_Mobtown_Ballroom.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "2a22e045e98e6d113d6c31e110b0d71dde2a7d12adb781d735fc9dfe9c774d34"
+    },
+    "tiramisu": {
+        "file": "tiramisu.jpg",
+        "title": "File:Dolce Tiramisù monoporzione.jpg",
+        "author": "Anna.Massini",
+        "license": "CC BY 4.0",
+        "license_url": "https://creativecommons.org/licenses/by/4.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Dolce_Tiramis%C3%B9_monoporzione.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/4/42/Dolce_Tiramis%C3%B9_monoporzione.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "fa488b76a8c90f07ab89fe75a47556aa066860537181794efdf0a542e12fd13e"
+    },
+    "torta-chocolate": {
+        "file": "torta-chocolate.jpg",
+        "title": "File:Layered chocolate cake.jpg",
+        "author": "Keijuu",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Layered_chocolate_cake.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/c/cf/Layered_chocolate_cake.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "bf290d67331627d1322ff86e0bc2361118083000edbccc47a94aa33f9ad67162"
+    },
+    "mousse-chocolate": {
+        "file": "mousse-chocolate.jpg",
+        "title": "File:Chocolate coffee mousse.jpg",
+        "author": "Lu from Seattle, USA",
+        "license": "CC BY 2.0",
+        "license_url": "https://creativecommons.org/licenses/by/2.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Chocolate_coffee_mousse.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/c/cb/Chocolate_coffee_mousse.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "f290a360f2b7c2fd7db75727d518a54a76da3787f04f75cf9853a30be686058b"
+    },
+    "helado": {
+        "file": "helado.jpg",
+        "title": "File:Strawberry Ice Cream Sundae (26853326784).jpg",
+        "author": "Sam Howzit",
+        "license": "CC BY 2.0",
+        "license_url": "https://creativecommons.org/licenses/by/2.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Strawberry_Ice_Cream_Sundae_(26853326784).jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/f/f0/Strawberry_Ice_Cream_Sundae_%2826853326784%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "70cf0a0d61181a033a809d77e39e02b5a34457e3e44310a56fa30e6d9b27baac"
+    },
+    "flan-casero": {
+        "file": "flan-casero.jpg",
+        "title": "File:Homemade Flan.jpg",
+        "author": "Cary Bass",
+        "license": "CC BY-SA 2.5",
+        "license_url": "https://creativecommons.org/licenses/by-sa/2.5",
+        "source": "https://commons.wikimedia.org/wiki/File:Homemade_Flan.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/4/43/Homemade_Flan.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "4d144ea287a239b18377da25c1ab43f0f37fed0c2518c7834629ac330bf8cf51"
+    },
+    "copa-dulce-leche": {
+        "file": "copa-dulce-leche.jpg",
+        "title": "File:DulceDeLeche.jpg",
+        "author": "audinou from Paris, France",
+        "license": "CC BY 2.0",
+        "license_url": "https://creativecommons.org/licenses/by/2.0",
+        "source": "https://commons.wikimedia.org/wiki/File:DulceDeLeche.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/5/5a/DulceDeLeche.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "d2a9dffa8df2c4f5e63e88567951f61f0f9bcff7098773884e4b6d040511c1db"
+    },
+    "hamburguesa-clasica": {
+        "file": "hamburguesa-clasica.jpg",
+        "title": "File:Cheeseburger with onions at Hatfield Heath Festival 2017.jpg",
+        "author": "Acabashi",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Cheeseburger_with_onions_at_Hatfield_Heath_Festival_2017.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/c/cf/Cheeseburger_with_onions_at_Hatfield_Heath_Festival_2017.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "0f998b027204d4ea4c5f6fc6565984cbff695f37a6dd7f30fa3d8b3444c38eea"
+    },
+    "pizza-muzzarella": {
+        "file": "pizza-muzzarella.jpg",
+        "title": "File:Pizza with mozzarella (argentine style).jpg",
+        "author": "Victor Manuel Giordano",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Pizza_with_mozzarella_(argentine_style).jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/2/23/Pizza_with_mozzarella_%28argentine_style%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "b63b8a9f1650fa1b1f14def817b66d2ddf6632d07cdb48816c097e3acc19d41a"
+    },
+    "coca-cola-600": {
+        "file": "coca-cola-600.jpg",
+        "title": "File:CocaColaBottle background free.jpg",
+        "author": "Hariadhi",
+        "license": "CC BY-SA 3.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+        "source": "https://commons.wikimedia.org/wiki/File:CocaColaBottle_background_free.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/8/87/CocaColaBottle_background_free.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "81f555f0ea3f8c9cc8e80cbc1bf27ae0dcb348f41c01a4033bb6a613cf4f5e20"
+    },
+    "agua-mineral-500": {
+        "file": "agua-mineral-500.jpg",
+        "title": "File:Bottled water.jpg",
+        "author": "H.A.W.C 101",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Bottled_water.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/b/b1/Bottled_water.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sha256": "c185d7fb6890af2b95e836ef5a592351d48b6094d98804bec98b9463216d8f71"
+    }
+}

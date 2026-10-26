@@ -16,6 +16,10 @@ function h($value)
 
 function resolverRutaImagen($ruta, $nombreProducto = '')
 {
+  $subida = App\Support\ProductImage::uploadedPath($ruta);
+  if ($subida !== null) {
+    return app_url($subida);
+  }
   $catalogo = App\Support\ProductImage::catalogPath($nombreProducto);
   if ($catalogo !== null) {
     return app_url($catalogo . '?v=' . filemtime(__DIR__ . '/../' . $catalogo));

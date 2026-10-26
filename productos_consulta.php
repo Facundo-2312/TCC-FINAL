@@ -11,6 +11,10 @@ function pc_h($value)
 
 function pc_imagen($producto)
 {
+    $subida = App\Support\ProductImage::uploadedPath($producto['img'] ?? '');
+    if ($subida !== null) {
+        return $subida;
+    }
     $catalogo = App\Support\ProductImage::catalogPath($producto['nombre'] ?? '');
     if ($catalogo !== null) {
         return $catalogo;
@@ -72,6 +76,8 @@ h1{margin:0 0 6px;font-size:clamp(1.6rem,3vw,2.2rem)}
 </div>
 <main>
     <h1>Productos <span class="badge-ro">Solo lectura</span></h1>
+    <p class="sub">Fotos ilustrativas; la presentacion y el envase pueden variar.
+    <a href="<?php echo pc_h(app_url('MVCsix1.0/img/catalogo/creditos.html')); ?>">Creditos de fotografias</a></p>
     <p class="sub"><?php echo $esCocina ? 'Consulta de la carta y el stock disponible para la cocina.' : 'Consulta de la carta, precios y disponibilidad para atender a los clientes.'; ?></p>
     <div class="tools">
         <input id="buscar" type="search" placeholder="Buscar producto...">

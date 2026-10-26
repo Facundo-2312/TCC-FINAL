@@ -4,6 +4,18 @@ namespace App\Support;
 
 class ProductImage
 {
+    // Images uploaded by the admin (MVCsix1.0/InterfazProducto.php stores them as files/prod_<uniqid>.<ext>)
+    // must win over the name-based catalog photo; legacy paths do not, so old demo images never come back.
+    public static function uploadedPath($img)
+    {
+        $base = basename(str_replace('\\', '/', trim((string) $img)));
+        if (!preg_match('/^prod_[A-Za-z0-9_.]+\.(?:jpe?g|png|gif|webp)$/i', $base)) {
+            return null;
+        }
+        $path = 'MVCsix1.0/files/' . $base;
+        return is_file(__DIR__ . '/../../' . $path) ? $path : null;
+    }
+
     public static function catalogPath($name)
     {
         $name = mb_strtolower(trim((string) $name), 'UTF-8');

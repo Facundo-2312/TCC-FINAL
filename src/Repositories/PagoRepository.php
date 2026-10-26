@@ -98,4 +98,38 @@ class PagoRepository
 
         return $ok;
     }
+
+    public function liberarMesaSiNoQuedanPedidosAbiertos($idMesa, $idPedidoCobrado)
+    {
+        if ($idMesa <= 0) {
+            return true;
+        }
+
+        $lock = mysqli_prepare($this->connection, 'SELECT id_mesa FROM mesas WHERE id_mesa = ? FOR UPDATE');
+        mysqli_stmt_bind_param($lock, 'i', $idMesa);
+        mysqli_stmt_execute($lock);
+        mysqli_stmt_close($lock);
+
+        $stmt = mysqli_prepare(
+            $this->connection,
+            "SELECT COUNT(*) AS abiertos FROM pedidos p
+             LEFT JOIN pagos pg ON pg.id_pedido = p.id_pedido
+             WHERE p.id_mesa = ? AND p.id_pedido <> ? AND p.estado <> 'Cancelado'
+               AND pg.id_pago IS NULL FOR UPDATE"
+        );
+        mysqli_stmt_bind_param($stmt, 'ii', $idMesa, $idPedidoCobrado);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $row = $result ? mysqli_fetch_assoc($result) : null;
+        mysqli_stmt_close($stmt);
+
+        if (!$row) {
+            throw new \RuntimeException('No se pudo comprobar si quedan pedidos sin cobrar en la mesa.');
+        }
+        if ((int) $row['abiertos'] > 0) {
+            return true;
+        }
+
+        return $this->liberarMesa($idMesa);
+    }
 }

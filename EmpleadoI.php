@@ -100,7 +100,8 @@ table{width:100%;border-collapse:collapse}
 th,td{padding:12px;border-bottom:1px solid var(--line);text-align:left}
 th{color:#ff6e99;font-size:.92rem}
 .badge{display:inline-block;padding:5px 10px;border-radius:999px;background:#3a3a3a;color:#fff;font-size:.82rem}
-.actions a{display:inline-block;padding:7px 10px;border-radius:8px;color:#fff;text-decoration:none;margin-right:6px}
+.actions a,.actions button{display:inline-block;padding:7px 10px;border-radius:8px;color:#fff;text-decoration:none;margin-right:6px;border:0;cursor:pointer;font:inherit}
+.actions form{display:inline}
 .actions .edit{background:#2563eb}
 .actions .delete{background:#dc2626}
 .empty{padding:16px;color:var(--muted)}
@@ -157,8 +158,12 @@ th{color:#ff6e99;font-size:.92rem}
                         <td><span class="badge"><?php echo h($fila['Rol'] ?? ''); ?></span></td>
                         <td><?php echo h($fila['Usuario'] ?? ''); ?></td>
                         <td class="actions">
-                            <a class="edit" href="<?php echo htmlspecialchars(app_url('Actualizar.php'), ENT_QUOTES, 'UTF-8'); ?>?ID=<?php echo (int) ($fila['CI'] ?? 0); ?>"><i class="fas fa-pen"></i></a>
-                            <a class="delete" href="<?php echo htmlspecialchars(app_url('Eliminar.php'), ENT_QUOTES, 'UTF-8'); ?>?ID=<?php echo (int) ($fila['CI'] ?? 0); ?>"><i class="fas fa-trash"></i></a>
+                            <a class="edit" title="Editar" href="<?php echo h(app_url('Actualizar.php?ID=' . (int) ($fila['CI'] ?? 0))); ?>"><i class="fas fa-pen"></i></a>
+                            <form method="post" action="<?php echo h(app_url('Eliminar.php')); ?>" onsubmit="return confirm('¿Eliminar este funcionario?');">
+                                <?php echo csrf_field(); ?>
+                                <input type="hidden" name="ID" value="<?php echo (int) ($fila['CI'] ?? 0); ?>">
+                                <button type="submit" class="delete" title="Eliminar"><i class="fas fa-trash"></i></button>
+                            </form>
                         </td>
                     </tr>
                 <?php } ?>

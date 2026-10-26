@@ -10,6 +10,11 @@ function cliente_h($value)
 
 function cliente_imagen($producto)
 {
+    $imagenSubida = App\Support\ProductImage::uploadedPath($producto['img'] ?? '');
+    if ($imagenSubida !== null) {
+        return $imagenSubida;
+    }
+
     $imagenCatalogo = App\Support\ProductImage::catalogPath($producto['nombre'] ?? '');
     if ($imagenCatalogo !== null) {
         return $imagenCatalogo;
@@ -476,7 +481,10 @@ section[id],form[id],div[id]{scroll-margin-top:80px}
 </section>
 <section class="panel table-live-panel" id="mesa-estado"><h2>Estado actual de la mesa</h2><label for="mesa_supervisada">Mesa a consultar</label><select id="mesa_supervisada"><option value="">Selecciona una mesa</option><?php foreach ($mesasTodas as $mesa) { ?><option value="<?php echo (int) $mesa['id_mesa']; ?>" data-numero="<?php echo (int) $mesa['numero']; ?>">Mesa <?php echo (int) $mesa['numero']; ?> · <?php echo cliente_h($mesa['estado']); ?></option><?php } ?></select><p class="note" id="mesa-order-message" role="status" aria-live="polite"></p><div id="table-live"><p class="empty">Selecciona una mesa para ver quién está allí y qué está pidiendo.</p></div></section>
 <div class="layout" id="menu">
-<section class="panel"><h2>Menu disponible</h2><div class="products">
+<section class="panel"><h2>Menu disponible</h2>
+<p class="muted">Fotos ilustrativas; la presentacion y el envase pueden variar.
+<a href="<?php echo cliente_h(app_url('MVCsix1.0/img/catalogo/creditos.html')); ?>">Creditos de fotografias</a></p>
+<div class="products">
 <?php foreach ($productos as $producto) { $disponible = (int) ($producto['stock'] ?? 0) > 0; $imagen = cliente_imagen($producto); $rutaImagen = __DIR__ . '/' . $imagen; $versionImagen = is_file($rutaImagen) ? '?v=' . filemtime($rutaImagen) : ''; ?><article class="product"><img src="<?php echo cliente_h(app_url($imagen . $versionImagen)); ?>" alt="<?php echo cliente_h($producto['nombre']); ?>"><div class="product-info"><h3><?php echo cliente_h($producto['nombre']); ?></h3><p><?php echo cliente_h($producto['descripcion']); ?></p><span class="availability<?php echo $disponible ? '' : ' unavailable'; ?>"><?php echo $disponible ? 'Disponible' : 'Agotado'; ?></span><div class="product-bottom"><span class="price">$<?php echo number_format((float) $producto['precio'], 2, ',', '.'); ?></span><button class="add" type="button" data-id="<?php echo (int) $producto['id_producto']; ?>" data-name="<?php echo cliente_h($producto['nombre']); ?>" data-price="<?php echo cliente_h($producto['precio']); ?>"<?php echo $disponible ? '' : ' disabled'; ?>><?php echo $disponible ? 'Agregar' : 'Agotado'; ?></button></div></div></article><?php } ?>
 <?php if (!$productos) { ?><p class="empty">No hay productos disponibles en este momento.</p><?php } ?>
 </div></section>

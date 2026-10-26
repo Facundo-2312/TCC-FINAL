@@ -43,6 +43,6 @@ class ProductoService
 
     public function eliminar($idProducto)
     {
-        return (int) $idProducto > 0 && $this->repositorio->eliminar((int) $idProducto);
+        return (int) $idProducto > 0 ? $this->repositorio->eliminar((int) $idProducto) : false;
     }
 }

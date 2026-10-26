@@ -98,3 +98,46 @@ para eludirla. Para habilitar el asistente, consulta con el proveedor una opcion
 permitida o utiliza un alojamiento que admita esta funcionalidad.
 
 Referencia: [explicacion del bloqueo en el foro de InfinityFree](https://forum.infinityfree.com/t/error-403-on-a-single-page/82186).
+
+## 7. Importaciones que perdieron AUTO_INCREMENT
+
+Si las altas de usuarios, productos, pedidos o pagos fallan con
+`Duplicate entry '0' for key 'PRIMARY'`, comprueba la columna `Extra` en la
+estructura de la tabla. La clave numerica debe indicar `auto_increment`.
+No soluciones este error calculando `MAX(id)+1` desde PHP: generaria conflictos
+entre solicitudes simultaneas.
+
+Despues de exportar un respaldo completo, importa
+[`SQL/reparar_autoincrement_infinityfree.sql`](SQL/reparar_autoincrement_infinityfree.sql)
+en la base seleccionada. Este archivo corresponde a los tipos `INT` del esquema
+de este proyecto. Conserva los registros y sus identificadores, incluido el ID
+`0` que una importacion defectuosa haya dejado referenciado; no borra ni reinicia
+tablas. La consulta final permite verificar las 13 claves automaticas.
+
+Prueba local aislada (usa tablas temporales en la conexion):
+
+```powershell
+C:\xampp\php\php.exe database\tests\autoincrement_test.php
+C:\xampp\php\php.exe database\tests\integridad_productos_pagos_test.php
+```
+
+## 8. Fotografias del catalogo
+
+Las 41 fotografias (40 productos del catalogo y la hamburguesa existente) tienen
+autor, fuente, licencia y huella SHA-256 en
+[`MVCsix1.0/img/catalogo/fuentes.json`](MVCsix1.0/img/catalogo/fuentes.json).
+Los creditos publicos estan en
+[`MVCsix1.0/img/catalogo/creditos.html`](MVCsix1.0/img/catalogo/creditos.html)
+y se enlazan desde el menu del cliente y la consulta de productos.
+Son fotos ilustrativas: la presentacion y el envase no representan una fotografia
+del plato realmente servido. Conserva las atribuciones y licencias al distribuirlas.
+
+Una imagen subida por el administrador tiene prioridad sobre la foto del
+catalogo. Los archivos se versionan en la URL para evitar mostrar fotos antiguas
+desde la cache. Verifica las imagenes despues de subirlas, no solo el mensaje de
+exito del Administrador de archivos:
+
+```powershell
+C:\xampp\php\php.exe database\tests\product_images_test.php
+C:\xampp\php\php.exe database\validate_catalogo_40.php
+```

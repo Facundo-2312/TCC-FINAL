@@ -50,7 +50,7 @@ class PagoService
                 throw new \RuntimeException('No se pudo actualizar el estado del pedido.');
             }
 
-            if (!$this->repositorio->liberarMesa((int) $pedido['id_mesa'])) {
+            if (!$this->repositorio->liberarMesaSiNoQuedanPedidosAbiertos((int) $pedido['id_mesa'], $idPedido)) {
                 throw new \RuntimeException('No se pudo liberar la mesa.');
             }
 
