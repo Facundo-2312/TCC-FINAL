@@ -27,7 +27,7 @@ def login(role):
     return c, urllib.parse.parse_qs(urllib.parse.urlparse(url).query)['ctx'][0]
 
 allowed = {
-    1: ['Principal.php','EmpleadoI.php','Crear.php','productos.php','informes.php','CAJA.php','mesas.php','centro_reservas.php','Cocina2.php','cliente.php'],
+    1: ['Principal.php','EmpleadoI.php','crear.php','productos.php','informes.php','CAJA.php','mesas.php','centro_reservas.php','Cocina2.php','cliente.php'],
     2: ['CAJA.php','inicio_rol.php','mesas.php','centro_reservas.php'],
     3: ['inicio_rol.php','pedidos.php','Cocina2.php','productos_consulta.php','mesas.php'],
     4: ['inicio_rol.php','Cocina2.php','productos_consulta.php'],
