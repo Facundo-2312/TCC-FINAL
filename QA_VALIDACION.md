@@ -2,15 +2,15 @@
 
 ## Alcance y conclusion
 
-Validacion realizada en la rama `qa/auditoria-defensa`, sin fusionar ni publicar
-commits en `main`. Sitio: <https://restauranteuy.infinityfree.me/>.
+Validacion realizada en la rama `qa/auditoria-defensa`, fusionada despues en
+`main` con autorizacion del responsable. Sitio: <https://restauranteuy.infinityfree.me/>.
 
 Se corrigieron y desplegaron los problemas reproducibles descritos abajo.
 Los cinco roles fueron evaluados localmente; en el hosting se comprobaron los
 cuatro roles internos y el acceso real de un cliente invitado.
 El asistente (antes `chatbot.*`) ya funciona en el hosting tras renombrar sus
-archivos publicos. El ciclo comercial completo en produccion se documenta en la
-seccion "Prueba controlada en produccion".
+archivos publicos. El ciclo comercial completo en produccion sigue pendiente;
+ver la seccion "Prueba controlada en produccion".
 Las pruebas destructivas de pedidos, pagos, empleados y reservas
 se ejecutaron sobre `proyectomagnus_qa`, no sobre los datos publicados.
 
@@ -95,7 +95,7 @@ Comprobaciones adicionales, no sumadas a los resultados agrupados:
 | Reservas | Capacidad, solapamiento, cancelacion e historial | Aprobado local; paginas publicadas cargan | Test con tablas temporales | Evitar reservas incompatibles y estados incorrectos | Alta | [reservas_test.php](database/tests/reservas_test.php) | Validacion del circuito existente | Test aprobado |
 | Despliegue | Enlaces, mayusculas, PHP y HTTPS | Aprobado en rutas comprobadas | 22 paginas y navegador | Ruta Crear/crear y HTTP sin redireccion | Alta | [.htaccess](.htaccess), [crear.php](crear.php), [DEPLOY_INFINITYFREE.md](DEPLOY_INFINITYFREE.md) | Ruta minuscula y HTTPS salvo entorno local | Sin avisos PHP; redireccion valida |
 | Asistente | Script y servicio en InfinityFree | Aprobado en hosting | Navegador real con sesion de administrador: `asistente.js` HTTP 200; preguntas "Cual es el horario?" y "Recaudado de hoy" respondidas por el servidor | InfinityFree responde 403 a toda URL que contenga `chat` (filtro contra chats en vivo) | Media | [asistente.js](asistente.js), [asistente_api.php](asistente_api.php), [Principal.php](Principal.php) | Renombrado de `chatbot.*` a `asistente.*`, solucion indicada por el proveedor; el asistente es un FAQ sin sondeo, no un chat en vivo. Archivos antiguos eliminados del hosting | Sin 403; respuestas correctas |
-| Produccion | Ciclo completo pedido-cocina-cobro-reserva | No probado | No se crearon operaciones comerciales de prueba | Riesgo residual especifico del entorno publicado | Alta | Circuito completo | Preparar una prueba supervisada con autorizacion y datos identificados | Pendiente |
+| Produccion | Ciclo completo pedido-cocina-cobro-reserva | No probado | No se crearon operaciones comerciales de prueba | Riesgo residual especifico del entorno publicado | Alta | Circuito completo | Prueba autorizada; ver "Prueba controlada en produccion" | Pendiente |
 | Produccion | Editar/eliminar empleado | No probado | La tabla publicada tiene cero empleados | No existe registro sobre el que probar sin crear datos | Media | [EmpleadoI.php](EmpleadoI.php) | CRUD validado en base aislada | Pendiente en hosting |
 | Compatibilidad | Dispositivos fisicos y otros navegadores | No probado | Solo navegador integrado y viewport movil | Sin cobertura de motores/dispositivos adicionales | Media | Interfaz completa | Verificacion manual adicional | Pendiente |
 | Contacto | Enlaces sociales y datos definitivos del pie | No probado/configuracion pendiente | Existen valores de ejemplo | No hay datos reales confirmados para sustituirlos | Baja | Pie de las paginas | Completar con informacion del restaurante | Pendiente |
@@ -232,3 +232,22 @@ Los tests nuevos de integridad y AUTO_INCREMENT quedan versionados.
 7. Mantener las atribuciones de imagenes y no reimportar un SQL antiguo sobre
    la base reparada. Consultar [DEPLOY_INFINITYFREE.md](DEPLOY_INFINITYFREE.md)
    para diagnostico y validacion posterior a una importacion.
+
+## Prueba controlada en produccion
+
+Estado: **pendiente**. El responsable autorizo una venta de prueba en el sitio
+publicado, conservando los registros identificados como prueba QA. No se
+ejecuto porque el navegador integrado dejo de estar conectado; no se crearon
+pedidos ni pagos en produccion. Recorrido previsto: pedido con un producto
+economico en una mesa libre (mozo/administrador), cambio de estado en cocina,
+cobro en caja, liberacion de la mesa y control de "Recaudado de hoy".
+
+## Fusion en `main` y despliegue automatico
+
+`qa/auditoria-defensa` se fusiono con `origin/main` (incluye PR #5) y `main`
+se actualizo por avance rapido. Tras la fusion se corrigio de nuevo el enlace
+"Agregar Funcionario" de [EmpleadoI.php](EmpleadoI.php) a `crear.php` (el
+archivo `Crear.php` no existe y el hosting distingue mayusculas). El workflow
+`CI` de GitHub fue aprobado. El workflow "Deploy PHP to InfinityFree (FTPS)"
+usa el entorno protegido `infinityfree` y queda en espera hasta que el
+responsable apruebe el despliegue en GitHub Actions.
