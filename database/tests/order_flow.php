@@ -1,0 +1,33 @@
+<?php
+if (PHP_SAPI !== 'cli' || getenv('APP_DB_NAME') !== 'ci_test') exit(1);
+require __DIR__ . '/../../app_bootstrap.php';
+function check($ok, $message) { if (!$ok) throw new RuntimeException($message); }
+$c = app_db_connect();
+$users = new App\Repositories\UsuarioRepository($c);
+$client = $users->buscarAcceso('flow_role_5');
+$other = $users->buscarAcceso('flow_role_3');
+$orders = new App\Services\PedidoService();
+$payments = new App\Services\PagoService();
+$reservations = new App\Services\ReservaService();
+$before = (int) mysqli_fetch_assoc(mysqli_query($c, 'SELECT stock FROM productos WHERE id_producto=1'))['stock'];
+$id = $orders->crearPedidoCliente(2, 'flow_role_5', 'Synthetic order', [['IDProducto'=>1,'quantity'=>2,'sinIngredientes'=>'Sin sal','extraIngredientes'=>'']], (int)$client['id_usuario']);
+check($id > 0, 'Client order creation');
+$after = (int) mysqli_fetch_assoc(mysqli_query($c, 'SELECT stock FROM productos WHERE id_producto=1'))['stock'];
+check($after === $before - 2, 'Stock deducted exactly once without triggers');
+check(!$payments->solicitarCobro($id, $client['id_usuario'], 'Efectivo')['ok'], 'Early payment request rejected');
+check($orders->cambiarEstadoCocina($id, 'Pendiente', 'Preparando'), 'Kitchen starts preparation');
+check(!$orders->cambiarEstadoCocina($id, 'Pendiente', 'Preparando'), 'Stale kitchen update rejected');
+check($orders->cambiarEstadoCocina($id, 'Preparando', 'Entregado'), 'Kitchen delivery');
+check(!$payments->solicitarCobro($id, $other['id_usuario'], 'Efectivo')['ok'], 'Cannot request payment for another client');
+check($payments->solicitarCobro($id, $client['id_usuario'], 'Efectivo')['ok'], 'Client requests payment');
+check($payments->facturar($id, 'Efectivo')['ok'], 'Cashier confirms payment');
+check(!$payments->facturar($id, 'Efectivo')['ok'], 'Duplicate payment rejected');
+check(mysqli_fetch_assoc(mysqli_query($c, 'SELECT estado FROM mesas WHERE numero=2'))['estado'] === 'Libre', 'Table released after payment');
+check((int)mysqli_fetch_assoc(mysqli_query($c, 'SELECT COUNT(*) n FROM pagos WHERE id_pedido='.(int)$id))['n'] === 1, 'One payment only');
+$data = ['id_mesa'=>2,'nombre_cliente'=>'Synthetic reservation','cantidad_personas'=>2,'hora_inicio'=>date('Y-m-d H:i:s',time()+86400),'hora_fin'=>date('Y-m-d H:i:s',time()+91800),'telefono'=>'','notas'=>'','id_usuario'=>$client['id_usuario'],'usuario'=>'flow_role_5'];
+$res = $reservations->crear($data);
+check($res['ok'], 'Reservation creation');
+check(!$reservations->crear($data)['ok'], 'Overlapping reservation rejected');
+check($reservations->cancelar($res['id'])['ok'], 'Reservation cancellation');
+check($orders->crearPedidoMozo(2,'flow_role_3','Synthetic waiter order',[['IDProducto'=>1,'quantity'=>1]]) > 0, 'Waiter order creation');
+echo "PASS order, stock, kitchen, client ownership, payment, table, reservation and waiter flow\n";

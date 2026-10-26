@@ -1,0 +1,36 @@
+name: Deployment readiness (safe checks)
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deployment-readiness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check PHP syntax
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            php -l "$file" >/dev/null
+          done < <(find . -type f -name '*.php' -not -path './.git/*' -print0)
+      - name: Ensure deployment secrets are not tracked
+        run: |
+          set -euo pipefail
+          if git ls-files | grep -Ei '(^|/)(\.env|\.env\.[^/]+|id_rsa|id_ed25519|.*\.pem|.*\.key)$' | grep -vE '(^|/)\.env\.example$'; then
+            echo "::error::Potential credential file tracked in Git."
+            exit 1
+          fi
+      - name: Check required deployment assets
+        run: |
+          set -euo pipefail
+          for file in Dockerfile app_bootstrap.php SQL/install_infinityfree.sql SQL/catalogo_infinityfree.sql; do
+            test -s "$file" || { echo "::error::Missing $file"; exit 1; }
+          done
+      - name: Explain deployment scope
+        run: |
+          echo "Readiness checks only: no hosting account, credentials, production DB or live site modified."
