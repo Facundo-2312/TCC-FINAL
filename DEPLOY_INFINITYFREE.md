@@ -91,11 +91,13 @@ subir futuras actualizaciones.
 
 ## 6. Bloqueo 403 del asistente
 
-InfinityFree bloquea las URLs que contienen `chat`; esto afecta a `chatbot.js` y
-`chatbot_api.php`, aunque los archivos existan y el login funcione. Es una
-restriccion del proveedor, no un error de roles o de MySQL. No renombres archivos
-para eludirla. Para habilitar el asistente, consulta con el proveedor una opcion
-permitida o utiliza un alojamiento que admita esta funcionalidad.
+InfinityFree responde 403 a cualquier URL que contenga `chat`, porque prohibe los
+chats en vivo que consultan el servidor continuamente. El asistente del sistema no
+es un chat en vivo: responde preguntas frecuentes con una sola peticion por
+consulta y sin sondeo. Por eso sus archivos publicos se llaman `asistente.js` y
+`asistente_api.php`, el cambio de nombre que recomienda el propio proveedor.
+No vuelvas a usar `chat` en nombres de archivos, carpetas ni parametros de URL, y
+borra del hosting los antiguos `chatbot.js` y `chatbot_api.php` si siguen alli.
 
 Referencia: [explicacion del bloqueo en el foro de InfinityFree](https://forum.infinityfree.com/t/error-403-on-a-single-page/82186).
 

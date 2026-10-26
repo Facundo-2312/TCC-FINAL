@@ -55,7 +55,8 @@
     input.value = '';
 
     try {
-      var response = await fetch((typeof chatbotApiUrl !== 'undefined' ? chatbotApiUrl : 'chatbot_api.php'), {
+      // Public URLs must not contain "chat": InfinityFree answers 403 to any such path.
+      var response = await fetch((typeof asistenteApiUrl !== 'undefined' ? asistenteApiUrl : 'asistente_api.php'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: question })

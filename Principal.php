@@ -7,7 +7,7 @@ if ((int) ($_SESSION['Rol'] ?? 0) === 5) {
 }
 
 $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
-$chatbotJsVersion = @filemtime(__DIR__ . '/chatbot.js') ?: time();
+$asistenteJsVersion = @filemtime(__DIR__ . '/asistente.js') ?: time();
 
 ?>
 
@@ -157,8 +157,8 @@ $chatbotJsVersion = @filemtime(__DIR__ . '/chatbot.js') ?: time();
     </form>
 </section>
 
-<script>var chatbotApiUrl = <?php echo json_encode(app_url('chatbot_api.php')); ?>;</script>
-<script src="<?php echo htmlspecialchars(app_url('chatbot.js?v=' . $chatbotJsVersion), ENT_QUOTES, 'UTF-8'); ?>"></script>
+<script>var asistenteApiUrl = <?php echo json_encode(app_url('asistente_api.php')); ?>;</script>
+<script src="<?php echo htmlspecialchars(app_url('asistente.js?v=' . $asistenteJsVersion), ENT_QUOTES, 'UTF-8'); ?>"></script>
 
 </body>
 </html>

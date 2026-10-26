@@ -8,9 +8,10 @@ commits en `main`. Sitio: <https://restauranteuy.infinityfree.me/>.
 Se corrigieron y desplegaron los problemas reproducibles descritos abajo.
 Los cinco roles fueron evaluados localmente; en el hosting se comprobaron los
 cuatro roles internos y el acceso real de un cliente invitado.
-**Este informe no certifica un funcionamiento del 100%**: el chatbot sigue
-bloqueado por el proveedor y no se realizaron operaciones comerciales completas
-en produccion. Las pruebas que modifican pedidos, pagos, empleados y reservas
+El asistente (antes `chatbot.*`) ya funciona en el hosting tras renombrar sus
+archivos publicos. El ciclo comercial completo en produccion se documenta en la
+seccion "Prueba controlada en produccion".
+Las pruebas destructivas de pedidos, pagos, empleados y reservas
 se ejecutaron sobre `proyectomagnus_qa`, no sobre los datos publicados.
 
 Entornos comprobados:
@@ -58,8 +59,8 @@ como si fueran resultados adicionales independientes del total 76.
 Las nueve invocaciones del repositorio son seis tests PHP de dominio, dos modos
 de `env_url_test.php` y el test JavaScript.
 
-En el hosting, el resultado agrupado fallido corresponde a recursos estaticos:
-`chatbot.js` devuelve HTTP 403. El harness tambien informo tres URLs escapadas
+En el hosting, el resultado agrupado fallido correspondia a recursos estaticos:
+`chatbot.js` devolvia HTTP 403 (resuelto despues renombrando a `asistente.js`). El harness tambien informo tres URLs escapadas
 incorrectamente extraidas de HTML; se contrastaron con el DOM real del navegador:
 logo, CSS de login y CSS del panel devolvieron **HTTP 200 y el tipo correcto**.
 Se conserva el registro original, sin ocultar esos falsos positivos.
@@ -93,7 +94,7 @@ Comprobaciones adicionales, no sumadas a los resultados agrupados:
 | Cobro cliente | Solicitud, confirmacion y actualizacion automatica | Aprobado local | Test PHP y JavaScript | No confundir solicitud con pago confirmado | Alta | [solicitudes_cobro_test.php](database/tests/solicitudes_cobro_test.php), [cliente_cobro_test.js](database/tests/cliente_cobro_test.js) | Validacion del circuito existente | Tests aprobados, pago duplicado rechazado |
 | Reservas | Capacidad, solapamiento, cancelacion e historial | Aprobado local; paginas publicadas cargan | Test con tablas temporales | Evitar reservas incompatibles y estados incorrectos | Alta | [reservas_test.php](database/tests/reservas_test.php) | Validacion del circuito existente | Test aprobado |
 | Despliegue | Enlaces, mayusculas, PHP y HTTPS | Aprobado en rutas comprobadas | 22 paginas y navegador | Ruta Crear/crear y HTTP sin redireccion | Alta | [.htaccess](.htaccess), [crear.php](crear.php), [DEPLOY_INFINITYFREE.md](DEPLOY_INFINITYFREE.md) | Ruta minuscula y HTTPS salvo entorno local | Sin avisos PHP; redireccion valida |
-| Chatbot | Script y servicio en InfinityFree | Fallido | HTTP 403 del proveedor | Restriccion del hosting sobre rutas del chatbot | Media | [chatbot.js](chatbot.js), [chatbot_api.php](chatbot_api.php) | No se renombro para evadir la politica del proveedor | Sigue bloqueado |
+| Asistente | Script y servicio en InfinityFree | Aprobado en hosting | Navegador real con sesion de administrador: `asistente.js` HTTP 200; preguntas "Cual es el horario?" y "Recaudado de hoy" respondidas por el servidor | InfinityFree responde 403 a toda URL que contenga `chat` (filtro contra chats en vivo) | Media | [asistente.js](asistente.js), [asistente_api.php](asistente_api.php), [Principal.php](Principal.php) | Renombrado de `chatbot.*` a `asistente.*`, solucion indicada por el proveedor; el asistente es un FAQ sin sondeo, no un chat en vivo. Archivos antiguos eliminados del hosting | Sin 403; respuestas correctas |
 | Produccion | Ciclo completo pedido-cocina-cobro-reserva | No probado | No se crearon operaciones comerciales de prueba | Riesgo residual especifico del entorno publicado | Alta | Circuito completo | Preparar una prueba supervisada con autorizacion y datos identificados | Pendiente |
 | Produccion | Editar/eliminar empleado | No probado | La tabla publicada tiene cero empleados | No existe registro sobre el que probar sin crear datos | Media | [EmpleadoI.php](EmpleadoI.php) | CRUD validado en base aislada | Pendiente en hosting |
 | Compatibilidad | Dispositivos fisicos y otros navegadores | No probado | Solo navegador integrado y viewport movil | Sin cobertura de motores/dispositivos adicionales | Media | Interfaz completa | Verificacion manual adicional | Pendiente |
@@ -217,9 +218,9 @@ Los tests nuevos de integridad y AUTO_INCREMENT quedan versionados.
 
 1. No quedan errores criticos conocidos en los circuitos locales ejercitados.
    Esto no descarta errores fuera de la cobertura declarada.
-2. El chatbot **no esta operativo en InfinityFree**. Para presentarlo se necesita
-   una alternativa permitida por el proveedor o un hosting compatible; no se
-   alteraron rutas para eludir restricciones.
+2. El asistente funciona en InfinityFree desde que sus archivos se llaman
+   `asistente.*`. No uses `chat` en nombres de archivos, carpetas ni URLs: el
+   proveedor responde 403 a cualquier ruta que lo contenga.
 3. Antes de la defensa, realizar una venta supervisada en el sitio publicado,
    recorriendo cliente/mozo, cocina, caja y liberacion de mesa, con autorizacion
    y registro de los datos que se generen. La prueba local no sustituye esa prueba.

@@ -28,7 +28,7 @@ agregan controles nuevos de forma no destructiva.
 ### 3. XSS (almacenado/reflejado)
 - Las vistas auditadas ya centralizan el escape de salida con una función `h()`
   (`htmlspecialchars(..., ENT_QUOTES, 'UTF-8')`) en `mesas.php`, `CAJA.php`, `Cocina2.php`,
-  `InterfazObtenerPedidos.php`, `chatbot_api.php`. No se detectó `echo` directo de datos de
+  `InterfazObtenerPedidos.php`, `asistente_api.php`. No se detectó `echo` directo de datos de
   usuario/BD sin escapar en esos flujos.
 
 ### 4. Autenticación insegura / gestión de contraseñas
