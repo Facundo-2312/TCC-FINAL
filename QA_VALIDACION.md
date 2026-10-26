@@ -263,3 +263,20 @@ usa el entorno protegido `infinityfree` y queda en espera hasta que el
 responsable lo apruebe en GitHub Actions. El hosting ya contiene el enlace
 corregido (comprobado en el navegador), por lo que esa aprobacion no es
 necesaria para el funcionamiento actual.
+
+## Revision final (25/10/2026, 23:52)
+
+- Local: 7 tests de base de datos y 4 de modulos de Principal aprobados.
+- Hosting (navegador real): 21 rutas con HTTP 200 sin errores; 41 productos y
+  42 imagenes; 6 mesas libres; Caja con $120,00 cobrados y $0,00 pendiente;
+  `asistente.js` publicado identico a la copia local (SHA-256).
+- El workflow `CI` comprueba sintaxis, esquema, archivos sensibles e imagen
+  Docker; no ejecuta los flujos de roles (eso corresponde a `role-flows.yml`).
+
+Defectos encontrados y corregidos en esta revision:
+
+| Archivo | Defecto | Correccion |
+|---|---|---|
+| [mesas.php](mesas.php) | Error JavaScript: faltaba `;` tras `window.onclick = function…`, por lo que la funcion autoejecutable siguiente fallaba. Los filtros, la actualizacion cada 3 s, el historial y el cierre del modal al hacer clic fuera no funcionaban | Se agrego el `;` |
+| [cliente.php](cliente.php) | En moviles de 390 px el encabezado medía 416 px y el boton "Salir" quedaba fuera de pantalla (la regla movil apuntaba a una clase antigua) | La regla movil oculta el nombre en `.site-user` y reduce el relleno |
+| [Principal.php](Principal.php) | Sin `meta viewport` ni `charset` | Se agregaron |

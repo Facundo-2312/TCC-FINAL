@@ -929,7 +929,7 @@ window.onclick = function(e) {
     if (e.target === modal) {
         cerrarModalReserva();
     }
-}
+};
 
 // Sincronización en tiempo real
 (function() {

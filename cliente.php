@@ -438,7 +438,8 @@ section[id],form[id],div[id]{scroll-margin-top:80px}
 @media(max-width:620px){
   body{padding-bottom:40px}
   .top{padding:12px 16px}
-  .top .user{display:none}
+  .top .user,.site-user .user{display:none}
+  .site-header-in{padding:10px 14px;gap:10px}
   h1{padding:0 16px}
   .layout{padding:0 12px}
   .reservation-grid{grid-template-columns:1fr}
