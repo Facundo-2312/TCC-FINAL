@@ -9,8 +9,8 @@ Se corrigieron y desplegaron los problemas reproducibles descritos abajo.
 Los cinco roles fueron evaluados localmente; en el hosting se comprobaron los
 cuatro roles internos y el acceso real de un cliente invitado.
 El asistente (antes `chatbot.*`) ya funciona en el hosting tras renombrar sus
-archivos publicos. El ciclo comercial completo en produccion sigue pendiente;
-ver la seccion "Prueba controlada en produccion".
+archivos publicos. El ciclo comercial completo en produccion fue aprobado; ver
+la seccion "Prueba controlada en produccion".
 Las pruebas destructivas de pedidos, pagos, empleados y reservas
 se ejecutaron sobre `proyectomagnus_qa`, no sobre los datos publicados.
 
@@ -95,7 +95,7 @@ Comprobaciones adicionales, no sumadas a los resultados agrupados:
 | Reservas | Capacidad, solapamiento, cancelacion e historial | Aprobado local; paginas publicadas cargan | Test con tablas temporales | Evitar reservas incompatibles y estados incorrectos | Alta | [reservas_test.php](database/tests/reservas_test.php) | Validacion del circuito existente | Test aprobado |
 | Despliegue | Enlaces, mayusculas, PHP y HTTPS | Aprobado en rutas comprobadas | 22 paginas y navegador | Ruta Crear/crear y HTTP sin redireccion | Alta | [.htaccess](.htaccess), [crear.php](crear.php), [DEPLOY_INFINITYFREE.md](DEPLOY_INFINITYFREE.md) | Ruta minuscula y HTTPS salvo entorno local | Sin avisos PHP; redireccion valida |
 | Asistente | Script y servicio en InfinityFree | Aprobado en hosting | Navegador real con sesion de administrador: `asistente.js` HTTP 200; preguntas "Cual es el horario?" y "Recaudado de hoy" respondidas por el servidor | InfinityFree responde 403 a toda URL que contenga `chat` (filtro contra chats en vivo) | Media | [asistente.js](asistente.js), [asistente_api.php](asistente_api.php), [Principal.php](Principal.php) | Renombrado de `chatbot.*` a `asistente.*`, solucion indicada por el proveedor; el asistente es un FAQ sin sondeo, no un chat en vivo. Archivos antiguos eliminados del hosting | Sin 403; respuestas correctas |
-| Produccion | Ciclo completo pedido-cocina-cobro-reserva | No probado | No se crearon operaciones comerciales de prueba | Riesgo residual especifico del entorno publicado | Alta | Circuito completo | Prueba autorizada; ver "Prueba controlada en produccion" | Pendiente |
+| Produccion | Ciclo completo pedido-cocina-cobro-reserva | Aprobado en hosting | Venta controlada autorizada, pedido #1 | Riesgo residual especifico del entorno publicado | Alta | Circuito completo | Ver "Prueba controlada en produccion" | Pedido, cocina, cobro, mesa e informes coherentes |
 | Produccion | Editar/eliminar empleado | No probado | La tabla publicada tiene cero empleados | No existe registro sobre el que probar sin crear datos | Media | [EmpleadoI.php](EmpleadoI.php) | CRUD validado en base aislada | Pendiente en hosting |
 | Compatibilidad | Dispositivos fisicos y otros navegadores | No probado | Solo navegador integrado y viewport movil | Sin cobertura de motores/dispositivos adicionales | Media | Interfaz completa | Verificacion manual adicional | Pendiente |
 | Contacto | Enlaces sociales y datos definitivos del pie | No probado/configuracion pendiente | Existen valores de ejemplo | No hay datos reales confirmados para sustituirlos | Baja | Pie de las paginas | Completar con informacion del restaurante | Pendiente |
@@ -221,9 +221,8 @@ Los tests nuevos de integridad y AUTO_INCREMENT quedan versionados.
 2. El asistente funciona en InfinityFree desde que sus archivos se llaman
    `asistente.*`. No uses `chat` en nombres de archivos, carpetas ni URLs: el
    proveedor responde 403 a cualquier ruta que lo contenga.
-3. Antes de la defensa, realizar una venta supervisada en el sitio publicado,
-   recorriendo cliente/mozo, cocina, caja y liberacion de mesa, con autorizacion
-   y registro de los datos que se generen. La prueba local no sustituye esa prueba.
+3. La venta supervisada en el sitio publicado ya se realizo (ver "Prueba
+   controlada en produccion"). Repetirla solo si se modifica el circuito.
 4. Probar el sitio en el telefono real y navegador que utilizara la orientadora.
 5. Completar datos de contacto y enlaces sociales reales; revisar precios y stock
    de las nuevas entradas antes de utilizarlas como oferta comercial.
@@ -235,12 +234,23 @@ Los tests nuevos de integridad y AUTO_INCREMENT quedan versionados.
 
 ## Prueba controlada en produccion
 
-Estado: **pendiente**. El responsable autorizo una venta de prueba en el sitio
-publicado, conservando los registros identificados como prueba QA. No se
-ejecuto porque el navegador integrado dejo de estar conectado; no se crearon
-pedidos ni pagos en produccion. Recorrido previsto: pedido con un producto
-economico en una mesa libre (mozo/administrador), cambio de estado en cocina,
-cobro en caja, liberacion de la mesa y control de "Recaudado de hoy".
+Estado: **aprobado** (25/10/2026, 23:42-23:44, navegador real con sesion de
+administrador, autorizada por el responsable). Registros conservados e
+identificados con la nota "PRUEBA QA - venta controlada autorizada 25/10/2026".
+
+| Paso | Resultado observado |
+|---|---|
+| Estado inicial | 6 mesas libres; Caja "Cobrado hoy" $0,00 |
+| Pedido (Pedidos) | Pedido #1, mesa 6, 1 x Agua Mineral 500 ml: "Pedido enviado a cocina correctamente" |
+| Cocina | Pendiente -> Preparando -> Entregado: "Pedido actualizado correctamente" |
+| Caja | Aparece por cobrar $120,00; pago en Efectivo: "Pago confirmado correctamente"; Cobrado hoy $120,00, 1 pago |
+| Mesas | 6 libres despues del cobro |
+| Asistente | "Hoy se registran $120,00 en 1 pagos" |
+| Informes | Total vendido $120,00, 1 pedido |
+
+Recorrido adicional del hosting: 22 rutas internas con HTTP 200, sin mensaje
+"Ocurrio un error inesperado" ni avisos PHP; enlace "Agregar Funcionario" a
+`crear.php`; 41 productos y 42 imagenes cargan correctamente.
 
 ## Fusion en `main` y despliegue automatico
 
@@ -250,4 +260,6 @@ se actualizo por avance rapido. Tras la fusion se corrigio de nuevo el enlace
 archivo `Crear.php` no existe y el hosting distingue mayusculas). El workflow
 `CI` de GitHub fue aprobado. El workflow "Deploy PHP to InfinityFree (FTPS)"
 usa el entorno protegido `infinityfree` y queda en espera hasta que el
-responsable apruebe el despliegue en GitHub Actions.
+responsable lo apruebe en GitHub Actions. El hosting ya contiene el enlace
+corregido (comprobado en el navegador), por lo que esa aprobacion no es
+necesaria para el funcionamiento actual.
