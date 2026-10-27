@@ -27,7 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crud'])) {
         $Pass = (string) ($_POST['Pass'] ?? '');
 
         if ($CI <= 0 || $Nombre === '' || $Apellido === '' || $Direccion === '' || $Rol === '' || $Usuario === '' || $Pass === '') {
-            die("Datos incompletos para crear funcionario.");
+            app_set_flash('error', 'Completa todos los campos para crear el funcionario.');
+            app_redirect('crear.php');
         }
 
         $res = $empleadoController->crear(array(
@@ -40,7 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crud'])) {
         }
 
         $detalle = trim((string) $empleadoController->ultimoError());
-        die($detalle !== '' ? $detalle : "Error al insertar.");
+        app_set_flash('error', $detalle !== '' ? $detalle : 'No se pudo guardar el funcionario.');
+        app_redirect('crear.php');
     }
 
     if ($crud === 2) {
@@ -53,7 +55,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crud'])) {
         $Pass = (string) ($_POST['Pass'] ?? '');
 
         if ($CI <= 0 || $Nombre === '' || $Apellido === '' || $Direccion === '' || $Rol === '' || $Usuario === '') {
-            die("Datos incompletos para actualizar funcionario.");
+            app_set_flash('error', 'Completa todos los campos para actualizar el funcionario.');
+            app_redirect('Actualizar.php?ID=' . $CI);
         }
 
         $res = $empleadoController->actualizar(array(
@@ -66,7 +69,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crud'])) {
         }
 
         $detalle = trim((string) $empleadoController->ultimoError());
-        die($detalle !== '' ? $detalle : "Error al actualizar.");
+        app_set_flash('error', $detalle !== '' ? $detalle : 'No se pudo actualizar el funcionario.');
+        app_redirect('Actualizar.php?ID=' . $CI);
     }
 
     app_redirect('EmpleadoI.php');

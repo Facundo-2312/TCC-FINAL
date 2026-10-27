@@ -36,6 +36,28 @@ class MesaService
         return array('mesas' => $mesas, 'stats' => $stats);
     }
 
+    public function crear($numero, $capacidad)
+    {
+        $numero = (int) $numero;
+        $capacidad = (int) $capacidad;
+        if ($numero <= 0 || $numero > 9999 || $capacidad <= 0 || $capacidad > 50) {
+            return array('ok' => false, 'codigo' => 'datos_invalidos');
+        }
+
+        try {
+            if (!$this->repositorio->crear($numero, $capacidad)) {
+                return array('ok' => false, 'codigo' => mysqli_errno($this->repositorio->connection()) === 1062 ? 'duplicada' : 'error');
+            }
+            return array('ok' => true, 'codigo' => 'creada');
+        } catch (\Throwable $exception) {
+            $codigo = mysqli_errno($this->repositorio->connection()) === 1062 ? 'duplicada' : 'error';
+            if ($codigo !== 'duplicada') {
+                \App\Support\ErrorHandler::log($exception);
+            }
+            return array('ok' => false, 'codigo' => $codigo);
+        }
+    }
+
     public function cambiarEstado($idMesa, $estado, $usuario)
     {
         $idMesa = (int) $idMesa;

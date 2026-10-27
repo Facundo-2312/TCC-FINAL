@@ -39,10 +39,13 @@ class AuthService
             $this->usuarios->actualizarPassword((int) $cuenta['id_usuario'], password_hash($password, PASSWORD_DEFAULT));
         }
 
+        $idRolAplicacion = $this->idRolAplicacion($cuenta['rol'] ?? '');
+        if ($idRolAplicacion === null) return null;
+
         return (object) array(
             'id_usuario' => (int) $cuenta['id_usuario'],
             'nombre' => $cuenta['nombre'],
-            'id_rol' => (int) $cuenta['id_rol'],
+            'id_rol' => $idRolAplicacion,
             'Rol' => $cuenta['rol'],
             'CI' => isset($cuenta['CI']) ? (int) $cuenta['CI'] : null
         );
@@ -50,8 +53,23 @@ class AuthService
 
     private function rolCanonico($rol)
     {
-        $roles = array('admin' => 'Administrador', 'administrador' => 'Administrador', 'caja' => 'Caja', 'cajero' => 'Caja', 'mozo' => 'Mozo', 'cocina' => 'Cocina', 'cocinero' => 'Cocina');
+        $roles = array('admin' => 'Administrador', 'administrador' => 'Administrador', 'caja' => 'Caja', 'cajero' => 'Caja', 'mozo' => 'Mozo', 'cocina' => 'Cocina', 'cocinero' => 'Cocina', 'cliente' => 'Cliente');
         $clave = strtolower(trim((string) $rol));
         return $roles[$clave] ?? trim((string) $rol);
+    }
+
+    private function idRolAplicacion($rol)
+    {
+        $roles = array(
+            'administrador' => 1,
+            'caja' => 2,
+            'cajero' => 2,
+            'mozo' => 3,
+            'cocina' => 4,
+            'cocinero' => 4,
+            'cliente' => 5
+        );
+        $nombre = strtolower(trim($this->rolCanonico($rol)));
+        return isset($roles[$nombre]) ? $roles[$nombre] : null;
     }
 }

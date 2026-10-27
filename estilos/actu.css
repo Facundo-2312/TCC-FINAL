@@ -201,13 +201,23 @@ color: #000000;
   }
 
   form input[type="text"],
-  form input[type="password"]{
+  form input[type="password"],
+  form select{
     background:#1b1b1b;
     color:var(--text);
     border:1px solid var(--line);
   }
 
   #Pal::placeholder{ color:#bdbdbd; }
+
+  form select{
+    width: calc(100% - 150px);
+    padding: 8px;
+    margin: 20px 0 10px;
+    border-radius: 20px;
+    color: var(--text);
+    background: #1b1b1b;
+  }
 
   input[type="submit"]{
     background-color:var(--accent);
@@ -277,7 +287,6 @@ color: #000000;
     transform: none;
   }
 }
-
 
 
 

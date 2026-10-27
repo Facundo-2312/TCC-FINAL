@@ -42,6 +42,17 @@ class ReservaService
         }
 
         $idMesa = (int)($datos['id_mesa'] ?? 0);
+        if ($idMesa <= 0) {
+            return array('ok' => false, 'error' => 'Selecciona una mesa valida.');
+        }
+
+        $capacidad = $this->repositorio->obtenerCapacidadMesa($idMesa);
+        if ($capacidad === null) {
+            return array('ok' => false, 'error' => 'La mesa seleccionada no existe.');
+        }
+        if ($cantidad > $capacidad) {
+            return array('ok' => false, 'error' => 'La mesa admite hasta ' . $capacidad . ' personas. Reduce la cantidad o selecciona otra mesa.');
+        }
 
         // Verificar disponibilidad
         if (!$this->repositorio->mesaDisponible($idMesa, $horaInicio, $horaFin)) {

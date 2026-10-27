@@ -233,7 +233,7 @@ class PedidoRepository
 
     public function buscarProductoParaPedido($idProducto)
     {
-        $stmt = mysqli_prepare($this->connection, "SELECT id_producto, precio FROM productos WHERE id_producto = ? AND estado = 'Activo' LIMIT 1");
+        $stmt = mysqli_prepare($this->connection, "SELECT id_producto, nombre, precio, stock FROM productos WHERE id_producto = ? AND estado = 'Activo' LIMIT 1 FOR UPDATE");
         mysqli_stmt_bind_param($stmt, 'i', $idProducto);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);

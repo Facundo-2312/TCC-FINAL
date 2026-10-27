@@ -205,7 +205,7 @@ select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset
 </div>
 
 <section aria-labelledby="pendientes-titulo">
-<div class="section-head"><div><h2 id="pendientes-titulo">Pedidos por cobrar</h2><p>Las solicitudes de clientes aparecen primero. Confirma solo al recibir el dinero.</p></div></div>
+<div class="section-head"><div><h2 id="pendientes-titulo">Pedidos por cobrar</h2><p>Las solicitudes de clientes aparecen primero. Confirma solo al recibir el dinero. Los pedidos aparecen aqui cuando Cocina los marca como entregados.</p></div></div>
 <div class="grid" id="caja-pendientes">
 <?php foreach ($pedidosPendientes as $pedido) { require __DIR__ . '/src/Views/caja_pedido.php'; } ?>
 <div class="empty-state" id="caja-sin-pendientes"<?php echo $pedidosPendientes ? ' hidden' : ''; ?>><strong>Todo al dia</strong>No hay pedidos entregados pendientes de cobro.</div>
@@ -288,4 +288,3 @@ setInterval(actualizarSolicitudesCobro, 5000);
 </script>
 </body>
 </html>
-
