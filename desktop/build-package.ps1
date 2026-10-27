@@ -47,7 +47,9 @@ foreach ($desktopItem in $desktopItems) {
 
 $stageLogDir = Join-Path $OutputRoot 'storage\logs'
 if (Test-Path $stageLogDir) {
-    Get-ChildItem -Path $stageLogDir -Filter '*.log' -File | Remove-Item -Force
+    Get-ChildItem -Path $stageLogDir -Recurse -File |
+        Where-Object { $_.Extension -in @('.log', '.sql') } |
+        Remove-Item -Force -ErrorAction Stop
 }
 
 $StageRunDir = Join-Path $OutputRoot 'desktop\run'
