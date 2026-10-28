@@ -30,24 +30,37 @@ class EmpleadoRepository
             return self::$ubicacionDisponible;
         }
 
-        try {
-            $faltantes = array();
-            foreach (array('direccion_latitud', 'direccion_longitud') as $columna) {
+        $faltantes = array();
+        foreach (array('direccion_latitud', 'direccion_longitud') as $columna) {
+            try {
                 $res = mysqli_query($this->connection, "SHOW COLUMNS FROM empleado LIKE '" . $columna . "'");
-                if (!$res || mysqli_num_rows($res) === 0) {
-                    $faltantes[] = $columna;
-                }
+            } catch (\mysqli_sql_exception $e) {
+                error_log('No se pudieron comprobar las columnas de ubicacion de empleado: ' . $e->getMessage());
+                return self::$ubicacionDisponible = false;
             }
-            foreach ($faltantes as $columna) {
-                $despues = $columna === 'direccion_latitud' ? 'Direccion' : 'direccion_latitud';
+
+            if (!$res) {
+                error_log('No se pudieron comprobar las columnas de ubicacion de empleado: ' . mysqli_error($this->connection));
+                return self::$ubicacionDisponible = false;
+            }
+            if (mysqli_num_rows($res) === 0) {
+                $faltantes[] = $columna;
+            }
+        }
+
+        foreach ($faltantes as $columna) {
+            $despues = $columna === 'direccion_latitud' ? 'Direccion' : 'direccion_latitud';
+            try {
                 if (!mysqli_query($this->connection, 'ALTER TABLE empleado ADD COLUMN ' . $columna . ' DECIMAL(10,7) NULL AFTER ' . $despues)) {
+                    error_log('No se pudo agregar la columna ' . $columna . ' a empleado: ' . mysqli_error($this->connection));
                     return self::$ubicacionDisponible = false;
                 }
+            } catch (\mysqli_sql_exception $e) {
+                error_log('No se pudo agregar la columna ' . $columna . ' a empleado: ' . $e->getMessage());
+                return self::$ubicacionDisponible = false;
             }
-            return self::$ubicacionDisponible = true;
-        } catch (\Throwable $e) {
-            return self::$ubicacionDisponible = false;
         }
+        return self::$ubicacionDisponible = true;
     }
 
     private function columnasUbicacion()
