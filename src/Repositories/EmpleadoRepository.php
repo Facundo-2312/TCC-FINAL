@@ -20,13 +20,13 @@ class EmpleadoRepository
 
     public function listar()
     {
-        $result = mysqli_query($this->connection, 'SELECT CI, Nombre, Apellido, Direccion, Usuario, Rol FROM empleado ORDER BY Nombre ASC');
+        $result = mysqli_query($this->connection, 'SELECT CI, Nombre, Apellido, Direccion, direccion_latitud, direccion_longitud, Usuario, Rol FROM empleado ORDER BY Nombre ASC');
         return $result ? mysqli_fetch_all($result, MYSQLI_ASSOC) : array();
     }
 
     public function buscar($ci)
     {
-        $stmt = mysqli_prepare($this->connection, 'SELECT CI, Nombre, Apellido, Direccion, Rol, Usuario, Pass FROM empleado WHERE CI = ? LIMIT 1');
+        $stmt = mysqli_prepare($this->connection, 'SELECT CI, Nombre, Apellido, Direccion, direccion_latitud, direccion_longitud, Rol, Usuario, Pass FROM empleado WHERE CI = ? LIMIT 1');
         mysqli_stmt_bind_param($stmt, 'i', $ci);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
@@ -57,10 +57,10 @@ class EmpleadoRepository
         return $row ? (int) $row['id_rol'] : null;
     }
 
-    public function crearEmpleado($ci, $nombre, $apellido, $direccion, $rol, $usuario, $password)
+    public function crearEmpleado($ci, $nombre, $apellido, $direccion, $latitud, $longitud, $rol, $usuario, $password)
     {
-        $stmt = mysqli_prepare($this->connection, 'INSERT INTO empleado (CI, Nombre, Apellido, Direccion, Rol, Usuario, Pass) VALUES (?, ?, ?, ?, ?, ?, ?)');
-        mysqli_stmt_bind_param($stmt, 'issssss', $ci, $nombre, $apellido, $direccion, $rol, $usuario, $password);
+        $stmt = mysqli_prepare($this->connection, 'INSERT INTO empleado (CI, Nombre, Apellido, Direccion, direccion_latitud, direccion_longitud, Rol, Usuario, Pass) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+        mysqli_stmt_bind_param($stmt, 'isssddsss', $ci, $nombre, $apellido, $direccion, $latitud, $longitud, $rol, $usuario, $password);
         $ok = mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
         return $ok;
@@ -75,14 +75,14 @@ class EmpleadoRepository
         return $ok;
     }
 
-    public function actualizarEmpleado($ci, $nombre, $apellido, $direccion, $rol, $usuario, $password = null)
+    public function actualizarEmpleado($ci, $nombre, $apellido, $direccion, $latitud, $longitud, $rol, $usuario, $password = null)
     {
         if ($password !== null) {
-            $stmt = mysqli_prepare($this->connection, 'UPDATE empleado SET Nombre=?, Apellido=?, Direccion=?, Rol=?, Usuario=?, Pass=? WHERE CI=?');
-            mysqli_stmt_bind_param($stmt, 'ssssssi', $nombre, $apellido, $direccion, $rol, $usuario, $password, $ci);
+            $stmt = mysqli_prepare($this->connection, 'UPDATE empleado SET Nombre=?, Apellido=?, Direccion=?, direccion_latitud=?, direccion_longitud=?, Rol=?, Usuario=?, Pass=? WHERE CI=?');
+            mysqli_stmt_bind_param($stmt, 'sssddsssi', $nombre, $apellido, $direccion, $latitud, $longitud, $rol, $usuario, $password, $ci);
         } else {
-            $stmt = mysqli_prepare($this->connection, 'UPDATE empleado SET Nombre=?, Apellido=?, Direccion=?, Rol=?, Usuario=? WHERE CI=?');
-            mysqli_stmt_bind_param($stmt, 'sssssi', $nombre, $apellido, $direccion, $rol, $usuario, $ci);
+            $stmt = mysqli_prepare($this->connection, 'UPDATE empleado SET Nombre=?, Apellido=?, Direccion=?, direccion_latitud=?, direccion_longitud=?, Rol=?, Usuario=? WHERE CI=?');
+            mysqli_stmt_bind_param($stmt, 'sssddssi', $nombre, $apellido, $direccion, $latitud, $longitud, $rol, $usuario, $ci);
         }
         $ok = mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);

@@ -27,18 +27,23 @@ class EmpleadoService
     public function listar() { return $this->repositorio->listar(); }
     public function buscar($ci) { return $this->repositorio->buscar((int) $ci); }
 
-    public function crear($ci, $nombre, $apellido, $direccion, $rol, $usuario, $password)
+    public function crear($ci, $nombre, $apellido, $direccion, $rol, $usuario, $password, $latitud = null, $longitud = null)
     {
         $this->lastError = '';
-        if ((int) $ci <= 0 || strlen((string) $password) < 8) return $this->error('La contrasena debe tener al menos 8 caracteres.');
+        if ((int) $ci <= 0) return $this->error('Ingresa una CI valida.');
+        if (!$this->datosPersonalesValidos($nombre, $apellido, $direccion, $usuario, $latitud, $longitud)) return false;
+        $latitud = $latitud === null || $latitud === '' ? null : (float) $latitud;
+        $longitud = $longitud === null || $longitud === '' ? null : (float) $longitud;
+        if (strlen((string) $password) < 8 || strlen((string) $password) > 72) return $this->error('La contrasena debe tener entre 8 y 72 caracteres.');
         $rol = $this->rolCanonico($rol);
+        if (!in_array($rol, array('Administrador', 'Caja', 'Mozo', 'Cocina'), true)) return $this->error('Selecciona un rol valido.');
         $idRol = $this->repositorio->idRol($rol);
-        if (!$idRol) return $this->error('Rol invalido: no existe en tabla roles.');
+        if (!$idRol) return $this->error('El rol seleccionado no existe en la base de datos. Verifica la configuracion de roles.');
         $con = $this->repositorio->connection();
         mysqli_begin_transaction($con);
         try {
             $hash = password_hash($password, PASSWORD_DEFAULT);
-            if (!$this->repositorio->crearEmpleado($ci, $nombre, $apellido, $direccion, $rol, $usuario, $hash) || !$this->repositorio->crearUsuario($this->nombreCompleto($nombre, $apellido), $usuario, $hash, $idRol)) throw new \RuntimeException();
+            if (!$this->repositorio->crearEmpleado($ci, $nombre, $apellido, $direccion, $latitud, $longitud, $rol, $usuario, $hash) || !$this->repositorio->crearUsuario($this->nombreCompleto($nombre, $apellido), $usuario, $hash, $idRol)) throw new \RuntimeException();
             mysqli_commit($con);
             return true;
         } catch (\Throwable $exception) {
@@ -47,26 +52,68 @@ class EmpleadoService
         }
     }
 
-    public function actualizar($nombre, $apellido, $direccion, $rol, $usuario, $password, $ci)
+    public function actualizar($nombre, $apellido, $direccion, $rol, $usuario, $password, $ci, $latitud = null, $longitud = null)
     {
         $this->lastError = '';
-        if ($password !== null && $password !== '' && strlen((string) $password) < 8) return $this->error('La contrasena debe tener al menos 8 caracteres.');
+        if (!$this->datosPersonalesValidos($nombre, $apellido, $direccion, $usuario, $latitud, $longitud)) return false;
+        $latitud = $latitud === null || $latitud === '' ? null : (float) $latitud;
+        $longitud = $longitud === null || $longitud === '' ? null : (float) $longitud;
+        if ($password !== null && $password !== '' && (strlen((string) $password) < 8 || strlen((string) $password) > 72)) return $this->error('La contrasena debe tener entre 8 y 72 caracteres.');
         $anterior = $this->buscar($ci);
         if (!$anterior) return $this->error('No se encontro funcionario para actualizar.');
         $rol = $this->rolCanonico($rol);
+        if (!in_array($rol, array('Administrador', 'Caja', 'Mozo', 'Cocina'), true)) return $this->error('Selecciona un rol valido.');
         $idRol = $this->repositorio->idRol($rol);
-        if (!$idRol) return $this->error('Rol invalido: no existe en tabla roles.');
+        if (!$idRol) return $this->error('El rol seleccionado no existe en la base de datos. Verifica la configuracion de roles.');
         $con = $this->repositorio->connection();
         mysqli_begin_transaction($con);
         try {
             $hash = $password !== null && $password !== '' ? password_hash($password, PASSWORD_DEFAULT) : $anterior['Pass'];
-            if (!$this->repositorio->actualizarEmpleado((int) $ci, $nombre, $apellido, $direccion, $rol, $usuario, $password !== null && $password !== '' ? $hash : null) || !$this->repositorio->actualizarUsuario($anterior['Usuario'], $this->nombreCompleto($nombre, $apellido), $usuario, $hash, $idRol)) throw new \RuntimeException();
+            if (!$this->repositorio->actualizarEmpleado((int) $ci, $nombre, $apellido, $direccion, $latitud, $longitud, $rol, $usuario, $password !== null && $password !== '' ? $hash : null) || !$this->repositorio->actualizarUsuario($anterior['Usuario'], $this->nombreCompleto($nombre, $apellido), $usuario, $hash, $idRol)) throw new \RuntimeException();
             mysqli_commit($con);
             return true;
         } catch (\Throwable $exception) {
             mysqli_rollback($con);
             return $this->error(mysqli_errno($con) === 1062 ? 'La CI o el usuario ya existe.' : 'No se pudo actualizar el funcionario.');
         }
+    }
+
+    private function datosPersonalesValidos($nombre, $apellido, $direccion, $usuario, $latitud, $longitud)
+    {
+        $nombre = trim((string) $nombre);
+        $apellido = trim((string) $apellido);
+        $direccion = trim((string) $direccion);
+        $usuario = trim((string) $usuario);
+        if ($nombre === '' || strlen($nombre) > 100 || !preg_match('/^[\p{L}\p{M} .\'-]+$/u', $nombre)) {
+            $this->error('El nombre solo puede contener letras, espacios, apostrofes o guiones.');
+            return false;
+        }
+        if ($apellido === '' || strlen($apellido) > 100 || !preg_match('/^[\p{L}\p{M} .\'-]+$/u', $apellido)) {
+            $this->error('El apellido solo puede contener letras, espacios, apostrofes o guiones.');
+            return false;
+        }
+        if ($direccion === '' || strlen($direccion) > 100) {
+            $this->error('Ingresa una direccion de hasta 100 caracteres.');
+            return false;
+        }
+        if (!preg_match('/^[A-Za-z0-9._-]{3,50}$/', $usuario)) {
+            $this->error('El usuario debe tener entre 3 y 50 caracteres y solo puede usar letras, numeros, punto, guion o guion bajo.');
+            return false;
+        }
+        $latitudVacia = $latitud === null || $latitud === '';
+        $longitudVacia = $longitud === null || $longitud === '';
+        if ($latitudVacia !== $longitudVacia) {
+            $this->error('Selecciona el punto completo en el mapa o quita ambas coordenadas.');
+            return false;
+        }
+        if (!$latitudVacia && (!is_numeric($latitud) || !is_numeric($longitud)
+            || !is_finite((float) $latitud) || !is_finite((float) $longitud)
+            || (float) $latitud < -90 || (float) $latitud > 90
+            || (float) $longitud < -180 || (float) $longitud > 180)) {
+            $this->error('Las coordenadas del mapa no son validas. Selecciona nuevamente el punto.');
+            return false;
+        }
+        return true;
     }
 
     public function eliminar($ci)

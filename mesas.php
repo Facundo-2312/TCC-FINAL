@@ -16,6 +16,24 @@ function h($value)
 $mesaController = new App\Controllers\MesaController();
 $servicioReserva = new App\Services\ReservaService();
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear_mesa'])) {
+    if ((string) ($_SESSION['Rol'] ?? '') !== '1') {
+        app_set_flash('error', 'Solo Administracion puede agregar mesas.');
+        app_redirect('mesas.php');
+    }
+    csrf_verify_or_die('mesas.php');
+    $resultadoMesa = $mesaController->crear($_POST['numero'] ?? 0, $_POST['capacidad'] ?? 0);
+    $mensajesMesa = array(
+        'creada' => array('success', 'Mesa agregada correctamente.'),
+        'duplicada' => array('error', 'Ya existe una mesa con ese numero.'),
+        'datos_invalidos' => array('error', 'El numero debe ser positivo y la capacidad debe estar entre 1 y 50 personas.'),
+        'error' => array('error', 'No se pudo agregar la mesa. Intenta nuevamente.')
+    );
+    $mensajeMesa = $mensajesMesa[$resultadoMesa['codigo']] ?? $mensajesMesa['error'];
+    app_set_flash($mensajeMesa[0], $mensajeMesa[1]);
+    app_redirect('mesas.php');
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion_mesa'])) {
     csrf_verify_or_die('mesas.php');
 
@@ -43,6 +61,7 @@ $libres = $vistaMesas['stats']['Libre'];
 $ocupadas = $vistaMesas['stats']['Ocupada'];
 $limpieza = $vistaMesas['stats']['Limpieza'];
 $historial = $mesaController->historial();
+$flashMesas = app_get_flash();
 
 // Cargar reservas para mostrar en las mesas
 $reservasActivas = $servicioReserva->listarActivas();
@@ -488,6 +507,18 @@ $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
             font-size: 12px;
         }
 
+        .add-table-form {
+            display: flex;
+            align-items: end;
+            gap: 12px;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+        .add-table-form label { display: grid; gap: 6px; color: #ddd; font-weight: bold; }
+        .add-table-form input { width: 130px; padding: 9px; border: 1px solid #ff0055; border-radius: 5px; background: #1b1b1b; color: #fff; }
+        .add-table-form button { padding: 10px 14px; border: 0; border-radius: 6px; background: #ff0055; color: #fff; font-weight: bold; cursor: pointer; }
+        .table-feedback { max-width: 1400px; margin: 14px auto; padding: 12px 16px; border-radius: 8px; background: rgba(255,255,255,.08); color: #fff; }
+
         .btn-submit {
             background-color: #ff0055;
             color: white;
@@ -594,6 +625,19 @@ $principalCssVersion = @filemtime(__DIR__ . '/estilos/Principal.css') ?: time();
     <?php if (isset($_GET['msg']) && $_GET['msg'] === 'occupied') { ?>
         <div class="alert warning">
             ⚠️ No se pudo reservar: la mesa ya fue ocupada por otro usuario.
+        </div>
+    <?php } ?>
+    <?php if (!empty($flashMesas['message'])) { ?><div class="table-feedback" role="status"><?php echo h($flashMesas['message']); ?></div><?php } ?>
+
+    <?php if ((string) ($_SESSION['Rol'] ?? '') === '1') { ?>
+        <div class="filters-container">
+            <form method="post" class="add-table-form">
+                <?php echo csrf_field(); ?>
+                <input type="hidden" name="crear_mesa" value="1">
+                <label for="numero-mesa">Numero de mesa<input id="numero-mesa" name="numero" type="number" min="1" max="9999" required></label>
+                <label for="capacidad-mesa">Capacidad (personas)<input id="capacidad-mesa" name="capacidad" type="number" min="1" max="50" value="4" required></label>
+                <button type="submit"><i class="fas fa-plus" aria-hidden="true"></i> Agregar mesa</button>
+            </form>
         </div>
     <?php } ?>
 

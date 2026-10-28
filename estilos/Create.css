@@ -181,6 +181,89 @@ form {
   background: rgba(59, 130, 246, 0.16);
 }
 
+.form-intro {
+  max-width: 420px;
+  margin: -10px 0 8px;
+  color: #bdbdbd;
+  text-align: center;
+  line-height: 1.45;
+}
+
+.field-label {
+  display: block;
+  width: 100%;
+  margin: 0 0 6px;
+  color: #bdbdbd;
+  font-size: .9rem;
+  text-align: left;
+}
+
+.contenido form .field-row {
+  width: calc(100% - 150px);
+}
+
+.contenido form .field-row > div {
+  width: 100%;
+  min-width: 0;
+}
+
+.contenido form .field-row input,
+.contenido form .field-row select {
+  width: 100%;
+  margin: 0 0 10px;
+}
+
+.contenido form > div:not(.field-row):not(.custom-file-input) {
+  width: calc(100% - 150px);
+}
+
+.contenido form > div input[type="password"] {
+  width: 100%;
+  margin: 0;
+}
+
+.contenido form select {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #1b1b1b;
+  color: var(--text);
+  font: inherit;
+}
+
+.contenido form > label {
+  width: calc(100% - 150px);
+  margin: 8px 0 -12px;
+  color: #dedede;
+  font-size: .9rem;
+  text-align: left;
+}
+
+.contenido form input[type="number"] {
+  width: calc(100% - 150px);
+  padding: 8px;
+  margin: 20px 0 10px;
+  border: 0;
+  border-radius: 20px;
+  background: #1b1b1b;
+  color: #f3f3f3;
+  box-shadow: 1px 1px 4px rgba(0,0,0,.8);
+}
+
+.custom-file-input input[type="file"] {
+  width: 1px;
+  height: 1px;
+}
+
+#file-name {
+  display: block;
+  margin-top: 8px;
+  color: #bdbdbd;
+  font-size: .82rem;
+  text-align: center;
+}
+
 /* Estilos para las palabras */
 
 form input[type="text"],
@@ -197,6 +280,13 @@ form input[type="password"] {
   transition: all 0.3s;
   outline: none;
   border-style: none;
+}
+
+#Nombre::placeholder,
+#Descripcion::placeholder,
+#Precio::placeholder,
+#Stock::placeholder {
+  color: #bdbdbd;
 }
 
 form input[type="text"]:hover,
@@ -365,4 +455,3 @@ form .guardar{
 
 
  
-

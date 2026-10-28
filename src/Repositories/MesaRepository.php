@@ -24,6 +24,15 @@ class MesaRepository
         return $result ? mysqli_fetch_all($result, MYSQLI_ASSOC) : array();
     }
 
+    public function crear($numero, $capacidad)
+    {
+        $stmt = mysqli_prepare($this->connection, 'INSERT INTO mesas (numero, capacidad) VALUES (?, ?)');
+        mysqli_stmt_bind_param($stmt, 'ii', $numero, $capacidad);
+        $ok = mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+        return $ok;
+    }
+
     public function buscarParaActualizar($idMesa)
     {
         $stmt = mysqli_prepare($this->connection, 'SELECT id_mesa, estado FROM mesas WHERE id_mesa = ? LIMIT 1 FOR UPDATE');

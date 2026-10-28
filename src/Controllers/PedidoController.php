@@ -60,6 +60,7 @@ class PedidoController
     public function crearPedidoRapido($mesa, $producto, $precio, $cantidad, $usuario) { return $this->servicio->crearPedidoRapido($mesa, $producto, $precio, $cantidad, $usuario); }
     public function crearPedidoMozo($numeroMesa, $usuario, $observaciones, array $items) { return $this->servicio->crearPedidoMozo($numeroMesa, $usuario, $observaciones, $items); }
     public function crearPedidoCliente($numeroMesa, $usuario, $observaciones, array $items, $idUsuario) { return $this->servicio->crearPedidoCliente($numeroMesa, $usuario, $observaciones, $items, $idUsuario); }
+    public function ultimoError() { return $this->servicio->ultimoError(); }
     
         public function listarParaCajaLegacy()
         {

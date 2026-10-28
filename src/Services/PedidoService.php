@@ -13,10 +13,16 @@ class PedidoService
     const ESTADOS_VALIDOS = array('Pendiente', 'Preparando', 'Entregado', 'Cancelado', 'ArchivadoCocina');
 
     private $repositorio;
+    private $lastError = '';
 
     public function __construct(PedidoRepository $repositorio = null)
     {
         $this->repositorio = $repositorio ?: new PedidoRepository();
+    }
+
+    public function ultimoError()
+    {
+        return $this->lastError;
     }
 
     public function listarConDetalle()
@@ -145,56 +151,86 @@ class PedidoService
 
     private function procesarPedidoMozo($numeroMesa, $usuario, $observaciones, array $items, $autorizacionCliente)
     {
+        $this->lastError = '';
         $numeroMesa = (int) $numeroMesa;
         $usuario = trim((string) $usuario);
         $observaciones = trim((string) $observaciones);
-        if ($numeroMesa <= 0 || $usuario === '' || empty($items) || count($items) > 50) return false;
+        if ($numeroMesa <= 0) {
+            $this->lastError = 'Selecciona un numero de mesa valido.';
+            return false;
+        }
+        if ($usuario === '' || empty($items) || count($items) > 50) {
+            $this->lastError = 'El pedido no contiene datos validos. Recarga la pagina e intenta nuevamente.';
+            return false;
+        }
 
         $connection = $this->repositorio->connection();
         mysqli_begin_transaction($connection);
         try {
             $idUsuario = $this->repositorio->buscarIdUsuario($usuario);
-            if ($idUsuario <= 0) throw new \RuntimeException();
-            if ($autorizacionCliente !== null && $idUsuario !== $autorizacionCliente['id_usuario']) throw new \RuntimeException();
+            if ($idUsuario <= 0) throw new \RuntimeException('No se pudo identificar al usuario del pedido.');
+            if ($autorizacionCliente !== null && $idUsuario !== $autorizacionCliente['id_usuario']) {
+                throw new \RuntimeException('La cuenta no coincide con la sesion actual.');
+            }
             $idMesa = $this->repositorio->buscarMesaPorNumeroParaActualizar($numeroMesa);
-            if (!$idMesa) throw new \RuntimeException();
+            if (!$idMesa) throw new \RuntimeException('La mesa ' . $numeroMesa . ' no existe. Selecciona una mesa valida.');
             if ($autorizacionCliente !== null) {
                 $estadoMesa = $this->repositorio->obtenerEstadoMesa($idMesa);
                 if ($estadoMesa !== 'Libre') {
-                    if (!in_array($estadoMesa, array('Reservada', 'Ocupada'), true)) throw new \RuntimeException();
+                    if (!in_array($estadoMesa, array('Reservada', 'Ocupada'), true)) {
+                        throw new \RuntimeException('La mesa ' . $numeroMesa . ' no esta disponible para pedidos.');
+                    }
                     $reservas = new ReservaRepository($connection);
                     if (!$reservas->bloquearReservaActivaDelCliente(
                         $idMesa,
                         $autorizacionCliente['id_usuario']
                     )) {
-                        throw new \RuntimeException();
+                        throw new \RuntimeException('La mesa ' . $numeroMesa . ' esta reservada para otra cuenta.');
                     }
                 }
             }
             $idPedido = $this->repositorio->crearPedidoMozo($idMesa, $idUsuario, substr($observaciones, 0, 500));
-            if ($idPedido <= 0 || !$this->repositorio->ocuparMesa($idMesa)) throw new \RuntimeException();
+            if ($idPedido <= 0 || !$this->repositorio->ocuparMesa($idMesa)) {
+                throw new \RuntimeException('No se pudo asignar el pedido a la mesa ' . $numeroMesa . '.');
+            }
 
             $total = 0.0;
             foreach ($items as $item) {
                 $idProducto = (int) ($item['IDProducto'] ?? 0);
                 $cantidad = (int) ($item['quantity'] ?? 0);
-                if ($idProducto <= 0 || $cantidad <= 0 || $cantidad > 100) throw new \RuntimeException();
+                if ($idProducto <= 0 || $cantidad <= 0 || $cantidad > 100) {
+                    throw new \RuntimeException('Hay un producto con una cantidad invalida. Revisa el pedido.');
+                }
                 $producto = $this->repositorio->buscarProductoParaPedido($idProducto);
-                if (!$producto) throw new \RuntimeException();
+                if (!$producto) {
+                    throw new \RuntimeException('Uno de los productos ya no esta disponible. Actualiza el menu e intenta nuevamente.');
+                }
+                if ((int) $producto['stock'] < $cantidad) {
+                    throw new \RuntimeException('Stock insuficiente para ' . $producto['nombre'] . '. Disponible: ' . (int) $producto['stock'] . '.');
+                }
                 $precio = (float) $producto['precio'];
                 $subtotal = $precio * $cantidad;
                 $sin = substr(trim((string) ($item['sinIngredientes'] ?? '')), 0, 255);
                 $extra = substr(trim((string) ($item['extraIngredientes'] ?? '')), 0, 255);
                 if (!$this->descontarStockSiCorresponde($idProducto, $cantidad)
-                    || !$this->repositorio->agregarDetallePersonalizado($idPedido, $idProducto, $cantidad, $precio, $subtotal, $sin, $extra)) throw new \RuntimeException();
+                    || !$this->repositorio->agregarDetallePersonalizado($idPedido, $idProducto, $cantidad, $precio, $subtotal, $sin, $extra)) {
+                    throw new \RuntimeException('No se pudo reservar el stock de ' . $producto['nombre'] . '. Vuelve a revisar su disponibilidad.');
+                }
                 $total += $subtotal;
             }
 
-            if (!$this->repositorio->actualizarTotal($idPedido, $total)) throw new \RuntimeException();
+            if (!$this->repositorio->actualizarTotal($idPedido, $total)) {
+                throw new \RuntimeException('No se pudo calcular el total del pedido.');
+            }
             mysqli_commit($connection);
             return $idPedido;
         } catch (\Throwable $exception) {
             mysqli_rollback($connection);
+            $this->lastError = $exception instanceof \mysqli_sql_exception ? '' : $exception->getMessage();
+            if ($this->lastError === '') {
+                $this->lastError = 'No se pudo registrar el pedido. Intenta nuevamente.';
+                \App\Support\ErrorHandler::log($exception);
+            }
             return false;
         }
     }

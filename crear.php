@@ -1,8 +1,9 @@
 <?php
 require_once __DIR__ . '/app_bootstrap.php';
+require_once __DIR__ . '/OpenStreetMap.php';
 
 app_require_login('Login.php', ['1']);
-
+$flash = app_get_flash();
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -12,6 +13,7 @@ app_require_login('Login.php', ['1']);
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Agregar Empleado</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<?php OpenStreetMap::renderStylesheets(); ?>
 <script src="<?php echo htmlspecialchars(app_url('no-popups.js'), ENT_QUOTES, 'UTF-8'); ?>"></script>
 <style>
 :root{
@@ -167,6 +169,12 @@ input[type="password"]:focus{
 .guardar:hover{transform:translateY(-1px);filter:brightness(1.05)}
 .guardar:active{transform:translateY(0)}
 .note{color:var(--muted);font-size:.88rem;margin:0}
+.form-error{padding:12px;border:1px solid rgba(255,95,137,.45);border-radius:10px;background:rgba(255,0,85,.18);color:#ffe1e7}
+.field-label{display:block;margin:0 0 6px;color:var(--muted);font-size:.9rem}
+select{
+    width:100%;padding:14px 16px;border-radius:14px;border:1px solid var(--line);
+    background:#1b1b1b;color:var(--text);font:inherit
+}
 @media (max-width: 920px){
     .shell{grid-template-columns:1fr}
 }
@@ -209,25 +217,28 @@ input[type="password"]:focus{
         <section class="card">
             <h3>Datos del funcionario</h3>
             <p class="hint">Los campos se envian a <strong>InterfazE.php</strong> sin cambiar el flujo actual.</p>
+            <?php if (!empty($flash['message'])) { ?><div class="form-error" role="alert"><?php echo htmlspecialchars((string) $flash['message'], ENT_QUOTES, 'UTF-8'); ?></div><?php } ?>
 
             <form method="post" action="InterfazE.php" enctype="multipart/form-data">
                 <?php echo csrf_field(); ?>
                 <div class="field-row">
-                    <input type="number" name="CI" id="Pal" placeholder="CI" maxlength="100" required>
-                    <input type="text" name="Nombre" id="Pal" placeholder="Nombre" maxlength="100" required>
+                    <div><label class="field-label" for="CI">CI</label><input type="number" name="CI" id="CI" placeholder="CI" min="1" max="2147483647" required></div>
+                    <div><label class="field-label" for="Nombre">Nombre</label><input type="text" name="Nombre" id="Nombre" placeholder="Nombre" maxlength="100" pattern="[\p{L}\p{M} .'-]+" title="Usa letras, espacios, apostrofes o guiones." required></div>
                 </div>
 
                 <div class="field-row">
-                    <input type="text" name="Apellido" id="Pal" placeholder="Apellido" maxlength="100" required>
-                    <input type="text" name="Direccion" id="Pal" placeholder="Direccion" maxlength="100" required>
+                    <div><label class="field-label" for="Apellido">Apellido</label><input type="text" name="Apellido" id="Apellido" placeholder="Apellido" maxlength="100" pattern="[\p{L}\p{M} .'-]+" title="Usa letras, espacios, apostrofes o guiones." required></div>
+                    <div><label class="field-label" for="Direccion">Direccion</label><input type="text" name="Direccion" id="Direccion" placeholder="Direccion" maxlength="100" required></div>
                 </div>
 
                 <div class="field-row">
-                    <input type="text" name="Rol" id="Pal" placeholder="Rol" maxlength="100" required>
-                    <input type="text" name="Usuario" id="Pal" placeholder="Usuario" maxlength="100" required>
+                    <div><label class="field-label" for="Rol">Rol</label><select name="Rol" id="Rol" required><option value="">Selecciona un rol</option><option>Administrador</option><option>Caja</option><option>Mozo</option><option>Cocina</option></select></div>
+                    <div><label class="field-label" for="Usuario">Usuario</label><input type="text" name="Usuario" id="Usuario" placeholder="Usuario" minlength="3" maxlength="50" pattern="[A-Za-z0-9._-]{3,50}" required></div>
                 </div>
 
-                <input type="password" name="Pass" id="Pal" placeholder="Contrasena" maxlength="100" required>
+                <?php OpenStreetMap::renderEmployeeLocation(); ?>
+
+                <div><label class="field-label" for="Pass">Contrasena (8 a 72 caracteres)</label><input type="password" name="Pass" id="Pass" placeholder="Contrasena" minlength="8" maxlength="72" required></div>
 
                 <p class="note">Verifica el usuario y la contrasena antes de guardar.</p>
 
@@ -240,5 +251,6 @@ input[type="password"]:focus{
         </section>
     </main>
 </div>
+<?php OpenStreetMap::renderScripts(); ?>
 </body>
 </html>

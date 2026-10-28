@@ -64,6 +64,8 @@ eliminados por una importacion antigua: conserva respaldos privados separados.
 2. Ejecuta `build-installer.ps1` para intentar compilar el instalador.
 3. Si Inno Setup no está instalado, `build-installer.ps1` deja listo el archivo `installer.iss` para compilarlo manualmente más adelante.
 
+El staging omite los archivos `.log` y respaldos `.sql` de `storage/logs`; no los distribuye con el paquete.
+
 Archivos de build:
 
 - `build-package.ps1`: arma el paquete staged y copia un runtime PHP dentro de `runtime/php`

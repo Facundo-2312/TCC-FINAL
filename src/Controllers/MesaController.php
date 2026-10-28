@@ -14,6 +14,7 @@ class MesaController
     }
 
     public function listar() { return $this->servicio->listarConResumen(); }
+    public function crear($numero, $capacidad) { return $this->servicio->crear($numero, $capacidad); }
     public function cambiarEstado($idMesa, $estado, $usuario) { return $this->servicio->cambiarEstado($idMesa, $estado, $usuario); }
     public function historial() { return $this->servicio->historialReciente(); }
 }

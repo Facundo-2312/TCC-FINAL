@@ -43,27 +43,39 @@ $flash = app_get_flash();
 <form method="post" action="InterfazProducto.php" enctype="multipart/form-data">
 <?php echo csrf_field(); ?>
 
-<h2><i class="fas fa-plus"></i></h2>
+<h2><i class="fas fa-plus-circle" aria-hidden="true"></i> Nuevo producto</h2>
+<p class="form-intro">Completa los datos del producto y selecciona una imagen. Los campos marcados son obligatorios.</p>
 
-<input type="text" name="Nombre" id="Pal" placeholder="Nombre" maxlength="100" required>
+<label for="Nombre">Nombre del producto</label>
+<input type="text" name="Nombre" id="Nombre" placeholder="Ej.: Ensalada de frutas" maxlength="100" required>
 
-<input type="text" name="Descripcion" id="Pal" placeholder="Descripción" maxlength="100" required>
+<label for="Descripcion">Descripcion</label>
+<input type="text" name="Descripcion" id="Descripcion" placeholder="Describe brevemente el producto" maxlength="100" required>
 
-<input type="number" step="0.01" name="Precio" id="Pal" placeholder="Precio" min="0.01" required>
+<label for="Precio">Precio</label>
+<input type="number" step="0.01" name="Precio" id="Precio" placeholder="0,00" min="0.01" required>
 
-<input type="number" name="Stock" id="Pal" placeholder="Stock" min="0" value="0" required>
+<label for="Stock">Stock disponible</label>
+<input type="number" name="Stock" id="Stock" placeholder="Cantidad" min="0" max="999999" value="0" required>
 
 <div class="custom-file-input">
-  <label for="fileTest"><i class="fas fa-file-upload"></i>Subir archivo</label>
+  <label for="fileTest"><i class="fas fa-file-upload"></i>Seleccionar imagen del producto</label>
   <input type="file" id="fileTest" name="fileTest" accept="image/*" required>
+  <span id="file-name" aria-live="polite">Ningun archivo seleccionado</span>
 </div>
 
-<p><input class="guardar" type="submit" name="submit" value="Guardar Datos"></p>
+<p><input class="guardar" type="submit" name="submit" value="Guardar producto"></p>
 <input id="createID" name="crud" type="hidden" value="1">
 
 </form>
 
 </div>
+
+<script>
+document.getElementById('fileTest').addEventListener('change', function () {
+  document.getElementById('file-name').textContent = this.files.length ? this.files[0].name : 'Ningun archivo seleccionado';
+});
+</script>
 
 </body>
 </html>

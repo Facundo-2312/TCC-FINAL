@@ -18,6 +18,17 @@ class ReservaRepository
         return $this->connection;
     }
 
+    public function obtenerCapacidadMesa($idMesa)
+    {
+        $stmt = mysqli_prepare($this->connection, 'SELECT capacidad FROM mesas WHERE id_mesa = ? LIMIT 1');
+        mysqli_stmt_bind_param($stmt, 'i', $idMesa);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $row = $result ? mysqli_fetch_assoc($result) : null;
+        mysqli_stmt_close($stmt);
+        return $row ? max(1, (int) $row['capacidad']) : null;
+    }
+
     /**
      * Crear una nueva reserva
      */
