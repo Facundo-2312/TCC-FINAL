@@ -18,15 +18,54 @@ class EmpleadoRepository
         return $this->connection;
     }
 
+    private static $ubicacionDisponible = null;
+
+    /**
+     * Production databases may predate migration 015; add the location columns
+     * on demand and degrade gracefully when ALTER is not permitted.
+     */
+    private function tieneUbicacion()
+    {
+        if (self::$ubicacionDisponible !== null) {
+            return self::$ubicacionDisponible;
+        }
+
+        try {
+            $faltantes = array();
+            foreach (array('direccion_latitud', 'direccion_longitud') as $columna) {
+                $res = mysqli_query($this->connection, "SHOW COLUMNS FROM empleado LIKE '" . $columna . "'");
+                if (!$res || mysqli_num_rows($res) === 0) {
+                    $faltantes[] = $columna;
+                }
+            }
+            foreach ($faltantes as $columna) {
+                $despues = $columna === 'direccion_latitud' ? 'Direccion' : 'direccion_latitud';
+                if (!mysqli_query($this->connection, 'ALTER TABLE empleado ADD COLUMN ' . $columna . ' DECIMAL(10,7) NULL AFTER ' . $despues)) {
+                    return self::$ubicacionDisponible = false;
+                }
+            }
+            return self::$ubicacionDisponible = true;
+        } catch (\Throwable $e) {
+            return self::$ubicacionDisponible = false;
+        }
+    }
+
+    private function columnasUbicacion()
+    {
+        return $this->tieneUbicacion()
+            ? 'direccion_latitud, direccion_longitud'
+            : 'NULL AS direccion_latitud, NULL AS direccion_longitud';
+    }
+
     public function listar()
     {
-        $result = mysqli_query($this->connection, 'SELECT CI, Nombre, Apellido, Direccion, direccion_latitud, direccion_longitud, Usuario, Rol FROM empleado ORDER BY Nombre ASC');
+        $result = mysqli_query($this->connection, 'SELECT CI, Nombre, Apellido, Direccion, ' . $this->columnasUbicacion() . ', Usuario, Rol FROM empleado ORDER BY Nombre ASC');
         return $result ? mysqli_fetch_all($result, MYSQLI_ASSOC) : array();
     }
 
     public function buscar($ci)
     {
-        $stmt = mysqli_prepare($this->connection, 'SELECT CI, Nombre, Apellido, Direccion, direccion_latitud, direccion_longitud, Rol, Usuario, Pass FROM empleado WHERE CI = ? LIMIT 1');
+        $stmt = mysqli_prepare($this->connection, 'SELECT CI, Nombre, Apellido, Direccion, ' . $this->columnasUbicacion() . ', Rol, Usuario, Pass FROM empleado WHERE CI = ? LIMIT 1');
         mysqli_stmt_bind_param($stmt, 'i', $ci);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
@@ -59,6 +98,13 @@ class EmpleadoRepository
 
     public function crearEmpleado($ci, $nombre, $apellido, $direccion, $latitud, $longitud, $rol, $usuario, $password)
     {
+        if (!$this->tieneUbicacion()) {
+            $stmt = mysqli_prepare($this->connection, 'INSERT INTO empleado (CI, Nombre, Apellido, Direccion, Rol, Usuario, Pass) VALUES (?, ?, ?, ?, ?, ?, ?)');
+            mysqli_stmt_bind_param($stmt, 'issssss', $ci, $nombre, $apellido, $direccion, $rol, $usuario, $password);
+            $ok = mysqli_stmt_execute($stmt);
+            mysqli_stmt_close($stmt);
+            return $ok;
+        }
         $stmt = mysqli_prepare($this->connection, 'INSERT INTO empleado (CI, Nombre, Apellido, Direccion, direccion_latitud, direccion_longitud, Rol, Usuario, Pass) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
         mysqli_stmt_bind_param($stmt, 'isssddsss', $ci, $nombre, $apellido, $direccion, $latitud, $longitud, $rol, $usuario, $password);
         $ok = mysqli_stmt_execute($stmt);
@@ -77,6 +123,18 @@ class EmpleadoRepository
 
     public function actualizarEmpleado($ci, $nombre, $apellido, $direccion, $latitud, $longitud, $rol, $usuario, $password = null)
     {
+        if (!$this->tieneUbicacion()) {
+            if ($password !== null) {
+                $stmt = mysqli_prepare($this->connection, 'UPDATE empleado SET Nombre=?, Apellido=?, Direccion=?, Rol=?, Usuario=?, Pass=? WHERE CI=?');
+                mysqli_stmt_bind_param($stmt, 'ssssssi', $nombre, $apellido, $direccion, $rol, $usuario, $password, $ci);
+            } else {
+                $stmt = mysqli_prepare($this->connection, 'UPDATE empleado SET Nombre=?, Apellido=?, Direccion=?, Rol=?, Usuario=? WHERE CI=?');
+                mysqli_stmt_bind_param($stmt, 'sssssi', $nombre, $apellido, $direccion, $rol, $usuario, $ci);
+            }
+            $ok = mysqli_stmt_execute($stmt);
+            mysqli_stmt_close($stmt);
+            return $ok;
+        }
         if ($password !== null) {
             $stmt = mysqli_prepare($this->connection, 'UPDATE empleado SET Nombre=?, Apellido=?, Direccion=?, direccion_latitud=?, direccion_longitud=?, Rol=?, Usuario=?, Pass=? WHERE CI=?');
             mysqli_stmt_bind_param($stmt, 'sssddsssi', $nombre, $apellido, $direccion, $latitud, $longitud, $rol, $usuario, $password, $ci);
