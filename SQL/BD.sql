@@ -85,6 +85,8 @@ CREATE TABLE empleado (
     Nombre VARCHAR(50) NOT NULL,
     Apellido VARCHAR(50) NOT NULL,
     Direccion VARCHAR(100),
+    direccion_latitud DECIMAL(10,7) NULL,
+    direccion_longitud DECIMAL(10,7) NULL,
     Rol VARCHAR(30),
     Usuario VARCHAR(30) UNIQUE NOT NULL,
     Pass VARCHAR(255) NOT NULL

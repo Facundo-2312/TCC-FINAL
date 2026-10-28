@@ -31,7 +31,7 @@ faltan `mesas_historial`, `reservas`, `solicitudes_cobro` o columnas como
 `mesas.capacidad`. El detalle aparece en `C:\xampp\apache\logs\error.log`.
 
 Antes de actualizar, respalda la base con `mysqldump`. Luego ejecuta el runner
-anterior. Comprueba con `--status` que todas las migraciones 000 a 014 figuren
+anterior. Comprueba con `--status` que todas las migraciones 000 a 015 figuren
 como aplicadas y que `--dry-run` no muestre pendientes. Esto actualiza el
 esquema de la base existente sin importar ni reemplazar datos con `SQL/BD.sql`.
 
@@ -113,6 +113,7 @@ migraciones: usar directamente `SQL/install.sql`, que ya incluye todas estas mej
 | `012_rol_cliente.sql` | Añade el rol de cliente si todavia no existe. |
 | `013_catalogo_fotos_reales.sql` | Actualiza referencias de imagen SVG del catalogo a JPG. |
 | `014_solicitudes_cobro.sql` | Guarda solicitudes de cobro del cliente sin registrar pagos; Caja confirma el dinero recibido. Incluida en los esquemas de instalacion nuevos. |
+| `015_ubicacion_empleados.sql` | Agrega coordenadas geograficas opcionales para la direccion del funcionario; se seleccionan en un mapa OpenStreetMap. |
 
 ## Solicitar el cobro desde el cliente
 

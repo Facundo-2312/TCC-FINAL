@@ -28,4 +28,10 @@ verificarValidacionEmpleado(!$resultado && strpos($servicio->ultimoError(), 'ape
 $resultado = $servicio->crear($comun[0], $comun[1], $comun[2], $comun[3], $comun[4], $comun[5], 'corta');
 verificarValidacionEmpleado(!$resultado && strpos($servicio->ultimoError(), '8 y 72') !== false, 'Debe explicar el minimo de contrasena.');
 
-echo "PASS validacion de nombre, apellido y longitud de contrasena\n";
+$resultado = $servicio->crear($comun[0], $comun[1], $comun[2], $comun[3], $comun[4], $comun[5], 'contrasena-valida', -91, 0);
+verificarValidacionEmpleado(!$resultado && strpos($servicio->ultimoError(), 'coordenadas') !== false, 'Debe rechazar latitudes fuera de rango.');
+
+$resultado = $servicio->crear($comun[0], $comun[1], $comun[2], $comun[3], $comun[4], $comun[5], 'contrasena-valida', -34.9, null);
+verificarValidacionEmpleado(!$resultado && strpos($servicio->ultimoError(), 'punto completo') !== false, 'Debe requerir ambas coordenadas.');
+
+echo "PASS validacion de empleados, contrasena y coordenadas\n";

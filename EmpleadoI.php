@@ -142,6 +142,7 @@ th{color:#ff6e99;font-size:.92rem}
                 <th>Nombre</th>
                 <th>Apellido</th>
                 <th>Dirección</th>
+                <th>Mapa</th>
                 <th>Rol</th>
                 <th>Usuario</th>
                 <th>Acciones</th>
@@ -155,6 +156,7 @@ th{color:#ff6e99;font-size:.92rem}
                         <td><?php echo h($fila['Nombre'] ?? ''); ?></td>
                         <td><?php echo h($fila['Apellido'] ?? ''); ?></td>
                         <td><?php echo h($fila['Direccion'] ?? ''); ?></td>
+                        <td><?php if ($fila['direccion_latitud'] !== null && $fila['direccion_longitud'] !== null) { $latitud = (float) $fila['direccion_latitud']; $longitud = (float) $fila['direccion_longitud']; ?><a href="<?php echo h('https://www.openstreetmap.org/?mlat=' . $latitud . '&mlon=' . $longitud . '#map=17/' . $latitud . '/' . $longitud); ?>" target="_blank" rel="noopener noreferrer">Ver ubicación</a><?php } else { ?><span class="badge">Sin ubicación</span><?php } ?></td>
                         <td><span class="badge"><?php echo h($fila['Rol'] ?? ''); ?></span></td>
                         <td><?php echo h($fila['Usuario'] ?? ''); ?></td>
                         <td class="actions">
@@ -168,7 +170,7 @@ th{color:#ff6e99;font-size:.92rem}
                     </tr>
                 <?php } ?>
             <?php } else { ?>
-                <tr><td colspan="7" class="empty">No hay funcionarios registrados.</td></tr>
+                <tr><td colspan="8" class="empty">No hay funcionarios registrados.</td></tr>
             <?php } ?>
         </tbody>
     </table>
@@ -176,4 +178,3 @@ th{color:#ff6e99;font-size:.92rem}
 
 </body>
 </html>
-

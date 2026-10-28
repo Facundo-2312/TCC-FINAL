@@ -25,6 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crud'])) {
         $Rol = trim($_POST['Rol'] ?? '');
         $Usuario = trim($_POST['Usuario'] ?? '');
         $Pass = (string) ($_POST['Pass'] ?? '');
+        $Latitud = trim((string) ($_POST['direccion_latitud'] ?? ''));
+        $Longitud = trim((string) ($_POST['direccion_longitud'] ?? ''));
 
         if ($CI <= 0 || $Nombre === '' || $Apellido === '' || $Direccion === '' || $Rol === '' || $Usuario === '' || $Pass === '') {
             app_set_flash('error', 'Completa todos los campos para crear el funcionario.');
@@ -33,7 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crud'])) {
 
         $res = $empleadoController->crear(array(
             'CI' => $CI, 'Nombre' => $Nombre, 'Apellido' => $Apellido,
-            'Direccion' => $Direccion, 'Rol' => $Rol, 'Usuario' => $Usuario, 'Pass' => $Pass
+            'Direccion' => $Direccion, 'Rol' => $Rol, 'Usuario' => $Usuario, 'Pass' => $Pass,
+            'direccion_latitud' => $Latitud, 'direccion_longitud' => $Longitud
         ));
 
         if ($res) {
@@ -53,6 +56,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crud'])) {
         $Rol = trim($_POST['Rol'] ?? ($_POST['IDRol'] ?? ''));
         $Usuario = trim($_POST['Usuario'] ?? '');
         $Pass = (string) ($_POST['Pass'] ?? '');
+        $Latitud = trim((string) ($_POST['direccion_latitud'] ?? ''));
+        $Longitud = trim((string) ($_POST['direccion_longitud'] ?? ''));
 
         if ($CI <= 0 || $Nombre === '' || $Apellido === '' || $Direccion === '' || $Rol === '' || $Usuario === '') {
             app_set_flash('error', 'Completa todos los campos para actualizar el funcionario.');
@@ -61,7 +66,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crud'])) {
 
         $res = $empleadoController->actualizar(array(
             'CI' => $CI, 'Nombre' => $Nombre, 'Apellido' => $Apellido,
-            'Direccion' => $Direccion, 'Rol' => $Rol, 'Usuario' => $Usuario, 'Pass' => $Pass
+            'Direccion' => $Direccion, 'Rol' => $Rol, 'Usuario' => $Usuario, 'Pass' => $Pass,
+            'direccion_latitud' => $Latitud, 'direccion_longitud' => $Longitud
         ));
 
         if ($res) {
