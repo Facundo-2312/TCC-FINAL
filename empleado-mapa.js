@@ -1,9 +1,12 @@
 (function () {
-    var mapElement = document.getElementById('employee-map');
-    var latitudeInput = document.getElementById('direccion_latitud');
-    var longitudeInput = document.getElementById('direccion_longitud');
-    var status = document.getElementById('employee-map-status');
-    var clearButton = document.getElementById('employee-map-clear');
+    var config = window.OpenStreetMapConfig;
+    if (!config) return;
+
+    var mapElement = document.getElementById(config.mapElementId);
+    var latitudeInput = document.getElementById(config.latitudeField);
+    var longitudeInput = document.getElementById(config.longitudeField);
+    var status = document.getElementById(config.statusElementId);
+    var clearButton = document.getElementById(config.clearButtonId);
 
     if (!mapElement || !latitudeInput || !longitudeInput || !status || !clearButton) return;
     if (!window.L) {
@@ -16,11 +19,11 @@
     var initialLongitude = Number(longitudeInput.value);
     var hasInitialPoint = latitudeInput.value !== '' && longitudeInput.value !== ''
         && Number.isFinite(initialLatitude) && Number.isFinite(initialLongitude);
-    var start = hasInitialPoint ? [initialLatitude, initialLongitude] : [-34.9011, -56.1645];
-    var map = L.map(mapElement).setView(start, hasInitialPoint ? 16 : 12);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    var start = hasInitialPoint ? [initialLatitude, initialLongitude] : config.defaultCenter;
+    var map = L.map(mapElement).setView(start, hasInitialPoint ? config.selectedZoom : config.defaultZoom);
+    L.tileLayer(config.tileUrlTemplate, {
+        maxZoom: config.maxZoom,
+        attribution: config.attribution
     }).addTo(map);
 
     var marker = null;

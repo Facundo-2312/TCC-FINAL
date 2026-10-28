@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/app_bootstrap.php';
+require_once __DIR__ . '/OpenStreetMap.php';
 
 app_require_login('Login.php', ['1']);
 $flash = app_get_flash();
@@ -12,7 +13,7 @@ $flash = app_get_flash();
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Agregar Empleado</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
+<?php OpenStreetMap::renderStylesheets(); ?>
 <script src="<?php echo htmlspecialchars(app_url('no-popups.js'), ENT_QUOTES, 'UTF-8'); ?>"></script>
 <style>
 :root{
@@ -170,13 +171,6 @@ input[type="password"]:focus{
 .note{color:var(--muted);font-size:.88rem;margin:0}
 .form-error{padding:12px;border:1px solid rgba(255,95,137,.45);border-radius:10px;background:rgba(255,0,85,.18);color:#ffe1e7}
 .field-label{display:block;margin:0 0 6px;color:var(--muted);font-size:.9rem}
-.employee-location{width:100%;padding:14px;border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.14)}
-.employee-location h4{margin:0 0 8px}
-.employee-location small{display:block;margin-top:8px;color:var(--muted)}
-.employee-location a{color:#ff9aba}
-#employee-map{height:260px;width:100%;margin:12px 0;border-radius:8px;background:#1b1b1b}
-.map-clear{padding:9px 12px;border:1px solid #555;border-radius:8px;background:#333;color:#fff;cursor:pointer}
-.map-clear:disabled{opacity:.55;cursor:not-allowed}
 select{
     width:100%;padding:14px 16px;border-radius:14px;border:1px solid var(--line);
     background:#1b1b1b;color:var(--text);font:inherit
@@ -242,16 +236,7 @@ select{
                     <div><label class="field-label" for="Usuario">Usuario</label><input type="text" name="Usuario" id="Usuario" placeholder="Usuario" minlength="3" maxlength="50" pattern="[A-Za-z0-9._-]{3,50}" required></div>
                 </div>
 
-                <section class="employee-location" aria-labelledby="employee-location-title">
-                    <h4 id="employee-location-title">Ubicacion de la direccion (opcional)</h4>
-                    <p class="note">Haz clic en el mapa para marcar el punto exacto. Puedes arrastrar el marcador para ajustarlo.</p>
-                    <div id="employee-map" role="application" aria-label="Mapa de OpenStreetMap para elegir la ubicacion"></div>
-                    <p id="employee-map-status" class="note" role="status" aria-live="polite">Cargando mapa...</p>
-                    <input type="hidden" name="direccion_latitud" id="direccion_latitud">
-                    <input type="hidden" name="direccion_longitud" id="direccion_longitud">
-                    <button class="map-clear" id="employee-map-clear" type="button">Quitar ubicacion seleccionada</button>
-                    <small>Mapa © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a></small>
-                </section>
+                <?php OpenStreetMap::renderEmployeeLocation(); ?>
 
                 <div><label class="field-label" for="Pass">Contrasena (8 a 72 caracteres)</label><input type="password" name="Pass" id="Pass" placeholder="Contrasena" minlength="8" maxlength="72" required></div>
 
@@ -266,7 +251,6 @@ select{
         </section>
     </main>
 </div>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
-<script src="<?php echo htmlspecialchars(app_url('empleado-mapa.js'), ENT_QUOTES, 'UTF-8'); ?>"></script>
+<?php OpenStreetMap::renderScripts(); ?>
 </body>
 </html>
