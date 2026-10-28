@@ -39,6 +39,7 @@ jobs:
           set -euo pipefail
           mariadb -h127.0.0.1 -uroot ci_test < database/tests/infinityfree_legacy_fixture.sql
           mariadb -h127.0.0.1 -uroot ci_test < SQL/upgrade_infinityfree_legacy.sql
+          mariadb -h127.0.0.1 -uroot ci_test < SQL/migrations/015_ubicacion_empleados.sql
           export FLOW_TEST_PASSWORD="$(openssl rand -hex 24)"
           php database/tests/role_flows_seed.php
           php -S 127.0.0.1:8080 -t . >/tmp/role-flow-server.log 2>&1 &
