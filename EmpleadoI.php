@@ -11,6 +11,7 @@ function h($value)
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 }
 
+$flash = app_get_flash();
 $empleados = ListarEmpleado();
 $totalFuncionarios = count($empleados);
 $rolesResumen = [];
@@ -31,6 +32,7 @@ foreach ($empleados as $fila) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Funcionarios</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<link rel="stylesheet" href="<?php echo h(app_url('estilos/confirmacion.css')); ?>">
 <script src="<?php echo htmlspecialchars(app_url('no-popups.js'), ENT_QUOTES, 'UTF-8'); ?>"></script>
 <style>
 :root{
@@ -77,6 +79,9 @@ body{
     color:var(--accent);
     font-size:clamp(1.8rem,3vw,2.5rem);
 }
+.flash{margin-bottom:20px;padding:12px;border:1px solid var(--line);border-radius:10px}
+.flash-success{color:#d9ffe8;border-color:rgba(54,211,153,.45);background:rgba(34,197,94,.16)}
+.flash-error{color:#ffe1e7;border-color:rgba(255,95,137,.45);background:rgba(255,0,85,.18)}
 .summary{
     display:grid;
     grid-template-columns:repeat(4,minmax(0,1fr));
@@ -104,7 +109,6 @@ th{color:#ff6e99;font-size:.92rem}
 .actions a,.actions button{display:inline-block;padding:7px 10px;border-radius:8px;color:#fff;text-decoration:none;margin-right:6px;border:0;cursor:pointer;font:inherit}
 .actions form{display:inline}
 .actions .edit{background:#2563eb}
-.actions .delete{background:#dc2626}
 .empty{padding:16px;color:var(--muted)}
 @media (max-width: 900px){.summary{grid-template-columns:1fr 1fr}}
 @media (max-width: 620px){.summary{grid-template-columns:1fr}}
@@ -118,6 +122,12 @@ th{color:#ff6e99;font-size:.92rem}
 </div>
 
 <h1 class="title">Gestión de Funcionarios</h1>
+
+<?php if (!empty($flash['message'])) { ?>
+    <div class="flash flash-<?php echo h($flash['type'] ?? 'info'); ?>" role="<?php echo ($flash['type'] ?? '') === 'error' ? 'alert' : 'status'; ?>">
+        <?php echo h($flash['message']); ?>
+    </div>
+<?php } ?>
 
 <div class="summary">
     <div class="card">
@@ -162,11 +172,20 @@ th{color:#ff6e99;font-size:.92rem}
                         <td><?php echo h($fila['Usuario'] ?? ''); ?></td>
                         <td class="actions">
                             <a class="edit" title="Editar" href="<?php echo h(app_url('Actualizar.php?ID=' . (int) ($fila['CI'] ?? 0))); ?>"><i class="fas fa-pen"></i></a>
-                            <form method="post" action="<?php echo h(app_url('Eliminar.php')); ?>" onsubmit="return confirm('¿Eliminar este funcionario?');">
-                                <?php echo csrf_field(); ?>
-                                <input type="hidden" name="ID" value="<?php echo (int) ($fila['CI'] ?? 0); ?>">
-                                <button type="submit" class="delete" title="Eliminar"><i class="fas fa-trash"></i></button>
-                            </form>
+                            <details class="confirm-delete">
+                                <summary>
+                                    <span class="confirm-delete__open"><i class="fas fa-trash" aria-hidden="true"></i> Eliminar</span>
+                                    <span class="confirm-delete__cancel">Cancelar</span>
+                                </summary>
+                                <div class="confirm-delete__panel">
+                                    <p>¿Eliminar este funcionario?</p>
+                                    <form method="post" action="<?php echo h(app_url('Eliminar.php')); ?>">
+                                        <?php echo csrf_field(); ?>
+                                        <input type="hidden" name="ID" value="<?php echo (int) ($fila['CI'] ?? 0); ?>">
+                                        <button type="submit" class="confirm-delete__confirm">Confirmar</button>
+                                    </form>
+                                </div>
+                            </details>
                         </td>
                     </tr>
                 <?php } ?>

@@ -135,6 +135,7 @@ if (!is_array($productos)) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Listado de productos</title>
 <link rel="stylesheet" type="text/css" href="../estilos/index.css?v=<?php echo $indexCssVersion; ?>">
+<link rel="stylesheet" href="<?php echo h(app_url('estilos/confirmacion.css')); ?>">
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
@@ -203,7 +204,20 @@ if (!is_array($productos)) {
           </td>
           <td>
             <a href="<?php echo h(app_url('MVCsix1.0/update.php?ID=' . $id)); ?>" class="edit" title="Editar"><i class="fas fa-pencil-alt"></i></a>
-            <a href="<?php echo h(app_url('MVCsix1.0/delete.php?ID=' . $id . '&_csrf=' . App\Support\Csrf::token())); ?>" class="delete" title="Eliminar" onclick="return confirm('¿Eliminar este producto?');"><i class="fas fa-trash"></i></a>
+            <details class="confirm-delete">
+              <summary>
+                <span class="confirm-delete__open"><i class="fas fa-trash" aria-hidden="true"></i> Eliminar</span>
+                <span class="confirm-delete__cancel">Cancelar</span>
+              </summary>
+              <div class="confirm-delete__panel">
+                <p>¿Eliminar este producto?</p>
+                <form method="post" action="<?php echo h(app_url('MVCsix1.0/delete.php')); ?>">
+                  <?php echo csrf_field(); ?>
+                  <input type="hidden" name="ID" value="<?php echo $id; ?>">
+                  <button type="submit" class="confirm-delete__confirm">Confirmar</button>
+                </form>
+              </div>
+            </details>
           </td>
         </tr>
         <?php } ?>

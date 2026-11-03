@@ -440,14 +440,20 @@ section[id],form[id],div[id]{scroll-margin-top:80px}
   body{padding-bottom:40px}
   .top{padding:12px 16px}
   .top .user,.site-user .user{display:none}
-  .site-header-in{padding:10px 14px;gap:10px}
+  .site-header-in{padding:10px 14px;gap:10px;flex-wrap:wrap}
   h1{padding:0 16px}
   .layout{padding:0 12px}
   .reservation-grid{grid-template-columns:1fr}
   .products{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
   .product img{height:120px}
   .product p{display:none}
+  .product-bottom{flex-wrap:wrap}
+  .price{min-width:0;overflow-wrap:anywhere}
+  .add{max-width:100%}
   .panel{padding:18px}
+}
+@media(max-width:400px){
+  section[id],form[id],div[id]{scroll-margin-top:120px}
 }
 </style>
 </head>

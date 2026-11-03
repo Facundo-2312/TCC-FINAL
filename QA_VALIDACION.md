@@ -1,5 +1,36 @@
 # RESTAURANTE-UY: informe de validacion y despliegue
 
+## Revision de cierre local (03/11/2026)
+
+Esta revision corresponde a los cambios de la rama de trabajo. Los resultados
+de despliegue anteriores de este informe son historicos: las correcciones de
+esta revision no deben considerarse publicadas hasta verificar su despliegue.
+
+- En una base sintetica aislada se probaron el acceso y permisos de los cinco
+  roles, el alta, edicion y baja de funcionarios, sus coordenadas y el bloqueo
+  de solicitudes de borrado sin CSRF valido.
+- Se verificaron la baja de productos mediante POST con CSRF y la conservacion
+  del historial al desactivar un producto que ya tiene pedidos.
+- Se probo el circuito de pedido, stock, cocina, solicitud y confirmacion de
+  cobro, liberacion de mesa, reserva y pedido de mozo. Tambien pasaron las
+  regresiones de integridad de pagos, productos, imagenes y empleados.
+- Se corrigieron las confirmaciones de borrado que quedaban bloqueadas, los
+  patrones de los formularios de funcionarios y varios problemas de
+  adaptacion movil. La prueba automatizada comprueba los patrones con las
+  banderas JavaScript `u` y `v`.
+- En un navegador se revisaron 11 pantallas en cuatro anchos moviles, el login
+  entre 320 y 1366 px, y la adicion de un producto al carrito a 320 px.
+  Esas pruebas no sustituyen una comprobacion en un telefono fisico ni en
+  otros motores de navegador.
+
+La revision utilizo PHP 8.0.30 y MariaDB 10.4 en una instancia sintetica
+separada, con triggers de stock desactivados para reproducir el hosting. No se
+hicieron operaciones comerciales sobre datos de produccion durante esta
+revision. Quedan pendientes la publicacion y su aprobacion, la comprobacion en
+un dispositivo fisico, la confirmacion de los datos de contacto y redes, y un
+respaldo externo actualizado de produccion. Las direcciones visibles no
+coinciden y el telefono y los enlaces sociales son de ejemplo.
+
 ## Alcance y conclusion
 
 Validacion realizada en la rama `qa/auditoria-defensa`, fusionada despues en

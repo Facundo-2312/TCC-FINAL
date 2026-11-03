@@ -1,0 +1,55 @@
+.confirm-delete {
+  display: inline-block;
+  vertical-align: top;
+  text-align: left;
+}
+
+.confirm-delete summary {
+  display: inline-block;
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  background: #b91c1c;
+  color: #fff;
+  cursor: pointer;
+  list-style: none;
+}
+
+.confirm-delete summary::-webkit-details-marker {
+  display: none;
+}
+
+.confirm-delete__cancel,
+.confirm-delete[open] .confirm-delete__open {
+  display: none;
+}
+
+.confirm-delete[open] .confirm-delete__cancel {
+  display: inline;
+}
+
+.confirm-delete__panel {
+  margin-top: 8px;
+  max-width: 14rem;
+  font-size: 0.9rem;
+}
+
+.confirm-delete__panel p {
+  margin: 0 0 8px;
+}
+
+.confirm-delete__confirm {
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: #b91c1c;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+}
+
+.confirm-delete summary:focus-visible,
+.confirm-delete__confirm:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}

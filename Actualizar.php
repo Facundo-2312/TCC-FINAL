@@ -63,11 +63,11 @@ $flash = app_get_flash();
 				<h2>Editar funcionario</h2>
 				
 <label></label>
-<input type="text" name="Nombre" id="Nombre" class='texto'placeholder="Nombre" maxlength="100" pattern="[\p{L}\p{M} .'-]+" title="Usa letras, espacios, apostrofes o guiones." required value="<?php echo h($datos_empleado->Nombre);?>">
+<input type="text" name="Nombre" id="Nombre" class='texto'placeholder="Nombre" maxlength="100" pattern="[\p{L}\p{M} .'\-]+" title="Usa letras, espacios, apostrofes o guiones." required value="<?php echo h($datos_empleado->Nombre);?>">
 <input type="hidden" name="CI" id="CI" class='texto' maxlength="100" value="<?php echo h($datos_empleado->CI); ?>">
 
 <label></label>
-<input type="text" name="Apellido" id="Apellido" class='texto' placeholder="Apellido" maxlength="100" pattern="[\p{L}\p{M} .'-]+" title="Usa letras, espacios, apostrofes o guiones." required value="<?php echo h($datos_empleado->Apellido);?>">
+<input type="text" name="Apellido" id="Apellido" class='texto' placeholder="Apellido" maxlength="100" pattern="[\p{L}\p{M} .'\-]+" title="Usa letras, espacios, apostrofes o guiones." required value="<?php echo h($datos_empleado->Apellido);?>">
 
 <label></label>
 <input type="text" name="Direccion" id="Direccion" class='texto' placeholder="Direccion" maxlength="100" required value="<?php echo h($datos_empleado->Direccion);?>">
@@ -81,7 +81,7 @@ $flash = app_get_flash();
 <select name="Rol" id="Rol" required><?php foreach (array('Administrador', 'Caja', 'Mozo', 'Cocina') as $rol) { ?><option value="<?php echo h($rol); ?>"<?php echo strcasecmp((string) $datos_empleado->Rol, $rol) === 0 ? ' selected' : ''; ?>><?php echo h($rol); ?></option><?php } ?></select>
 
 <label></label>
-<input type="text" name="Usuario" id="Usuario" class='texto' placeholder="Usuario" minlength="3" maxlength="50" pattern="[A-Za-z0-9._-]{3,50}" required value="<?php echo h($datos_empleado->Usuario);?>">
+<input type="text" name="Usuario" id="Usuario" class='texto' placeholder="Usuario" minlength="3" maxlength="50" pattern="[A-Za-z0-9._\-]{3,50}" required value="<?php echo h($datos_empleado->Usuario);?>">
 
 <label></label>
 <input type="password" name="Pass" id="Pass" class='texto' placeholder="Nueva contraseña (opcional, 8 a 72 caracteres)" minlength="8" maxlength="72" value="">

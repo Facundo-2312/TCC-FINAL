@@ -11,10 +11,17 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 csrf_verify_or_die('EmpleadoI.php');
 
 $Ci = (int) ($_POST['ID'] ?? 0);
-if ($Ci > 0) {
-    include('Empleado.php');
-    $Empleado = new Empleado();
-    $Empleado->delete($Ci);
+if ($Ci <= 0) {
+    app_set_flash('error', 'Selecciona un funcionario valido.');
+    app_redirect('EmpleadoI.php');
 }
 
+require_once __DIR__ . '/Empleado.php';
+$Empleado = new Empleado();
+if ($Empleado->delete($Ci)) {
+    app_set_flash('success', 'Funcionario eliminado correctamente.');
+} else {
+    $detalle = trim((string) $Empleado->getLastError());
+    app_set_flash('error', $detalle !== '' ? $detalle : 'No se pudo eliminar el funcionario.');
+}
 app_redirect('EmpleadoI.php');

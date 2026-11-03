@@ -30,6 +30,9 @@ jobs:
         with:
           php-version: "8.4"
           extensions: mysqli, mbstring, fileinfo
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
       - name: Install database client
         run: sudo apt-get update -qq && sudo apt-get install -y -qq mariadb-client
       - name: Upgrade synthetic legacy database and exercise all five roles
@@ -49,5 +52,6 @@ jobs:
             if curl -fsS http://127.0.0.1:8080/Login.php >/dev/null; then break; fi
             sleep 1
           done
+          node database/tests/empleado_form_patterns_test.js
           python3 database/tests/role_flows_http.py
           php database/tests/order_flow.php

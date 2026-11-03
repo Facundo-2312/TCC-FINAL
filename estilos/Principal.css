@@ -275,6 +275,7 @@ ul.social-icons li {
   }
 
   .Links {
+    box-sizing: border-box;
     width: 100%;
     max-width: 320px;
     text-align: center;

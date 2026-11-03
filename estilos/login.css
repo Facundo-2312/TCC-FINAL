@@ -67,7 +67,7 @@ h1 {
 }
 
 .login-container {
-  width: min(430px, 94vw);
+  width: min(430px, 100%);
   padding: 28px 24px 26px;
   border-radius: 18px;
   border: 1px solid var(--line);
@@ -362,6 +362,5 @@ ul.social-icons li {
     transform: none;
   }
 }
-
 
 
