@@ -3,7 +3,8 @@ require_once __DIR__ . '/app_bootstrap.php';
 app_start_session();
 
 $contextoLogin = (string) ($_GET['ctx'] ?? '');
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && !preg_match('/^[a-f0-9]{64}$/', $contextoLogin)) {
+if ($_SERVER['REQUEST_METHOD'] === 'GET'
+    && (!preg_match('/^[a-f0-9]{64}$/', $contextoLogin) || isset($_SESSION['Usuario'], $_SESSION['Rol']))) {
   App\Support\Auth::createContext();
   app_redirect('Login.php');
 }

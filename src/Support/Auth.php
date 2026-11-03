@@ -6,10 +6,12 @@ namespace App\Support;
 class Auth
 {
     private static $contextKeys = array('Usuario', 'Rol', 'CI', 'ClienteNombre', 'cliente_pedido_token', '_csrf_token');
+    private static $contextActivated = false;
 
     public static function startSession()
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {
+            self::$contextActivated = false;
             $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
                 || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower((string) $_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https');
 
@@ -43,7 +45,11 @@ class Auth
             );
         }
 
-        self::activateContext();
+        // Select the tab once per request, not again after createContext() or logout().
+        if (!self::$contextActivated) {
+            self::activateContext();
+            self::$contextActivated = true;
+        }
         $_SESSION['_last_activity'] = $now;
 
         if (!isset($_SESSION['_last_regen'])) {
@@ -59,8 +65,8 @@ class Auth
     private static function activateContext()
     {
         $requested = trim((string) ($_GET['ctx'] ?? $_POST['ctx'] ?? ''));
-        if ($requested === '' || !preg_match('/^[a-f0-9]{64}$/', $requested)) {
-            return;
+        if (!preg_match('/^[a-f0-9]{64}$/', $requested)) {
+            $requested = '';
         }
 
         if (!isset($_SESSION['_contexts']) || !is_array($_SESSION['_contexts'])) {
@@ -69,6 +75,7 @@ class Auth
 
         $active = (string) ($_SESSION['_active_context'] ?? '');
         if ($active === $requested) {
+            if ($requested === '') return;
             $_SESSION['_context_activity'][$requested] = time();
             return;
         }
@@ -78,13 +85,18 @@ class Auth
             $_SESSION['_context_activity'][$active] = time();
         }
 
-        $context = $_SESSION['_contexts'][$requested] ?? array();
+        // A request without ctx must never borrow the identity of the last tab.
+        $context = $requested !== '' ? ($_SESSION['_contexts'][$requested] ?? array()) : array();
         foreach (self::$contextKeys as $key) {
             if (array_key_exists($key, $context)) $_SESSION[$key] = $context[$key];
             else unset($_SESSION[$key]);
         }
-        $_SESSION['_active_context'] = $requested;
-        $_SESSION['_context_activity'][$requested] = time();
+        if ($requested !== '') {
+            $_SESSION['_active_context'] = $requested;
+            $_SESSION['_context_activity'][$requested] = time();
+        } else {
+            unset($_SESSION['_active_context']);
+        }
     }
 
     private static function captureContext()
