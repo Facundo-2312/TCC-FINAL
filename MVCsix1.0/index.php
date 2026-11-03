@@ -147,7 +147,7 @@ if (!is_array($productos)) {
 <body>
 
 <header>
-<a class="Atras" href="../Principal.php">
+<a class="Atras" href="<?php echo h(app_url('Principal.php')); ?>">
   <i class="fas fa-arrow-circle-left" style="margin-left: 5px;"></i>
 </a>
 
@@ -156,7 +156,7 @@ if (!is_array($productos)) {
 
 <div class="botones-container">
   <div class="bot">
-    <a href="create.php" class="boton">Agregar Producto</a>
+    <a href="<?php echo h(app_url('MVCsix1.0/create.php')); ?>" class="boton">Agregar Producto</a>
   </div>
   <div class="bot"></div>
 </div>

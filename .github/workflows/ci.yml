@@ -26,6 +26,10 @@ jobs:
             php -l "$f" >/dev/null || { echo "Error de sintaxis: $f"; status=1; }
           done < <(find . -name '*.php' -not -path './.git/*' -print0)
           exit $status
+      - name: Session contexts and URL regression tests
+        run: |
+          php database/tests/auth_context_test.php
+          php database/tests/env_url_test.php
 
   no-secrets:
     runs-on: ubuntu-latest

@@ -45,6 +45,13 @@ El `.htaccess` del repositorio bloquea archivos que comienzan con punto; comprob
 ## 5. Pruebas
 - Abrir `https://TU-DOMINIO/` y `/Login.php`.
 - Probar `registro_cliente.php`, `cliente.php`, cocina, mozo, caja, imágenes y operaciones de base.
+- Para usar varios roles en Chrome, abrir `/Login.php` en cada pestaña e iniciar
+  sesion por separado. Conservar el parametro `ctx` durante la navegacion:
+  identifica el acceso de esa pestaña, no el rol. Abrir un enlace de login ya
+  autenticado crea un acceso nuevo sin reemplazar el anterior; salir cierra
+  solamente ese acceso. Duplicar una pantalla interna con su `ctx` comparte
+  ese mismo acceso. Una URL interna sin `ctx` solicita iniciar sesion, nunca
+  utiliza el ultimo rol de otra pestaña.
 - Confirmar que `/.env`, `/SQL/` y `/src/` devuelven 403/404; no deben revelar datos.
 - Confirmar que los cambios se reflejan después de un commit aprobado en `main`.
 - Si el hosting rechaza FTPS/certificados o limita transferencias, revisar el log de Actions **sin desactivar la validación TLS**.

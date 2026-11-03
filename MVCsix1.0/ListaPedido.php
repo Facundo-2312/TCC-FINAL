@@ -446,7 +446,7 @@ th{
         </div>
         <div class="actions">
             <button class="btn primary" type="submit">Filtrar</button>
-            <a class="btn ghost" href="ListaPedido.php">Hoy</a>
+            <a class="btn ghost" href="<?php echo htmlspecialchars(app_url('MVCsix1.0/ListaPedido.php'), ENT_QUOTES, 'UTF-8'); ?>">Hoy</a>
         </div>
     </form>
 </div>

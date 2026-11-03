@@ -337,7 +337,7 @@ $mesas = mysqli_fetch_all($resultMesas, MYSQLI_ASSOC);
             </div>
 
             <button type="submit" class="btn-action reserve" style="padding: 10px 20px;">🔍 Filtrar</button>
-            <a href="reportes_reservas.php" class="btn-action free" style="padding: 10px 20px; text-decoration: none; text-align: center;">✕ Limpiar</a>
+            <a href="<?php echo h(app_url('reportes_reservas.php')); ?>" class="btn-action free" style="padding: 10px 20px; text-decoration: none; text-align: center;">✕ Limpiar</a>
         </form>
     </div>
 
@@ -405,7 +405,7 @@ $mesas = mysqli_fetch_all($resultMesas, MYSQLI_ASSOC);
                                     </span>
                                 </td>
                                 <td style="padding: 12px; text-align: center;">
-                                    <a href="editar_reserva.php?id=<?php echo (int)$r['id_reserva']; ?>" 
+                                    <a href="<?php echo h(app_url('editar_reserva.php?id=' . (int) $r['id_reserva'])); ?>"
                                        class="btn-action reserve" style="padding: 6px 12px; font-size: 12px;">
                                         ✏️ Editar
                                     </a>
@@ -420,12 +420,12 @@ $mesas = mysqli_fetch_all($resultMesas, MYSQLI_ASSOC);
 
     <!-- Exportar -->
     <div style="margin-top: 20px; text-align: center;">
-        <a href="exportar_reservas.php?<?php echo http_build_query(array(
+        <a href="<?php echo h(app_url('exportar_reservas.php?' . http_build_query(array(
             'estado' => $filtroEstado,
             'fecha_inicio' => $filtroFechaInicio,
             'fecha_fin' => $filtroFechaFin,
             'id_mesa' => $filtroMesa
-        )); ?>" class="btn-action reserve" style="display: inline-block; padding: 12px 24px;">
+        )))); ?>" class="btn-action reserve" style="display: inline-block; padding: 12px 24px;">
             📥 Exportar a CSV
         </a>
     </div>

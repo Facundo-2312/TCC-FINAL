@@ -1,5 +1,24 @@
 # RESTAURANTE-UY: informe de validacion y despliegue
 
+## Sesiones simultaneas por pestaña (03/11/2026)
+
+- Se corrigio la seleccion del contexto: se realiza una sola vez por peticion.
+  Los pedidos sin un `ctx` valido ya no heredan la identidad de otra pestaña.
+- Abrir el login con el contexto de un usuario autenticado crea un acceso
+  nuevo y conserva el anterior. Se repararon enlaces de retorno, productos,
+  informes y reservas que perdian el contexto.
+- Pasaron `auth_context_test.php`, `env_url_test.php` (con y sin `putenv`),
+  el control de sintaxis de los PHP modificados y `git diff --check`.
+- En el navegador local, contra una base sintetica `ci_test`, se comprobaron
+  los cinco roles con una misma cookie, 19 accesos intercalados, el rechazo
+  de CSRF de otra pestaña, un login reutilizado, URLs sin contexto o con
+  contexto invalido y el cierre real de caja sin cerrar los otros cuatro roles.
+- La regresion de contextos queda incluida en CI. El harness HTTP tambien
+  comprueba los cinco roles con un mismo cliente, enlaces y cierre aislado.
+
+Estas comprobaciones son locales; la publicacion requiere confirmar el
+resultado del despliegue en GitHub Actions y comprobar el sitio publicado.
+
 ## Revision de cierre local (03/11/2026)
 
 Esta revision corresponde a los cambios de la rama de trabajo. Los resultados

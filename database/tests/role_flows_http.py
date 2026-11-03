@@ -30,8 +30,9 @@ def product_form(body, name):
     assert row is not None, 'Synthetic product not found: ' + name
     return row.group(1), fields(row.group(0))
 
-def login(role):
-    c = client()
+def login(role, c=None):
+    if c is None:
+        c = client()
     _, body = request(c, 'Login.php')
     data = fields(body)
     data.update(Usuario='flow_role_' + str(role), Pass=PASSWORD)
@@ -70,6 +71,34 @@ for role in range(1,6):
     url, _ = request(c, 'Principal.php')
     assert '/Login.php' in url
     print('PASS role', role, 'login, allowed pages, denied pages, logout')
+
+# Chrome tabs share the cookie jar: do not test isolation with separate clients.
+shared = client()
+contexts = {role: login(role, shared)[1] for role in range(1, 6)}
+for role in (1, 4, 2, 5, 3, 1, 5):
+    for path in allowed[role]:
+        url, _ = request(shared, path + '?ctx=' + contexts[role])
+        assert '/Login.php' not in url, ('shared cookie', role, path)
+
+url, body = request(shared, 'Login.php?ctx=' + contexts[1])
+fresh_ctx = fields(body)['ctx']
+assert fresh_ctx not in contexts.values(), 'A copied login URL must open a new context'
+url, _ = request(shared, 'Principal.php?ctx=' + contexts[1])
+assert '/Principal.php' in url, 'Opening another login must preserve the original tab'
+url, _ = request(shared, 'Principal.php')
+assert '/Login.php' in url, 'Missing ctx must not borrow the last tab identity'
+
+_, body = request(shared, 'MVCsix1.0/index.php?ctx=' + contexts[1])
+for target in ('Principal.php', 'MVCsix1.0/create.php'):
+    assert re.search(r'href="[^"]*/' + re.escape(target) + r'\?ctx=' + contexts[1] + r'"', body), target
+url, _ = request(shared, 'Salir.php?ctx=' + contexts[2])
+assert '/Login.php' in url
+url, _ = request(shared, 'CAJA.php?ctx=' + contexts[2])
+assert '/Login.php' in url, 'Logged out tab was restored'
+for role in (1, 3, 4, 5):
+    url, _ = request(shared, allowed[role][0] + '?ctx=' + contexts[role])
+    assert '/Login.php' not in url, ('logout affected another tab', role)
+print('PASS five roles share one cookie; login URLs, navigation and logout stay isolated')
 
 c=client()
 _, body=request(c,'Login.php')

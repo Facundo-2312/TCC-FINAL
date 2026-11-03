@@ -25,7 +25,7 @@ $flash = app_get_flash();
 
 <header>
 
-<a class="Atras" href="index.php">
+<a class="Atras" href="<?php echo htmlspecialchars(app_url('MVCsix1.0/index.php'), ENT_QUOTES, 'UTF-8'); ?>">
   <i class="fas fa-arrow-circle-left" style="margin-left: 5px;"></i>
 </a>
 <h1>Ingresar Producto</h1>

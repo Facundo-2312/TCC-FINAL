@@ -193,7 +193,7 @@ select{
 <body>
 <div class="page">
     <header class="topbar">
-        <a href="EmpleadoI.php" class="back"><i class="fas fa-arrow-left"></i> Volver</a>
+        <a href="<?php echo htmlspecialchars(app_url('EmpleadoI.php'), ENT_QUOTES, 'UTF-8'); ?>" class="back"><i class="fas fa-arrow-left"></i> Volver</a>
         <div class="title-block">
             <p class="eyebrow">Modulo de personal</p>
             <h1 class="title">Ingresar funcionario</h1>
