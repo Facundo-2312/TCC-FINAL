@@ -47,8 +47,12 @@ class EmpleadoService
             mysqli_commit($con);
             return true;
         } catch (\Throwable $exception) {
+            $errno = mysqli_errno($con) ?: (int) $exception->getCode();
+            $detalle = mysqli_error($con) ?: $exception->getMessage();
             mysqli_rollback($con);
-            return $this->error(mysqli_errno($con) === 1062 ? 'La CI o el usuario ya existe.' : 'No se pudo guardar el funcionario.');
+            if ($errno === 1062) return $this->error('La CI o el usuario ya existe.');
+            error_log('EmpleadoService::crear fallo (' . $errno . '): ' . $detalle);
+            return $this->error('No se pudo guardar el funcionario. Detalle: ' . ($detalle !== '' ? $detalle : 'error desconocido') . ($errno ? ' (codigo ' . $errno . ')' : ''));
         }
     }
 
@@ -73,8 +77,12 @@ class EmpleadoService
             mysqli_commit($con);
             return true;
         } catch (\Throwable $exception) {
+            $errno = mysqli_errno($con) ?: (int) $exception->getCode();
+            $detalle = mysqli_error($con) ?: $exception->getMessage();
             mysqli_rollback($con);
-            return $this->error(mysqli_errno($con) === 1062 ? 'La CI o el usuario ya existe.' : 'No se pudo actualizar el funcionario.');
+            if ($errno === 1062) return $this->error('La CI o el usuario ya existe.');
+            error_log('EmpleadoService::actualizar fallo (' . $errno . '): ' . $detalle);
+            return $this->error('No se pudo actualizar el funcionario. Detalle: ' . ($detalle !== '' ? $detalle : 'error desconocido') . ($errno ? ' (codigo ' . $errno . ')' : ''));
         }
     }
 
