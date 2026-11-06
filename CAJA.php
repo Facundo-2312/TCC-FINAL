@@ -142,7 +142,7 @@ $flashCaja = app_get_flash();
 body{margin:0;padding:24px;background:radial-gradient(ellipse at top left,rgba(255,45,111,.13),transparent 45%),var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-serif}
 main{max-width:1440px;margin:auto}
 .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;text-decoration:none;font-weight:700;border:0;cursor:pointer}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 14px;border-radius:10px;text-decoration:none;font-weight:700;border:0;cursor:pointer}
 .back{background:#3a3a3a;color:#fff}.logout{background:var(--accent);color:#fff}
 h1{margin:28px 0 8px;font-size:clamp(1.8rem,3vw,2.6rem)}
 h2{font-size:1.2rem;margin:0 0 8px}h3{margin:0;font-size:1.1rem}
@@ -172,7 +172,7 @@ th{font-size:.78rem;color:var(--muted);font-weight:600}td,th{padding:13px 12px;b
 .flash{padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--panel-soft)}
 #cobros-status{min-height:22px;color:var(--muted);font-size:.85rem}
 ul{padding-left:18px;margin-top:8px}
-select,button,input{padding:11px;border-radius:8px;border:1px solid var(--line);font:inherit}
+select,button,input{min-height:44px;padding:11px;border-radius:8px;border:1px solid var(--line);font:inherit}
 select,input{background:#101218;color:var(--text);width:100%}
 select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .monto-cobro{display:flex;flex-direction:column;gap:4px;font-size:.85rem;font-weight:700}

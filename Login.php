@@ -25,9 +25,9 @@ $loginCssVersion = @filemtime(__DIR__ . '/estilos/login.css') ?: time();
   </head>
   <body>
 
-  <header> 
-
+  <header>
   <h1>Bienvenido a <b>RESTAURANTE-UY</b></h1>
+  <a class="customer-entry-link" href="<?php echo htmlspecialchars(app_url('cliente_publico.php'), ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener noreferrer">Menú y pedidos para clientes</a>
     
  </header>
 
@@ -61,7 +61,6 @@ $loginCssVersion = @filemtime(__DIR__ . '/estilos/login.css') ?: time();
     <p><input type="submit" value="Ingresar" /></p>
     <input id="createID" name="crud" type="hidden" value="3">
 	</form>
-  <p class="cliente-login-form"><a href="<?php echo htmlspecialchars(app_url('cliente_publico.php'), ENT_QUOTES, 'UTF-8'); ?>">Menú y pedidos para clientes externos</a></p>
   </div>
 	
 </div>					

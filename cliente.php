@@ -286,12 +286,14 @@ body{
 /* ===== Botones ===== */
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  min-height:44px;
   padding:10px 16px;border:0;border-radius:10px;cursor:pointer;
   font-weight:600;font-size:.92rem;text-decoration:none;
   transition:transform .15s,filter .15s,box-shadow .15s;
 }
 .btn:hover{filter:brightness(1.1)}
 .btn:active{transform:translateY(1px)}
+button:focus-visible,a:focus-visible{outline:2px solid var(--accent-2);outline-offset:3px}
 .back{background:#23262f;color:var(--text);border:1px solid var(--line)}
 .primary{
   width:100%;color:var(--accent-ink);font-size:1rem;padding:13px 18px;
@@ -406,7 +408,7 @@ textarea{min-height:76px;resize:vertical}
 .product-bottom{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:auto}
 .price{font-size:1.02rem;font-weight:800}
 .add{
-  padding:8px 16px;border:0;border-radius:9px;cursor:pointer;
+  min-height:44px;padding:8px 16px;border:0;border-radius:9px;cursor:pointer;
   background:linear-gradient(135deg,var(--accent),var(--accent-2));
   color:#fff;font-weight:700;font-size:.85rem;
   transition:filter .15s,transform .12s;
@@ -425,14 +427,14 @@ textarea{min-height:76px;resize:vertical}
 }
 .quantity{display:inline-flex;align-items:center;gap:9px}
 .quantity button{
-  width:26px;height:26px;border:1px solid #3a3f4c;border-radius:7px;
+  width:44px;height:44px;border:1px solid #3a3f4c;border-radius:7px;
   background:transparent;color:var(--text);cursor:pointer;font-weight:700;
   transition:background .15s;
 }
 .quantity button:hover{background:#23262f}
 .remove{
-  border:0;background:transparent;color:var(--accent-2);cursor:pointer;
-  font-size:.8rem;padding:4px 6px;border-radius:6px;
+  min-height:44px;border:0;background:transparent;color:var(--accent-2);cursor:pointer;
+  font-size:.8rem;padding:8px 12px;border-radius:6px;
 }
 .remove:hover{background:rgba(255,45,111,.12)}
 .total{
@@ -470,19 +472,27 @@ section[id],form[id],div[id]{scroll-margin-top:80px}
   .top{padding:12px 16px}
   .top .user,.site-user .user{display:none}
   .site-header-in{padding:10px 14px;gap:10px;flex-wrap:wrap}
+  .site-user{margin-left:auto}
   h1{padding:0 16px}
   .layout{padding:0 12px}
   .reservation-grid{grid-template-columns:1fr}
+  .reservation-submit{width:100%;min-width:0}
+  .hero-cta .btn{width:100%;min-width:0}
   .products{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
   .product img{height:120px}
   .product p{display:none}
-  .product-bottom{flex-wrap:wrap}
-  .price{min-width:0;overflow-wrap:anywhere}
-  .add{max-width:100%}
+  .product-bottom{flex-wrap:wrap;align-items:stretch}
+  .price{width:100%;min-width:0;overflow-wrap:anywhere}
+  .add{width:100%;max-width:100%}
+  .quantity{gap:6px}
   .panel{padding:18px}
 }
 @media(max-width:400px){
   section[id],form[id],div[id]{scroll-margin-top:120px}
+  .site-user{width:100%;justify-content:flex-end}
+  .site-user .btn{flex:1}
+  .product-info{padding:11px 10px 12px}
+  .quantity button{width:44px;height:44px}
 }
 </style>
 </head>
