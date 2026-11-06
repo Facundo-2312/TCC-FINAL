@@ -76,7 +76,7 @@ $flash = app_get_flash();
 body{margin:0;padding:24px;background:radial-gradient(ellipse at top left,rgba(255,45,111,.13),transparent 45%),var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-serif}
 main{max-width:1540px;margin:auto}
 .top,.order-head,.column-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.btn{display:inline-flex;padding:10px 16px;border-radius:10px;text-decoration:none;font-weight:700;color:var(--text);background:var(--soft);border:1px solid var(--line)}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;border-radius:10px;text-decoration:none;font-weight:700;color:var(--text);background:var(--soft);border:1px solid var(--line)}
 .logout{background:var(--accent);border-color:var(--accent)}
 h1{margin:28px 0 8px;font-size:clamp(1.8rem,3vw,2.6rem)}
 .subtitle{color:var(--muted);line-height:1.5;margin:0 0 24px}
@@ -98,7 +98,7 @@ h3{font-size:1rem;margin:0}.badge{font-size:.72rem;font-weight:700;border-radius
 .kitchen-notes{border:1px solid rgba(245,166,35,.25);border-radius:10px;padding:12px;background:rgba(245,166,35,.06);font-size:.85rem;overflow-wrap:anywhere}
 .kitchen-notes strong{color:#ffd187}.kitchen-notes p{margin:6px 0 0;white-space:normal}
 .kitchen-action{display:flex;gap:10px;flex-wrap:wrap}
-button{font:inherit;font-weight:700;cursor:pointer;border:1px solid var(--line);border-radius:9px;padding:11px 12px;width:100%}
+button{min-height:44px;font:inherit;font-weight:700;cursor:pointer;border:1px solid var(--line);border-radius:9px;padding:11px 12px;width:100%}
 .action-btn{background:var(--accent);color:white}.action-btn.secondary,.archive-btn{background:transparent;color:var(--muted)}.archive-btn{font-size:.8rem}
 button:hover{filter:brightness(1.15)}button:disabled{opacity:.5;cursor:wait}
 button:focus-visible,a:focus-visible{outline:2px solid #ff8eb1;outline-offset:3px}

@@ -11,6 +11,7 @@ if (isset($_SESSION['Usuario'], $_SESSION['Rol'])) {
 
 $flash = app_get_flash();
 $error = '';
+$loginCssVersion = @filemtime(__DIR__ . '/estilos/login.css') ?: time();
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify_or_die('cliente_publico.php');
     $nombre = trim((string) ($_POST['nombre_cliente'] ?? ''));
@@ -39,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Menú de Restaurante-UY</title>
     <link rel="icon" type="image/jpeg" href="<?php echo htmlspecialchars(app_url('img/logonuevo.jpeg'), ENT_QUOTES, 'UTF-8'); ?>">
-    <link rel="stylesheet" href="<?php echo htmlspecialchars(app_url('estilos/login.css'), ENT_QUOTES, 'UTF-8'); ?>">
+    <link rel="stylesheet" href="<?php echo htmlspecialchars(app_url('estilos/login.css?v=' . $loginCssVersion), ENT_QUOTES, 'UTF-8'); ?>">
 </head>
 <body>
 <header><h1>Restaurante-UY · Menú para clientes</h1></header>
