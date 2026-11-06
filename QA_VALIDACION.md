@@ -1,5 +1,35 @@
 # RESTAURANTE-UY: informe de validacion y despliegue
 
+## Validacion ampliada y respaldo (06/11/2026)
+
+- Reservas: 23 comprobaciones en tablas temporales, incluyendo capacidad,
+  fechas pasadas, fin invalido, cancelacion, reutilizacion, turnos adyacentes
+  y solapamiento de un minuto.
+- Concurrencia real con dos procesos PHP y conexiones independientes:
+  ultima unidad de stock, dos clientes para una mesa, dos adiciones del mismo
+  cliente, reservas del mismo horario y cobros simultaneos.
+- Se reprodujo un interbloqueo al buscar cuentas inexistentes con
+  `FOR UPDATE`. Los pedidos ahora usan `READ COMMITTED` y bloquean la fila
+  del cliente antes de consultar su cuenta: evitan bloqueos de hueco y
+  serializan las adiciones sin perder unidades ni duplicar cuentas.
+- `concurrencia_test.php`: cinco repeticiones finales, 19 comprobaciones por
+  repeticion. Solo admite `APP_DB_NAME=ci_test` y stock sin triggers;
+  crea y retira sus propios datos sinteticos. Incluido en `role-flows.yml`.
+- Pasaron el ciclo de adiciones despues de entrega, stock, cocina y cobro,
+  los tests de solicitudes de cobro, integridad de pagos, cocina, sesiones,
+  URLs (con y sin `putenv`) y acceso publico HTTP.
+- Sitio publicado: API de horarios con turnos de 90 minutos y fechas pasadas
+  no disponibles; formulario cliente sin desborde horizontal a 320, 390, 768
+  y 1366 px. Esto no sustituye un recorrido en celular fisico: pendiente
+  porque el responsable no tenia un dispositivo disponible.
+- Respaldo privado descargado fuera del hosting y del repositorio:
+  SQL de 33043 bytes, restaurado en una base local desechable con 15 tablas;
+  ZIP de 49670121 bytes, 454 entradas con longitud y CRC comprobados.
+  Incluye la configuracion privada; no publicar ni versionar estos archivos.
+- Se conserva por decision explicita del responsable la venta QA #21
+  (pago #9, mesa 1, un Agua Mineral 500 ml, $120 en efectivo).
+  No se borraron ni regularizaron operaciones comerciales existentes.
+
 ## Acceso publico de clientes (06/11/2026)
 
 - El acceso publico crea un contexto de cliente separado al confirmar el nombre,

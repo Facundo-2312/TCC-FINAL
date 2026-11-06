@@ -65,4 +65,25 @@ mysqli_query($connection, 'UPDATE reservas SET hora_inicio = DATE_SUB(NOW(), INT
 $service->completarPorMesa(1);
 verificarReserva($repo->obtener($creada['id'])['estado'] === 'Completada', 'Liberar mesa completa su reserva en curso');
 verificarReserva($mesas->listar()[0]['estado'] === 'Libre', 'Mesa queda libre despues de completar');
+
+foreach (array(
+    array('cantidad_personas', 0),
+    array('id_mesa', 999999),
+    array('hora_inicio', date('Y-m-d H:i:s', time() - 60)),
+    array('hora_fin', $datos['hora_inicio'])
+) as $invalido) {
+    $prueba = $datos;
+    $prueba[$invalido[0]] = $invalido[1];
+    verificarReserva(!$service->crear($prueba)['ok'], 'Rechaza reserva invalida: ' . $invalido[0]);
+}
+$primera = $service->crear($datos);
+verificarReserva($primera['ok'], 'Crea reserva para comprobar limites del horario');
+$adyacente = $datos;
+$adyacente['hora_inicio'] = $datos['hora_fin'];
+$adyacente['hora_fin'] = date('Y-m-d H:i:s', strtotime($datos['hora_fin']) + 5400);
+verificarReserva($service->crear($adyacente)['ok'], 'Permite un turno que comienza exactamente al terminar otro');
+$superpuesta = $datos;
+$superpuesta['hora_inicio'] = date('Y-m-d H:i:s', strtotime($datos['hora_fin']) - 60);
+$superpuesta['hora_fin'] = $adyacente['hora_fin'];
+verificarReserva(!$service->crear($superpuesta)['ok'], 'Rechaza solapamiento de un minuto entre turnos');
 echo 'Pruebas completadas en tablas temporales, sin modificar datos persistentes.' . PHP_EOL;

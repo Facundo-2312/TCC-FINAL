@@ -57,3 +57,6 @@ jobs:
           python3 database/tests/role_flows_http.py
           php database/tests/cliente_publico_http_test.php
           php database/tests/order_flow.php
+          php database/tests/reservas_test.php
+          php database/tests/reserva_capacidad_test.php
+          php database/tests/concurrencia_test.php

@@ -180,9 +180,11 @@ class PedidoService
         }
 
         $connection = $this->repositorio->connection();
+        // Avoid gap locks on absent accounts; the user row serializes that customer's additions.
+        mysqli_query($connection, 'SET TRANSACTION ISOLATION LEVEL READ COMMITTED');
         mysqli_begin_transaction($connection);
         try {
-            $idUsuario = $this->repositorio->buscarIdUsuario($usuario);
+            $idUsuario = $this->repositorio->buscarIdUsuario($usuario, $autorizacionCliente !== null);
             if ($idUsuario <= 0) throw new \RuntimeException('No se pudo identificar al usuario del pedido.');
             if ($autorizacionCliente !== null && $idUsuario !== $autorizacionCliente['id_usuario']) {
                 throw new \RuntimeException('La cuenta no coincide con la sesion actual.');

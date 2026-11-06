@@ -250,9 +250,11 @@ class PedidoRepository
         }
     }
 
-    public function buscarIdUsuario($usuario)
+    public function buscarIdUsuario($usuario, $bloquear = false)
     {
-        $stmt = mysqli_prepare($this->connection, 'SELECT id_usuario FROM usuarios WHERE usuario = ? LIMIT 1');
+        $sql = 'SELECT id_usuario FROM usuarios WHERE usuario = ? LIMIT 1';
+        if ($bloquear) $sql .= ' FOR UPDATE';
+        $stmt = mysqli_prepare($this->connection, $sql);
         mysqli_stmt_bind_param($stmt, 's', $usuario);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
