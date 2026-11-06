@@ -57,7 +57,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p><input id="nombre-cliente" type="text" name="nombre_cliente" maxlength="100" required autocomplete="name" placeholder="Digite su nombre"></p>
             <p><input type="submit" value="Ver menú y pedir"></p>
         </form>
-        <p><a href="<?php echo htmlspecialchars(app_url('Login.php'), ENT_QUOTES, 'UTF-8'); ?>">Acceso del personal</a></p>
     </section>
 </main>
 </body>
