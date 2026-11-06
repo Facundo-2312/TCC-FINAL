@@ -25,7 +25,7 @@ class PedidoRepository
         return $this->listarConDetalle();
     }
 
-    public function listarConDetalle($estados = null, $limite = null, $ordenCocina = false, $idUsuario = null)
+    public function listarConDetalle($estados = null, $limite = null, $ordenCocina = false, $idUsuario = null, $soloSinPagar = false)
     {
         $condiciones = array();
         if (is_array($estados) && !empty($estados)) {
@@ -35,12 +35,16 @@ class PedidoRepository
         if ($idUsuario !== null && (int) $idUsuario > 0) {
             $condiciones[] = 'p.id_usuario = ' . (int) $idUsuario;
         }
+        if ($soloSinPagar) {
+            $condiciones[] = 'pa.id_pago IS NULL';
+            $condiciones[] = "p.estado <> 'Cancelado'";
+        }
         $where = $condiciones ? ' WHERE ' . implode(' AND ', $condiciones) : '';
 
         $orden = $ordenCocina
-            ? "ORDER BY FIELD(p.estado,'Pendiente','Preparando','Entregado'), p.fecha ASC, p.id_pedido ASC"
+            ? "ORDER BY FIELD(p.estado,'Pendiente','Preparando','Pronto para entregar','Entregado'), p.fecha ASC, p.id_pedido ASC"
             : 'ORDER BY p.fecha DESC';
-        $sql = 'SELECT p.id_pedido, p.id_mesa, m.numero AS mesa_numero, p.id_usuario, p.fecha, p.estado, p.total, p.observaciones, dp.cantidad, dp.precio, dp.subtotal, dp.sin_ingredientes, dp.extra_ingredientes, pr.nombre AS producto_nombre,
+        $sql = 'SELECT p.id_pedido, p.id_mesa, m.numero AS mesa_numero, p.id_usuario, p.fecha, p.estado, p.total, p.observaciones, dp.cantidad, dp.precio, dp.subtotal, dp.sin_ingredientes, dp.extra_ingredientes, dp.estado_cocina, pr.nombre AS producto_nombre,
                        pa.id_pago, pa.metodo_pago AS pago_metodo, sc.metodo_pago AS cobro_metodo
                 FROM pedidos p
                 LEFT JOIN mesas m ON m.id_mesa = p.id_mesa
@@ -66,7 +70,8 @@ class PedidoRepository
             if ($row['cantidad'] !== null) {
                 $pedidos[$idPedido]['productos'][] = array(
                     'cantidad' => $row['cantidad'], 'precio' => $row['precio'], 'subtotal' => $row['subtotal'], 'nombre' => $row['producto_nombre'],
-                    'sin_ingredientes' => $row['sin_ingredientes'], 'extra_ingredientes' => $row['extra_ingredientes']
+                    'sin_ingredientes' => $row['sin_ingredientes'], 'extra_ingredientes' => $row['extra_ingredientes'],
+                    'estado_cocina' => $row['estado_cocina']
                 );
             }
         }
@@ -83,6 +88,62 @@ class PedidoRepository
         $fila = $resultado ? mysqli_fetch_assoc($resultado) : null;
         mysqli_stmt_close($stmt);
         return $fila ? $this->listarConDetalle(null, $limite, false, (int) $fila['id_usuario']) : array();
+    }
+
+    public function listarCuentaAbiertaDelUsuario($usuario, $limite = 10)
+    {
+        $stmt = mysqli_prepare($this->connection, 'SELECT id_usuario FROM usuarios WHERE usuario = ? LIMIT 1');
+        mysqli_stmt_bind_param($stmt, 's', $usuario);
+        mysqli_stmt_execute($stmt);
+        $resultado = mysqli_stmt_get_result($stmt);
+        $fila = $resultado ? mysqli_fetch_assoc($resultado) : null;
+        mysqli_stmt_close($stmt);
+        return $fila
+            ? $this->listarConDetalle(null, $limite, false, (int) $fila['id_usuario'], true)
+            : array();
+    }
+
+    public function buscarCuentaAbiertaCliente($idUsuario)
+    {
+        $stmt = mysqli_prepare($this->connection,
+            "SELECT p.id_pedido, p.id_mesa, p.estado, sc.id_pedido AS solicitud_cobro
+             FROM pedidos p
+             LEFT JOIN pagos pa ON pa.id_pedido = p.id_pedido
+             LEFT JOIN solicitudes_cobro sc ON sc.id_pedido = p.id_pedido
+             WHERE p.id_usuario = ? AND p.estado <> 'Cancelado' AND pa.id_pago IS NULL
+             ORDER BY p.fecha DESC, p.id_pedido DESC
+             LIMIT 1 FOR UPDATE"
+        );
+        mysqli_stmt_bind_param($stmt, 'i', $idUsuario);
+        mysqli_stmt_execute($stmt);
+        $resultado = mysqli_stmt_get_result($stmt);
+        $pedido = $resultado ? mysqli_fetch_assoc($resultado) : null;
+        mysqli_stmt_close($stmt);
+        return $pedido ?: null;
+    }
+
+    public function prepararPedidoParaAdicion($idPedido)
+    {
+        $estado = 'Pendiente';
+        $stmt = mysqli_prepare($this->connection, 'UPDATE pedidos SET estado = ? WHERE id_pedido = ?');
+        mysqli_stmt_bind_param($stmt, 'si', $estado, $idPedido);
+        $ok = mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+        return $ok;
+    }
+
+    public function anexarObservaciones($idPedido, $observaciones)
+    {
+        if (trim((string) $observaciones) === '') return true;
+        $stmt = mysqli_prepare($this->connection,
+            "UPDATE pedidos
+             SET observaciones = LEFT(CONCAT_WS('\\n', NULLIF(observaciones, ''), ?), 500)
+             WHERE id_pedido = ?"
+        );
+        mysqli_stmt_bind_param($stmt, 'si', $observaciones, $idPedido);
+        $ok = mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+        return $ok;
     }
 
     public function detalle($idPedido)
@@ -138,19 +199,55 @@ class PedidoRepository
 
     public function cambiarEstadoCocina($idPedido, $estadoAnterior, $estadoNuevo)
     {
-        $stmt = mysqli_prepare($this->connection,
-            'UPDATE pedidos SET estado = ? WHERE id_pedido = ? AND estado = ?'
-        );
-        if (!$stmt) {
-            throw new \RuntimeException(mysqli_error($this->connection));
+        mysqli_begin_transaction($this->connection);
+        try {
+            $stmt = mysqli_prepare($this->connection,
+                'UPDATE pedidos SET estado = ? WHERE id_pedido = ? AND estado = ?'
+            );
+            mysqli_stmt_bind_param($stmt, 'sis', $estadoNuevo, $idPedido, $estadoAnterior);
+            if (!mysqli_stmt_execute($stmt)) {
+                throw new \RuntimeException(mysqli_stmt_error($stmt));
+            }
+            $cambiado = mysqli_stmt_affected_rows($stmt) === 1;
+            mysqli_stmt_close($stmt);
+
+            if (!$cambiado) {
+                mysqli_commit($this->connection);
+                return false;
+            }
+
+            $estadosDetalle = array(
+                'Pendiente' => array('Pendiente', 'Preparando'),
+                'Preparando' => array('Preparando', 'Pronto para entregar'),
+                'Pronto para entregar' => array('Pronto para entregar', 'Entregado')
+            );
+            if (isset($estadosDetalle[$estadoAnterior]) && $estadoNuevo === $estadosDetalle[$estadoAnterior][1]) {
+                $stmt = mysqli_prepare($this->connection,
+                    'UPDATE detalle_pedido SET estado_cocina = ? WHERE id_pedido = ? AND estado_cocina = ?'
+                );
+                mysqli_stmt_bind_param($stmt, 'sis', $estadosDetalle[$estadoAnterior][1], $idPedido, $estadosDetalle[$estadoAnterior][0]);
+            } elseif ($estadoAnterior === 'Entregado' && $estadoNuevo === 'Pendiente') {
+                $pendiente = 'Pendiente';
+                $stmt = mysqli_prepare($this->connection,
+                    'UPDATE detalle_pedido SET estado_cocina = ? WHERE id_pedido = ?'
+                );
+                mysqli_stmt_bind_param($stmt, 'si', $pendiente, $idPedido);
+            } else {
+                $stmt = null;
+            }
+            if ($stmt !== null) {
+                if (!mysqli_stmt_execute($stmt)) {
+                    throw new \RuntimeException(mysqli_stmt_error($stmt));
+                }
+                mysqli_stmt_close($stmt);
+            }
+
+            mysqli_commit($this->connection);
+            return true;
+        } catch (\Throwable $exception) {
+            mysqli_rollback($this->connection);
+            throw $exception;
         }
-        mysqli_stmt_bind_param($stmt, 'sis', $estadoNuevo, $idPedido, $estadoAnterior);
-        if (!mysqli_stmt_execute($stmt)) {
-            throw new \RuntimeException(mysqli_stmt_error($stmt));
-        }
-        $cambiado = mysqli_stmt_affected_rows($stmt) === 1;
-        mysqli_stmt_close($stmt);
-        return $cambiado;
     }
 
     public function buscarIdUsuario($usuario)

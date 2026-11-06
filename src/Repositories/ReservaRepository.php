@@ -199,9 +199,17 @@ class ReservaRepository
                       AND r.estado = "Confirmada"
                       AND r.id_usuario = ?
                 ))
+                OR (m.estado = "Ocupada" AND EXISTS (
+                    SELECT 1 FROM pedidos p
+                    LEFT JOIN pagos pa ON pa.id_pedido = p.id_pedido
+                    WHERE p.id_mesa = m.id_mesa
+                      AND p.id_usuario = ?
+                      AND p.estado <> "Cancelado"
+                      AND pa.id_pago IS NULL
+                ))
              ORDER BY m.numero ASC'
         );
-        mysqli_stmt_bind_param($stmt, 'ii', $idUsuario, $idUsuario);
+        mysqli_stmt_bind_param($stmt, 'iii', $idUsuario, $idUsuario, $idUsuario);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
         $mesas = $result ? mysqli_fetch_all($result, MYSQLI_ASSOC) : array();
@@ -218,18 +226,27 @@ class ReservaRepository
                         WHERE r.id_mesa = m.id_mesa
                           AND r.estado = "Confirmada"
                           AND r.id_usuario = ?
-                    ) AS tiene_reserva
+                    ) AS tiene_reserva,
+                    EXISTS (
+                        SELECT 1 FROM pedidos p
+                        LEFT JOIN pagos pa ON pa.id_pedido = p.id_pedido
+                        WHERE p.id_mesa = m.id_mesa
+                          AND p.id_usuario = ?
+                          AND p.estado <> "Cancelado"
+                          AND pa.id_pago IS NULL
+                    ) AS tiene_cuenta
              FROM mesas m
              WHERE m.numero = ? LIMIT 1'
         );
-        mysqli_stmt_bind_param($stmt, 'ii', $idUsuario, $numeroMesa);
+        mysqli_stmt_bind_param($stmt, 'iii', $idUsuario, $idUsuario, $numeroMesa);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
         $mesa = $result ? mysqli_fetch_assoc($result) : null;
         mysqli_stmt_close($stmt);
 
         return $mesa && ($mesa['estado'] === 'Libre'
-            || (in_array($mesa['estado'], array('Reservada', 'Ocupada'), true) && (int)$mesa['tiene_reserva'] === 1));
+            || (in_array($mesa['estado'], array('Reservada', 'Ocupada'), true) && (int)$mesa['tiene_reserva'] === 1)
+            || ($mesa['estado'] === 'Ocupada' && (int)$mesa['tiene_cuenta'] === 1));
     }
 
     public function bloquearReservaActivaDelCliente($idMesa, $idUsuario)

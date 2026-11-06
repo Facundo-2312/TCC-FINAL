@@ -7,7 +7,7 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
 
-$pedidos = (new App\Controllers\PedidoController())->listarDelUsuario((string) $_SESSION['Usuario'], 10);
+$pedidos = (new App\Controllers\PedidoController())->listarCuentaAbiertaDelUsuario((string) $_SESSION['Usuario'], 10);
 $pedidosCliente = $pedidos;
 ob_start();
 require __DIR__ . '/src/Views/cliente_cuenta.php';

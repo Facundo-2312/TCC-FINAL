@@ -77,6 +77,8 @@ if (($argv[1] ?? '') === '--snapshot') {
 $repo = new App\Repositories\PedidoRepository($connection);
 $cuenta = $repo->listarDelUsuario('prueba_cobro', 10);
 verificar(count($cuenta) === 4, 'Cuenta excluye pedidos de otros usuarios');
+$cuentasAbiertas = $repo->listarCuentaAbiertaDelUsuario('prueba_cobro', 10);
+verificar(count($cuentasAbiertas) === 3, 'Vista de cliente solo devuelve cuentas sin pagar ni cancelar');
 $cuentaPorId = array_column($cuenta, null, 'id_pedido');
 verificar(!$cuentaPorId[1]['pagado'] && $cuentaPorId[1]['cobro_metodo'] === 'Transferencia', 'Cuenta indica cobro solicitado sin marcar pagado');
 $clienteHtml = renderizar('cliente.php');
@@ -113,7 +115,7 @@ $historialHtml = ob_get_clean();
 verificar(strpos($historialHtml, 'Confirmado') !== false && strpos($historialHtml, '$270,00') !== false, 'Historial muestra pago confirmado con su monto');
 $estadoCliente = json_decode(renderizar('pedidos_cliente_estado.php'), true);
 verificar(is_array($estadoCliente) && $estadoCliente['ok'], 'Endpoint devuelve JSON valido');
-verificar(strpos($estadoCliente['cuenta_html'], 'Pagado - Transferencia') !== false, 'Actualizacion automatica muestra la confirmacion de Caja');
+verificar(strpos($estadoCliente['cuenta_html'], 'Pedido #1') === false, 'La cuenta del cliente no muestra pedidos ya pagados');
 session_destroy();
 echo 'Pruebas completadas sin modificar datos persistentes.' . PHP_EOL;
 ob_end_flush();

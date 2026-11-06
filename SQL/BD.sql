@@ -119,7 +119,7 @@ CREATE TABLE pedidos (
     id_mesa INT,
     id_usuario INT,
     fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
-    estado ENUM('Pendiente','Preparando','Entregado','Cancelado') DEFAULT 'Pendiente',
+    estado ENUM('Pendiente','Preparando','Pronto para entregar','Entregado','Cancelado','ArchivadoCocina') NOT NULL DEFAULT 'Pendiente',
     total DECIMAL(10,2) DEFAULT 0,
     FOREIGN KEY (id_mesa) REFERENCES mesas(id_mesa),
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
@@ -135,6 +135,7 @@ CREATE TABLE detalle_pedido (
     cantidad INT NOT NULL,
     precio DECIMAL(10,2) NOT NULL,
     subtotal DECIMAL(10,2),
+    estado_cocina ENUM('Pendiente','Preparando','Pronto para entregar','Entregado') NOT NULL DEFAULT 'Pendiente',
     FOREIGN KEY (id_pedido) REFERENCES pedidos(id_pedido),
     FOREIGN KEY (id_producto) REFERENCES productos(id_producto)
 );

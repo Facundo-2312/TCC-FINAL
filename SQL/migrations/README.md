@@ -31,7 +31,7 @@ faltan `mesas_historial`, `reservas`, `solicitudes_cobro` o columnas como
 `mesas.capacidad`. El detalle aparece en `C:\xampp\apache\logs\error.log`.
 
 Antes de actualizar, respalda la base con `mysqldump`. Luego ejecuta el runner
-anterior. Comprueba con `--status` que todas las migraciones 000 a 015 figuren
+anterior. Comprueba con `--status` que todas las migraciones 000 a 016 figuren
 como aplicadas y que `--dry-run` no muestre pendientes. Esto actualiza el
 esquema de la base existente sin importar ni reemplazar datos con `SQL/BD.sql`.
 
@@ -114,10 +114,13 @@ migraciones: usar directamente `SQL/install.sql`, que ya incluye todas estas mej
 | `013_catalogo_fotos_reales.sql` | Actualiza referencias de imagen SVG del catalogo a JPG. |
 | `014_solicitudes_cobro.sql` | Guarda solicitudes de cobro del cliente sin registrar pagos; Caja confirma el dinero recibido. Incluida en los esquemas de instalacion nuevos. |
 | `015_ubicacion_empleados.sql` | Agrega coordenadas geograficas opcionales para la direccion del funcionario; se seleccionan en un mapa OpenStreetMap. |
+| `016_adiciones_pedido_estado_cocina.sql` | Añade productos a la cuenta abierta de la misma mesa y agrega el estado de detalle necesario para que Cocina procese solo las adiciones nuevas; incorpora `Pronto para entregar`. |
 
 ## Solicitar el cobro desde el cliente
 
-En **Mi cuenta / Pagar**, el cliente ve sus ultimos 10 pedidos con detalle y total.
+En **Mi cuenta / Pagar**, el cliente ve solo sus cuentas abiertas, con detalle y total;
+las cuentas pagadas o canceladas no se muestran. Las nuevas adiciones se suman a la
+cuenta abierta de la misma mesa, que se mantiene asignada durante esa visita.
 Puede solicitar o actualizar el medio de pago de un pedido propio entregado y no
 pagado (Efectivo, Tarjeta o Transferencia). Una solicitud no mueve dinero, no
 registra un pago y no libera la mesa. Caja ve la solicitud automaticamente cada
@@ -133,14 +136,19 @@ Resumen, tarjetas de pedidos e historial se actualizan cada 5 segundos sin
 recargar formularios; se preserva el medio elegido manualmente por el cajero.
 El cliente ve la confirmacion automaticamente.
 No se solicitan datos de tarjeta ni comprobantes bancarios en esta modalidad.
+El acceso publico para clientes externos se encuentra en `cliente_publico.php`; no
+requiere usuario ni contraseña del personal.
 
 Validacion aislada (usa tablas temporales, sin cambiar pedidos ni pagos reales):
 `C:\xampp\php\php.exe database\tests\solicitudes_cobro_test.php`.
 
 ## Panel de Cocina
 
-El panel organiza los pedidos por estado, con los mas antiguos primero, numero
+El panel organiza los pedidos por estado (Pendiente, Preparando, Pronto para entregar
+y Entregado), con los mas antiguos primero, numero
 de mesa, tiempo desde la creacion, notas y personalizaciones de ingredientes.
+Las adiciones a una cuenta conservan el estado de los productos anteriores para
+que Cocina no vuelva a procesarlos.
 Las tarjetas y contadores se actualizan cada 5 segundos sin recargar.
 El mozo conserva acceso solo de lectura; administrador y cocina pueden usar
 botones explicitos para preparar, entregar, volver a pendientes o retirar.

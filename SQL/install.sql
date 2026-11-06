@@ -272,7 +272,7 @@ CREATE TABLE pedidos (
     id_usuario INT,
     fecha DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     actualizado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    estado ENUM('Pendiente','Preparando','Entregado','Cancelado','ArchivadoCocina') NOT NULL DEFAULT 'Pendiente',
+    estado ENUM('Pendiente','Preparando','Pronto para entregar','Entregado','Cancelado','ArchivadoCocina') NOT NULL DEFAULT 'Pendiente',
     total DECIMAL(10,2) NOT NULL DEFAULT 0,
     observaciones VARCHAR(500) NULL,
     CONSTRAINT fk_pedidos_mesa FOREIGN KEY (id_mesa) REFERENCES mesas(id_mesa)
@@ -303,6 +303,7 @@ CREATE TABLE detalle_pedido (
     cantidad INT NOT NULL,
     precio DECIMAL(10,2) NOT NULL,
     subtotal DECIMAL(10,2),
+    estado_cocina ENUM('Pendiente','Preparando','Pronto para entregar','Entregado') NOT NULL DEFAULT 'Pendiente',
     sin_ingredientes VARCHAR(255) NULL,
     extra_ingredientes VARCHAR(255) NULL,
     CONSTRAINT fk_detalle_pedido FOREIGN KEY (id_pedido) REFERENCES pedidos(id_pedido)

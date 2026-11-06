@@ -26,7 +26,8 @@ mysqli_query($connection, "INSERT INTO pedidos (id_pedido, id_mesa, id_usuario, 
     (3, 1, 1, 'Entregado', 150, NOW() - INTERVAL 5 MINUTE, ''),
     (4, 1, 1, 'ArchivadoCocina', 150, NOW(), ''),
     (5, 1, 1, 'Cancelado', 120, NOW(), ''),
-    (6, 1, 1, 'Pendiente', 120, NOW(), '')");
+    (6, 1, 1, 'Pendiente', 120, NOW(), ''),
+    (7, 1, 1, 'Pronto para entregar', 90, NOW(), '')");
 mysqli_query($connection, "INSERT INTO productos (id_producto, nombre, precio, stock) VALUES (1, 'Plato de prueba', 270, 10)");
 mysqli_query($connection, "INSERT INTO detalle_pedido (id_pedido, id_producto, cantidad, precio, subtotal, sin_ingredientes, extra_ingredientes)
     VALUES (1, 1, 1, 270, 270, 'Cebolla', 'Queso')");
@@ -56,8 +57,8 @@ function comprobarCocina($condition, $message)
 }
 $service = new App\Services\PedidoService(new App\Repositories\PedidoRepository($connection));
 $vista = $service->listarCocina();
-comprobarCocina(count($vista['pedidos']) === 4, 'Excluye cancelados y archivados');
-comprobarCocina($vista['resumen'] === array('Pendiente' => 2, 'Preparando' => 1, 'Entregado' => 1), 'Contadores exactos por estado');
+comprobarCocina(count($vista['pedidos']) === 5, 'Excluye cancelados y archivados');
+comprobarCocina($vista['resumen'] === array('Pendiente' => 2, 'Preparando' => 1, 'Pronto para entregar' => 1, 'Entregado' => 1), 'Contadores exactos por estado');
 comprobarCocina($vista['pedidos'][0]['id_pedido'] === 1 && $vista['pedidos'][1]['id_pedido'] === 6, 'Pendientes ordenados por antiguedad');
 comprobarCocina((int) $vista['pedidos'][0]['mesa_numero'] === 42, 'Muestra numero real de mesa, no su identificador');
 ob_start();
@@ -67,16 +68,17 @@ comprobarCocina(strpos($html, 'http-equiv="refresh"') === false, 'No recarga aut
 comprobarCocina(strpos($html, 'Notas para cocina') !== false && strpos($html, '&lt;script&gt;alert(1)&lt;/script&gt;') !== false, 'Notas visibles y escapadas');
 comprobarCocina(strpos($html, 'Sin: Cebolla') !== false && strpos($html, 'Agregar: Queso') !== false, 'Muestra personalizaciones');
 comprobarCocina(strpos($html, 'Hace 30 min') !== false, 'Muestra espera desde la creacion');
-comprobarCocina(strpos($html, 'Comenzar preparacion') !== false && strpos($html, 'Marcar entregado') !== false, 'Acciones explicitas sin clic accidental en tarjeta');
+comprobarCocina(strpos($html, 'Comenzar preparacion') !== false && strpos($html, 'Pronto para entregar') !== false && strpos($html, 'Marcar entregado') !== false, 'Acciones explicitas de preparacion, aviso y entrega');
 comprobarCocina(strpos($html, 'name="_csrf"') !== false, 'Formularios protegidos');
 comprobarCocina(!$service->cambiarEstadoCocina(1, 'Pendiente', 'Entregado'), 'Impide saltos de estado');
 comprobarCocina(!$service->cambiarEstadoCocina(0, 'Pendiente', 'Preparando'), 'Rechaza identificador invalido');
 comprobarCocina($service->cambiarEstadoCocina(1, 'Pendiente', 'Preparando'), 'Comienza preparacion');
 comprobarCocina(!$service->cambiarEstadoCocina(1, 'Pendiente', 'Preparando'), 'Clic repetido o pantalla antigua no vuelve a cambiar estado');
-comprobarCocina($service->cambiarEstadoCocina(1, 'Preparando', 'Entregado'), 'Marca entregado');
+comprobarCocina($service->cambiarEstadoCocina(1, 'Preparando', 'Pronto para entregar'), 'Marca pronto para entregar');
+comprobarCocina($service->cambiarEstadoCocina(1, 'Pronto para entregar', 'Entregado'), 'Marca entregado');
 comprobarCocina($service->cambiarEstadoCocina(1, 'Entregado', 'Pendiente'), 'Permite volver explicitamente a pendientes');
 comprobarCocina($service->cambiarEstadoCocina(1, 'Pendiente', 'ArchivadoCocina'), 'Retira pedido sin eliminarlo');
-comprobarCocina((int) mysqli_fetch_row(mysqli_query($connection, 'SELECT COUNT(*) FROM pedidos'))[0] === 6, 'Conserva todos los pedidos');
+comprobarCocina((int) mysqli_fetch_row(mysqli_query($connection, 'SELECT COUNT(*) FROM pedidos'))[0] === 7, 'Conserva todos los pedidos');
 comprobarCocina((int) mysqli_fetch_row(mysqli_query($connection, 'SELECT COUNT(*) FROM pagos'))[0] === 0, 'Cambiar cocina no registra pagos');
 session_destroy();
 echo 'Pruebas completadas en tablas temporales.' . PHP_EOL;

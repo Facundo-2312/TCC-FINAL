@@ -33,6 +33,17 @@ Ejecuta una vez `SQL/reparar_roles_infinityfree.sql` en phpMyAdmin (pestana **SQ
 Sube el contenido del proyecto al directorio `htdocs` del subdominio. Incluye `.htaccess`; protege `.env`, SQL, los scripts de preparacion y los logs.
 InfinityFree distingue mayusculas y minusculas en nombres de archivos: conserva exactamente nombres como `CAJA.php`.
 
+El acceso publico y exclusivo para clientes es `https://TU_SUBDOMINIO/cliente_publico.php`.
+No compartas credenciales del personal para habilitar este acceso.
+
+### Actualizar una instalacion existente
+
+Antes de subir una version nueva, respalda la base. Aplica las migraciones pendientes
+en el orden indicado en [SQL/migrations/README.md](SQL/migrations/README.md), en
+particular `016_adiciones_pedido_estado_cocina.sql`, que agrega los nuevos estados
+y el seguimiento de productos añadidos. No vuelvas a importar el archivo de
+instalacion sobre una base que ya contiene datos.
+
 ## 3. Configurar la conexion
 
 Copia `.env.example` como `.env` en la raiz de `htdocs` y completa los datos de MySQL que muestra el panel:

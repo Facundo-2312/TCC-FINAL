@@ -61,12 +61,7 @@ $loginCssVersion = @filemtime(__DIR__ . '/estilos/login.css') ?: time();
     <p><input type="submit" value="Ingresar" /></p>
     <input id="createID" name="crud" type="hidden" value="3">
 	</form>
-  <form method="post" action="interfazlog.php" class="cliente-login-form">
-    <?php echo csrf_field(); ?>
-    <input type="hidden" name="cliente_login" value="1">
-    <p><input type="text" name="nombre_cliente" maxlength="100" required placeholder="Digite su nombre" /></p>
-    <p><input type="submit" value="Ingresar como cliente" /></p>
-  </form>
+  <p class="cliente-login-form"><a href="<?php echo htmlspecialchars(app_url('cliente_publico.php'), ENT_QUOTES, 'UTF-8'); ?>">Menú y pedidos para clientes externos</a></p>
   </div>
 	
 </div>					
