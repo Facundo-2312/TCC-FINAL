@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/app_bootstrap.php';
 
-app_require_login('Login.php', ['1', '5']);
+app_require_login('cliente_publico.php', ['1', '5']);
 
 function cliente_h($value)
 {

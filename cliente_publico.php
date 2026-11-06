@@ -2,11 +2,20 @@
 require_once __DIR__ . '/app_bootstrap.php';
 app_start_session();
 
+if (isset($_SESSION['Usuario'], $_SESSION['Rol']) && (string) $_SESSION['Rol'] === '5') {
+    app_redirect('cliente.php');
+}
+
+$contextoCliente = (string) ($_GET['ctx'] ?? '');
+if ($_SERVER['REQUEST_METHOD'] === 'GET'
+    && (!preg_match('/^[a-f0-9]{64}$/', $contextoCliente) || isset($_SESSION['Usuario'], $_SESSION['Rol']))) {
+    App\Support\Auth::createContext();
+    app_redirect('cliente_publico.php');
+}
+
 if (isset($_SESSION['Usuario'], $_SESSION['Rol'])) {
-    if ((string) $_SESSION['Rol'] === '5') {
-        app_redirect('cliente.php');
-    }
-    app_redirect('Login.php');
+    app_set_flash('warning', 'Abre el acceso de clientes para iniciar un pedido.');
+    app_redirect('cliente_publico.php');
 }
 
 $flash = app_get_flash();
@@ -22,7 +31,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($usuario === null) {
             $error = 'No se pudo iniciar el acceso de cliente. Intenta nuevamente.';
         } else {
-            session_regenerate_id(true);
+            App\Support\Auth::createContext();
+            if (!App\Support\Auth::hasOtherContext()) session_regenerate_id(true);
             $_SESSION['Usuario'] = $usuario;
             $_SESSION['Rol'] = 5;
             $_SESSION['CI'] = null;

@@ -1,5 +1,20 @@
 # RESTAURANTE-UY: informe de validacion y despliegue
 
+## Acceso publico de clientes (06/11/2026)
+
+- El acceso publico crea un contexto de cliente separado al confirmar el nombre,
+  incluso si se abrio desde una pestaña de login. Un contexto interno abre un
+  formulario nuevo sin cerrar la sesion del funcionario.
+- Entrar a `cliente.php` sin sesion lleva al formulario publico de clientes,
+  no al login interno. Un cliente ya identificado continua al menu.
+- Regresion HTTP: `php database/tests/cliente_publico_http_test.php`, con el
+  servidor local y los datos sinteticos de `role-flows.yml` (`APP_DB_NAME=ci_test`).
+  Comprueba destino, nombre, CSRF y alternancia entre login, funcionario y dos
+  clientes con una misma cookie. No se ejecuta sobre datos publicados.
+- Verificado localmente: regresion HTTP, `auth_context_test.php`,
+  `auth_role_mapping_test.php`, `env_url_test.php`, sintaxis PHP y
+  `git diff --check`. Esta correccion todavia requiere despliegue en el hosting.
+
 ## Sesiones simultaneas por pestaña (03/11/2026)
 
 - Se corrigio la seleccion del contexto: se realiza una sola vez por peticion.

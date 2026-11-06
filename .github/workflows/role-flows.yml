@@ -29,7 +29,7 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: "8.4"
-          extensions: mysqli, mbstring, fileinfo
+          extensions: mysqli, mbstring, fileinfo, curl
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
@@ -55,4 +55,5 @@ jobs:
           done
           node database/tests/empleado_form_patterns_test.js
           python3 database/tests/role_flows_http.py
+          php database/tests/cliente_publico_http_test.php
           php database/tests/order_flow.php
