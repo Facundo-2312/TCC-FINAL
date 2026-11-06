@@ -93,6 +93,29 @@ $usuarioRepository = new App\Repositories\UsuarioRepository();
 $cuentaCliente = $usuarioRepository->buscarAcceso((string)$_SESSION['Usuario']);
 $idUsuarioCliente = $cuentaCliente ? (int)$cuentaCliente['id_usuario'] : 0;
 $nombreCliente = (string)($_SESSION['ClienteNombre'] ?? $cuentaCliente['nombre'] ?? $_SESSION['Usuario']);
+$mesasPedido = $idUsuarioCliente > 0
+    ? $reservaRepository->mesasParaPedidoCliente($idUsuarioCliente)
+    : array();
+$pedidosCliente = $pedidoController->listarCuentaAbiertaDelUsuario($_SESSION['Usuario'], 10);
+$cuentaCobroSolicitado = false;
+if ($pedidosCliente) {
+    foreach ($pedidosCliente as $pedidoAbierto) {
+        if (!empty($pedidoAbierto['id_mesa']) && !empty($pedidoAbierto['mesa_numero'])) {
+            $_SESSION['cliente_mesa_id'] = (int) $pedidoAbierto['id_mesa'];
+            $_SESSION['cliente_mesa_numero'] = (int) $pedidoAbierto['mesa_numero'];
+            break;
+        }
+    }
+    foreach ($pedidosCliente as $pedidoAbierto) {
+        if (!empty($pedidoAbierto['cobro_metodo'])) {
+            $cuentaCobroSolicitado = true;
+            break;
+        }
+    }
+} else {
+    unset($_SESSION['cliente_mesa_id'], $_SESSION['cliente_mesa_numero']);
+}
+$mesaClienteAsignada = (int) ($_SESSION['cliente_mesa_numero'] ?? 0);
 $flash = app_get_flash();
 $mensaje = (string) ($flash['message'] ?? '');
 $tipoMensaje = (string) ($flash['type'] ?? '');
@@ -162,7 +185,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear_pedido'])) {
 
     $token = (string) ($_POST['pedido_token'] ?? '');
     $tokenValido = $token !== '' && isset($_SESSION['cliente_pedido_token']) && hash_equals($_SESSION['cliente_pedido_token'], $token);
-    $mesa = (int) ($_POST['mesa'] ?? 0);
+    $mesa = $mesaClienteAsignada > 0 ? $mesaClienteAsignada : (int) ($_POST['mesa'] ?? 0);
     $observaciones = trim((string) ($_POST['observaciones'] ?? ''));
     $items = json_decode((string) ($_POST['items'] ?? '[]'), true);
 
@@ -181,8 +204,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear_pedido'])) {
     } else {
         $idPedido = $pedidoController->crearPedidoCliente($mesa, $_SESSION['Usuario'], $observaciones, $items, $idUsuarioCliente);
         if ($idPedido) {
+            foreach ($mesasPedido as $mesaPedido) {
+                if ((int) $mesaPedido['numero'] === $mesa) {
+                    $_SESSION['cliente_mesa_id'] = (int) $mesaPedido['id_mesa'];
+                    $_SESSION['cliente_mesa_numero'] = $mesa;
+                    break;
+                }
+            }
             unset($_SESSION['cliente_pedido_token']);
-            app_set_flash('success', 'Pedido realizado con éxito.');
+            app_set_flash('success', 'Pedido enviado a Cocina. Si ya tenias una cuenta abierta en esta mesa, los productos se agregaron a ella.');
             app_redirect('cliente.php?pedido=ok');
         }
         $mensaje = $pedidoController->ultimoError();
@@ -194,7 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear_pedido'])) {
 $productos = array_values(array_filter($productoController->listar(), function ($producto) {
     return ($producto['estado'] ?? 'Inactivo') === 'Activo';
 }));
-$pedidosCliente = $pedidoController->listarDelUsuario($_SESSION['Usuario'], 10);
+$pedidosCliente = $pedidoController->listarCuentaAbiertaDelUsuario($_SESSION['Usuario'], 10);
 $clienteVolver = (string) ($_SESSION['Rol'] ?? '') === '5' ? 'Login.php' : 'Principal.php';
 
 function cliente_estado_clase($estado)
@@ -205,6 +235,7 @@ function cliente_estado_clase($estado)
 function cliente_demora($estado)
 {
     if (in_array($estado, array('Entregado', 'ArchivadoCocina'), true)) return 'Listo para retirar';
+    if ($estado === 'Pronto para entregar') return 'Pronto para entregar';
     if ($estado === 'Cancelado') return 'Pedido cancelado';
     if ($estado === 'Preparando') return 'Aproximadamente 10 minutos';
     return 'Aproximadamente 20 minutos';
@@ -212,9 +243,6 @@ function cliente_demora($estado)
 
 $mesasReserva = array();
 $mesasTodas = $mesaRepository->listar();
-$mesasPedido = $idUsuarioCliente > 0
-    ? $reservaRepository->mesasParaPedidoCliente($idUsuarioCliente)
-    : array();
 foreach ($mesasTodas as $mesa) {
     if (in_array(($mesa['estado'] ?? ''), array('Libre', 'Reservada'), true)) $mesasReserva[] = $mesa;
 }
@@ -326,6 +354,7 @@ textarea{min-height:76px;resize:vertical}
   color:#fff;font-size:.72rem;font-weight:700;background:var(--warn);
 }
 .tracking-status.preparando{background:var(--info)}
+.tracking-status.prontoparaentregar{background:#a855f7}
 .tracking-status.entregado{background:var(--ok)}
 .tracking-status.cancelado{background:var(--bad)}
 /* ===== Estado de mesa en vivo ===== */
@@ -440,14 +469,20 @@ section[id],form[id],div[id]{scroll-margin-top:80px}
   body{padding-bottom:40px}
   .top{padding:12px 16px}
   .top .user,.site-user .user{display:none}
-  .site-header-in{padding:10px 14px;gap:10px}
+  .site-header-in{padding:10px 14px;gap:10px;flex-wrap:wrap}
   h1{padding:0 16px}
   .layout{padding:0 12px}
   .reservation-grid{grid-template-columns:1fr}
   .products{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
   .product img{height:120px}
   .product p{display:none}
+  .product-bottom{flex-wrap:wrap}
+  .price{min-width:0;overflow-wrap:anywhere}
+  .add{max-width:100%}
   .panel{padding:18px}
+}
+@media(max-width:400px){
+  section[id],form[id],div[id]{scroll-margin-top:120px}
 }
 </style>
 </head>
@@ -478,19 +513,19 @@ section[id],form[id],div[id]{scroll-margin-top:80px}
 <section class="panel tracking-panel" id="seguimiento"><h2>Seguimiento de mis pedidos</h2><div id="order-tracking" class="tracking-list"><?php if (!$pedidosCliente) { ?><p class="empty">Todavia no tienes pedidos realizados.</p><?php } else { foreach ($pedidosCliente as $pedido) { ?><article class="tracking-item"><div><strong>Pedido #<?php echo (int) $pedido['id_pedido']; ?></strong><span class="tracking-status <?php echo cliente_h(cliente_estado_clase($pedido['estado'])); ?>"><?php echo cliente_h($pedido['estado']); ?></span></div><p><?php echo cliente_h(cliente_demora($pedido['estado'])); ?> · <?php echo cliente_h($pedido['fecha']); ?></p><p><?php echo count($pedido['productos']); ?> producto(s) · Total $<?php echo number_format((float) $pedido['total'], 2, ',', '.'); ?></p></article><?php } } ?></div><p class="note" id="tracking-refresh-status" role="status" aria-live="polite"></p></section>
 <section class="panel tracking-panel" id="cuenta">
     <h2>Mi cuenta / Pagar pedido</h2>
-    <p class="note">Ultimos 10 pedidos. Solicitar el cobro no realiza un pago online. Caja confirmara la recepcion del dinero por el total del pedido, sin cargos adicionales.</p>
+    <p class="note">Aqui solo se muestran las cuentas abiertas. Puedes agregar productos a esta cuenta; al solicitar el cobro, Caja confirmara el pago del total.</p>
     <div id="customer-account" class="tracking-list"><?php require __DIR__ . '/src/Views/cliente_cuenta.php'; ?></div>
 </section>
-<section class="panel table-live-panel" id="mesa-estado"><h2>Estado actual de la mesa</h2><label for="mesa_supervisada">Mesa a consultar</label><select id="mesa_supervisada"><option value="">Selecciona una mesa</option><?php foreach ($mesasTodas as $mesa) { ?><option value="<?php echo (int) $mesa['id_mesa']; ?>" data-numero="<?php echo (int) $mesa['numero']; ?>">Mesa <?php echo (int) $mesa['numero']; ?> · <?php echo cliente_h($mesa['estado']); ?></option><?php } ?></select><p class="note" id="mesa-order-message" role="status" aria-live="polite"></p><div id="table-live"><p class="empty">Selecciona una mesa para ver quién está allí y qué está pidiendo.</p></div></section>
+<section class="panel table-live-panel" id="mesa-estado"><h2>Estado de tu mesa</h2><?php if ($mesaClienteAsignada > 0) { ?><p class="note">Mesa <?php echo $mesaClienteAsignada; ?> asignada a esta visita.</p><select id="mesa_supervisada" hidden><option value="<?php echo (int) ($_SESSION['cliente_mesa_id'] ?? 0); ?>" data-numero="<?php echo $mesaClienteAsignada; ?>" selected></option></select><?php } else { ?><p class="note">Al enviar tu primer pedido quedaras identificado en esa mesa.</p><select id="mesa_supervisada" hidden><option value=""></option></select><?php } ?><p class="note" id="mesa-order-message" role="status" aria-live="polite"></p><div id="table-live"><p class="empty"><?php echo $mesaClienteAsignada > 0 ? 'Cargando el estado de tu mesa...' : 'Todavia no tienes una mesa asignada.'; ?></p></div></section>
 <div class="layout" id="menu">
 <section class="panel"><h2>Menu disponible</h2>
 <p class="muted">Fotos ilustrativas; la presentacion y el envase pueden variar.
 <a href="<?php echo cliente_h(app_url('MVCsix1.0/img/catalogo/creditos.html')); ?>">Creditos de fotografias</a></p>
 <div class="products">
-<?php foreach ($productos as $producto) { $disponible = (int) ($producto['stock'] ?? 0) > 0; $imagen = cliente_imagen($producto); $rutaImagen = __DIR__ . '/' . $imagen; $versionImagen = is_file($rutaImagen) ? '?v=' . filemtime($rutaImagen) : ''; ?><article class="product"><img src="<?php echo cliente_h(app_url($imagen . $versionImagen)); ?>" alt="<?php echo cliente_h($producto['nombre']); ?>"><div class="product-info"><h3><?php echo cliente_h($producto['nombre']); ?></h3><p><?php echo cliente_h($producto['descripcion']); ?></p><span class="availability<?php echo $disponible ? '' : ' unavailable'; ?>"><?php echo $disponible ? 'Disponible' : 'Agotado'; ?></span><div class="product-bottom"><span class="price">$<?php echo number_format((float) $producto['precio'], 2, ',', '.'); ?></span><button class="add" type="button" data-id="<?php echo (int) $producto['id_producto']; ?>" data-name="<?php echo cliente_h($producto['nombre']); ?>" data-price="<?php echo cliente_h($producto['precio']); ?>"<?php echo $disponible ? '' : ' disabled'; ?>><?php echo $disponible ? 'Agregar' : 'Agotado'; ?></button></div></div></article><?php } ?>
+<?php foreach ($productos as $producto) { $disponible = (int) ($producto['stock'] ?? 0) > 0; $imagen = cliente_imagen($producto); $rutaImagen = __DIR__ . '/' . $imagen; $versionImagen = is_file($rutaImagen) ? '?v=' . filemtime($rutaImagen) : ''; ?><article class="product"><img src="<?php echo cliente_h(app_url($imagen . $versionImagen)); ?>" alt="<?php echo cliente_h($producto['nombre']); ?>"><div class="product-info"><h3><?php echo cliente_h($producto['nombre']); ?></h3><p><?php echo cliente_h($producto['descripcion']); ?></p><span class="availability<?php echo $disponible ? '' : ' unavailable'; ?>"><?php echo $disponible ? 'Disponible' : 'Agotado'; ?></span><div class="product-bottom"><span class="price">$<?php echo number_format((float) $producto['precio'], 2, ',', '.'); ?></span><button class="add" type="button" data-id="<?php echo (int) $producto['id_producto']; ?>" data-name="<?php echo cliente_h($producto['nombre']); ?>" data-price="<?php echo cliente_h($producto['precio']); ?>"<?php echo $disponible && !$cuentaCobroSolicitado ? '' : ' disabled'; ?>><?php echo $cuentaCobroSolicitado ? 'Cobro solicitado' : ($disponible ? 'Agregar' : 'Agotado'); ?></button></div></div></article><?php } ?>
 <?php if (!$productos) { ?><p class="empty">No hay productos disponibles en este momento.</p><?php } ?>
 </div></section>
-<form class="panel order-panel" method="post" id="order-form"><?php echo csrf_field(); ?><input type="hidden" name="pedido_token" value="<?php echo cliente_h($_SESSION['cliente_pedido_token']); ?>"><input type="hidden" name="items" id="items"><h2>Pedido actual</h2><label for="mesa">Mesa</label><select id="mesa" name="mesa" required><option value="">Selecciona una mesa</option><?php foreach ($mesasPedido as $mesa) { ?><option value="<?php echo (int) $mesa['numero']; ?>" data-reserva-inicio="<?php echo cliente_h($mesa['reserva_inicio'] ?? ''); ?>">Mesa <?php echo (int) $mesa['numero']; ?><?php if ($mesa['estado'] !== 'Libre') { ?> · Reservada para ti<?php if (!empty($mesa['reserva_inicio'])) { ?> · <?php echo date('d/m H:i', strtotime($mesa['reserva_inicio'])); ?><?php } } ?></option><?php } ?></select><p class="note">Puedes ocupar tu mesa reservada y hacer pedidos sin esperar el horario. Solo el titular de la reserva puede usarla.</p><label for="observaciones">Notas para cocina</label><textarea id="observaciones" name="observaciones" maxlength="500" placeholder="Sin cebolla, extra salsa..."></textarea><div id="cart" class="cart"><div class="empty">Agrega productos desde el menu.</div></div><div class="total"><span>Total</span><span id="total">$0,00</span></div><button class="btn primary" type="submit" name="crear_pedido">Realizar pedido</button><p class="note">El total se verifica nuevamente al confirmar y el pedido se envía al mismo panel que utiliza cocina.</p></form>
+<form class="panel order-panel" method="post" id="order-form"><?php echo csrf_field(); ?><input type="hidden" name="pedido_token" value="<?php echo cliente_h($_SESSION['cliente_pedido_token']); ?>"><input type="hidden" name="items" id="items"><h2><?php echo $mesaClienteAsignada > 0 ? 'Agregar productos a mi cuenta' : 'Mi primer pedido'; ?></h2><label for="mesa">Mesa</label><select id="mesa"<?php echo $mesaClienteAsignada > 0 ? ' disabled' : ' name="mesa" required'; ?>><?php if ($mesaClienteAsignada > 0) { ?><option value="<?php echo $mesaClienteAsignada; ?>" selected>Mesa <?php echo $mesaClienteAsignada; ?> · asignada a tu visita</option><?php } else { ?><option value="">Selecciona una mesa</option><?php foreach ($mesasPedido as $mesa) { ?><option value="<?php echo (int) $mesa['numero']; ?>" data-reserva-inicio="<?php echo cliente_h($mesa['reserva_inicio'] ?? ''); ?>">Mesa <?php echo (int) $mesa['numero']; ?><?php if ($mesa['estado'] !== 'Libre') { ?> · Reservada para ti<?php if (!empty($mesa['reserva_inicio'])) { ?> · <?php echo date('d/m H:i', strtotime($mesa['reserva_inicio'])); ?><?php } } ?></option><?php } ?><?php } ?></select><?php if ($mesaClienteAsignada > 0) { ?><input type="hidden" name="mesa" value="<?php echo $mesaClienteAsignada; ?>"><p class="note">Tu mesa queda guardada. Las nuevas adiciones se sumaran a la cuenta abierta y Cocina procesara solo los productos nuevos.</p><?php } else { ?><p class="note">La mesa quedara guardada al enviar tu primer pedido. Solo puedes pedir en una mesa libre o reservada a tu cuenta.</p><?php } ?><?php if ($cuentaCobroSolicitado) { ?><p class="note">Ya solicitaste el cobro. Espera la confirmacion de Caja antes de agregar productos.</p><?php } ?><label for="observaciones">Notas para cocina</label><textarea id="observaciones" name="observaciones" maxlength="500" placeholder="Sin cebolla, extra salsa..."></textarea><div id="cart" class="cart"><div class="empty">Agrega productos desde el menu.</div></div><div class="total"><span>Total de esta adicion</span><span id="total">$0,00</span></div><button class="btn primary" type="submit" name="crear_pedido"<?php echo $cuentaCobroSolicitado ? ' disabled' : ''; ?>><?php echo $mesaClienteAsignada > 0 ? 'Agregar a mi cuenta' : 'Realizar pedido'; ?></button><p class="note">El total se verifica nuevamente al confirmar; el importe se agregara a la misma cuenta abierta de esta mesa.</p></form>
 </div>
 <script>
 const cart = new Map();
@@ -521,6 +556,8 @@ function renderCustomerOrders(pedidos) {
             ? 'Listo para retirar'
             : estado === 'Cancelado'
                 ? 'Pedido cancelado'
+                : estado === 'Pronto para entregar'
+                    ? 'Pronto para entregar'
                 : estado === 'Preparando'
                     ? 'Aproximadamente 10 minutos'
                     : 'Aproximadamente 20 minutos';
@@ -568,7 +605,7 @@ function renderTableLive(data) {
     if (!data.pedidos.length) {
         html += '<p class="empty">No hay pedidos activos en esta mesa.</p>';
     } else {
-        html += data.pedidos.map(pedido => '<article class="table-order"><strong>Pedido #' + pedido.id_pedido + '</strong><span class="tracking-status ' + pedido.estado.toLowerCase() + '">' + pedido.estado + '</span><ul>' + pedido.productos.map(producto => '<li>' + producto.cantidad + ' x ' + escapeHtml(producto.nombre) + '</li>').join('') + '</ul><small>Total: $' + Number(pedido.total).toLocaleString('es-UY', {minimumFractionDigits: 2}) + '</small></article>').join('');
+        html += data.pedidos.map(pedido => '<article class="table-order"><strong>Pedido #' + pedido.id_pedido + '</strong><span class="tracking-status ' + pedido.estado.replace(/[^a-zA-Z]/g, '').toLowerCase() + '">' + escapeHtml(pedido.estado) + '</span><ul>' + pedido.productos.map(producto => '<li>' + producto.cantidad + ' x ' + escapeHtml(producto.nombre) + '</li>').join('') + '</ul><small>Total: $' + Number(pedido.total).toLocaleString('es-UY', {minimumFractionDigits: 2}) + '</small></article>').join('');
     }
     tableLive.innerHTML = html;
 }
@@ -702,6 +739,7 @@ if (pedidoConfirmado) localStorage.removeItem(draftKey);
 else restoreDraft();
 renderCart(false);
 loadCustomerOrders();
+loadTableLive();
 setInterval(loadCustomerOrders, 5000);
 setInterval(loadTableLive, 15000);
 </script>

@@ -80,17 +80,17 @@ main{max-width:1540px;margin:auto}
 .logout{background:var(--accent);border-color:var(--accent)}
 h1{margin:28px 0 8px;font-size:clamp(1.8rem,3vw,2.6rem)}
 .subtitle{color:var(--muted);line-height:1.5;margin:0 0 24px}
-.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:26px}
+.summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;margin-bottom:26px}
 .metric{padding:20px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(160deg,var(--panel),var(--soft))}
 .metric p{margin:0;color:var(--muted);font-size:.88rem}.metric strong{display:block;font-size:2rem;margin:8px 0}.metric small{color:var(--muted)}
-.board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;align-items:start}
+.board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px;align-items:start}
 .column{min-width:0;background:rgba(22,25,34,.65);border:1px solid var(--line);border-radius:16px;padding:16px}
 .column-head{margin-bottom:6px}.column h2{font-size:1.05rem;margin:0}.column-head span{padding:4px 10px;border-radius:8px;background:var(--soft);font-weight:700}
 .column-note{font-size:.8rem;color:var(--muted);margin:0 0 18px}
 .order{border:1px solid var(--line);border-top:3px solid #f5a623;border-radius:12px;background:linear-gradient(160deg,var(--panel),var(--soft));padding:18px;margin-bottom:16px}
-.order.preparando{border-top-color:#619bff}.order.entregado{border-top-color:#2fbf71}
+.order.preparando{border-top-color:#619bff}.order.pronto-para-entregar{border-top-color:#a855f7}.order.entregado{border-top-color:#2fbf71}
 h3{font-size:1rem;margin:0}.badge{font-size:.72rem;font-weight:700;border-radius:99px;padding:5px 9px;white-space:nowrap}
-.badge.pendiente{background:rgba(245,166,35,.15);color:#ffd187}.badge.preparando{background:rgba(59,130,246,.17);color:#a7c7ff}.badge.entregado{background:rgba(47,191,113,.15);color:#7ee2a8}
+.badge.pendiente{background:rgba(245,166,35,.15);color:#ffd187}.badge.preparando{background:rgba(59,130,246,.17);color:#a7c7ff}.badge.pronto-para-entregar{background:rgba(168,85,247,.17);color:#d8b4fe}.badge.entregado{background:rgba(47,191,113,.15);color:#7ee2a8}
 .mesa{font-weight:700;margin:14px 0 6px}
 .order-meta,.order-note{color:var(--muted);font-size:.8rem;line-height:1.5}
 .waiting{color:#ffd187}.products{padding:0;list-style:none;margin:16px 0}.products li{padding:10px 0;border-top:1px solid var(--line);line-height:1.45}
@@ -105,7 +105,7 @@ button:focus-visible,a:focus-visible{outline:2px solid #ff8eb1;outline-offset:3p
 .empty{color:var(--muted);padding:24px 12px;text-align:center;border:1px dashed var(--line);border-radius:10px;font-size:.85rem}
 .flash{padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--soft)}
 #kitchen-status{min-height:22px;color:var(--muted);font-size:.85rem}#kitchen-message{color:#ffd187;line-height:1.5}
-@media(max-width:1100px){.summary{grid-template-columns:repeat(2,minmax(0,1fr))}.board{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:1100px){.summary{grid-template-columns:repeat(3,minmax(0,1fr))}.board{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){body{padding:16px}.board{grid-template-columns:1fr}.metric{padding:16px}.metric strong{font-size:1.6rem}}
 @media(max-width:380px){.summary{grid-template-columns:1fr}}
 </style>
@@ -120,23 +120,25 @@ button:focus-visible,a:focus-visible{outline:2px solid #ff8eb1;outline-offset:3p
     <div class="metric"><p>En cocina</p><strong id="kitchen-active"><?php echo $resumen['Pendiente'] + $resumen['Preparando']; ?></strong><small>Pendientes y en preparacion</small></div>
     <div class="metric"><p>Pendientes</p><strong id="kitchen-Pendiente"><?php echo $resumen['Pendiente']; ?></strong><small>Por comenzar</small></div>
     <div class="metric"><p>Preparando</p><strong id="kitchen-Preparando"><?php echo $resumen['Preparando']; ?></strong><small>En elaboracion</small></div>
+    <div class="metric"><p>Pronto para entregar</p><strong id="kitchen-Pronto-para-entregar"><?php echo $resumen['Pronto para entregar']; ?></strong><small>Esperando entrega</small></div>
     <div class="metric"><p>Entregados</p><strong id="kitchen-Entregado"><?php echo $resumen['Entregado']; ?></strong><small>Visibles hasta retirarlos del panel</small></div>
 </div>
 <p id="kitchen-status" role="status">Conectado al panel de pedidos.</p>
 <p id="kitchen-message" role="status" aria-live="polite"></p>
 <div class="board" id="kitchen-board">
 <?php
-$columnas = array('Pendiente' => 'Pendientes', 'Preparando' => 'Preparando', 'Entregado' => 'Entregados');
+$columnas = array('Pendiente' => 'Pendientes', 'Preparando' => 'Preparando', 'Pronto para entregar' => 'Pronto para entregar', 'Entregado' => 'Entregados');
 foreach ($columnas as $estadoColumna => $titulo) {
+$estadoId = str_replace(' ', '-', $estadoColumna);
 ?>
-<section class="column" aria-labelledby="title-<?php echo $estadoColumna; ?>">
-    <div class="column-head"><h2 id="title-<?php echo $estadoColumna; ?>"><?php echo $titulo; ?></h2><span id="count-<?php echo $estadoColumna; ?>"><?php echo $resumen[$estadoColumna]; ?></span></div>
+<section class="column" aria-labelledby="title-<?php echo h($estadoId); ?>">
+    <div class="column-head"><h2 id="title-<?php echo h($estadoId); ?>"><?php echo $titulo; ?></h2><span id="count-<?php echo h($estadoId); ?>"><?php echo $resumen[$estadoColumna]; ?></span></div>
     <p class="column-note">Pedidos mas antiguos primero</p>
-    <div id="orders-<?php echo $estadoColumna; ?>">
+    <div id="orders-<?php echo h($estadoId); ?>">
     <?php foreach ($vistaCocina['pedidos'] as $pedido) {
         if ($pedido['estado'] === $estadoColumna) require __DIR__ . '/src/Views/cocina_pedido.php';
     } ?>
-    <p class="empty" id="empty-<?php echo $estadoColumna; ?>"<?php echo $resumen[$estadoColumna] ? ' hidden' : ''; ?>>No hay pedidos en este estado.</p>
+    <p class="empty" id="empty-<?php echo h($estadoId); ?>"<?php echo $resumen[$estadoColumna] ? ' hidden' : ''; ?>>No hay pedidos en este estado.</p>
     </div>
 </section>
 <?php } ?>
@@ -146,7 +148,8 @@ foreach ($columnas as $estadoColumna => $titulo) {
 const board = document.getElementById('kitchen-board');
 const statusEl = document.getElementById('kitchen-status');
 const messageEl = document.getElementById('kitchen-message');
-const estados = ['Pendiente', 'Preparando', 'Entregado'];
+const estados = ['Pendiente', 'Preparando', 'Pronto para entregar', 'Entregado'];
+const estadoId = estado => estado.replace(/ /g, '-');
 const htmlAnterior = new Map();
 let actualizando = false;
 let enviando = false;
@@ -168,8 +171,8 @@ async function actualizarCocina() {
             if (!estados.includes(tarjeta.estado)) throw new Error('Estado invalido');
             const id = String(Number(tarjeta.id_pedido));
             let card = board.querySelector('[data-order-id="' + id + '"]');
-            const column = document.getElementById('orders-' + tarjeta.estado);
-            const empty = document.getElementById('empty-' + tarjeta.estado);
+            const column = document.getElementById('orders-' + estadoId(tarjeta.estado));
+            const empty = document.getElementById('empty-' + estadoId(tarjeta.estado));
             if (!card || card.dataset.state !== tarjeta.estado || (!card.contains(document.activeElement) && htmlAnterior.get(id) !== tarjeta.html)) {
                 const template = document.createElement('template');
                 template.innerHTML = tarjeta.html.trim();
@@ -183,9 +186,9 @@ async function actualizarCocina() {
             else if (!card.parentElement) column.insertBefore(card, empty);
         });
         estados.forEach(estado => {
-            document.getElementById('kitchen-' + estado).textContent = data.resumen[estado];
-            document.getElementById('count-' + estado).textContent = data.resumen[estado];
-            document.getElementById('empty-' + estado).hidden = data.resumen[estado] > 0;
+            document.getElementById('kitchen-' + estadoId(estado)).textContent = data.resumen[estado];
+            document.getElementById('count-' + estadoId(estado)).textContent = data.resumen[estado];
+            document.getElementById('empty-' + estadoId(estado)).hidden = data.resumen[estado] > 0;
         });
         document.getElementById('kitchen-active').textContent = Number(data.resumen.Pendiente) + Number(data.resumen.Preparando);
         statusEl.textContent = 'Actualizado a las ' + new Date().toLocaleTimeString('es-UY');

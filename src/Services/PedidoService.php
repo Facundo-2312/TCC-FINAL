@@ -9,8 +9,7 @@ use App\Support\Env;
 // Business rules for pedidos: valid states and transitions, reused by every entrypoint.
 class PedidoService
 {
-    // Matches the `pedidos.estado` ENUM in SQL/BD.sql plus the ArchivadoCocina status used by CAJA.php.
-    const ESTADOS_VALIDOS = array('Pendiente', 'Preparando', 'Entregado', 'Cancelado', 'ArchivadoCocina');
+    const ESTADOS_VALIDOS = array('Pendiente', 'Preparando', 'Pronto para entregar', 'Entregado', 'Cancelado', 'ArchivadoCocina');
 
     private $repositorio;
     private $lastError = '';
@@ -32,8 +31,8 @@ class PedidoService
 
     public function listarCocina()
     {
-        $pedidos = $this->repositorio->listarConDetalle(array('Pendiente', 'Preparando', 'Entregado'), null, true);
-        $resumen = array('Pendiente' => 0, 'Preparando' => 0, 'Entregado' => 0);
+        $pedidos = $this->repositorio->listarConDetalle(array('Pendiente', 'Preparando', 'Pronto para entregar', 'Entregado'), null, true);
+        $resumen = array('Pendiente' => 0, 'Preparando' => 0, 'Pronto para entregar' => 0, 'Entregado' => 0);
         foreach ($pedidos as $pedido) $resumen[$pedido['estado']]++;
         return array('pedidos' => $pedidos, 'resumen' => $resumen);
     }
@@ -45,7 +44,12 @@ class PedidoService
 
     public function cambiarEstadoCocina($idPedido, $estadoAnterior, $estadoNuevo)
     {
-        $siguientes = array('Pendiente' => 'Preparando', 'Preparando' => 'Entregado', 'Entregado' => 'Pendiente');
+        $siguientes = array(
+            'Pendiente' => 'Preparando',
+            'Preparando' => 'Pronto para entregar',
+            'Pronto para entregar' => 'Entregado',
+            'Entregado' => 'Pendiente'
+        );
         if ((int) $idPedido <= 0 || !isset($siguientes[$estadoAnterior])
             || ($estadoNuevo !== $siguientes[$estadoAnterior] && $estadoNuevo !== 'ArchivadoCocina')) {
             return false;
@@ -56,6 +60,11 @@ class PedidoService
     public function listarDelUsuario($usuario, $limite = 10)
     {
         return $this->repositorio->listarDelUsuario(trim((string) $usuario), $limite);
+    }
+
+    public function listarCuentaAbiertaDelUsuario($usuario, $limite = 10)
+    {
+        return $this->repositorio->listarCuentaAbiertaDelUsuario(trim((string) $usuario), $limite);
     }
 
     public function cambiarEstado($idPedido, $estado)
@@ -69,7 +78,7 @@ class PedidoService
         return $this->repositorio->actualizarEstado($idPedido, $estado);
     }
 
-    // Same state machine previously hardcoded in InterfazActualizarPedido.php: Pendiente -> Preparando -> Entregado.
+    // Legacy endpoint: advance one step through the kitchen workflow.
     public function avanzarEstado($idPedido)
     {
         $idPedido = (int) $idPedido;
@@ -79,8 +88,14 @@ class PedidoService
             return null;
         }
 
-        $siguiente = $pedido['estado'] === 'Pendiente' ? 'Preparando' : 'Entregado';
-        $this->repositorio->actualizarEstado($idPedido, $siguiente);
+        $siguientes = array(
+            'Pendiente' => 'Preparando',
+            'Preparando' => 'Pronto para entregar',
+            'Pronto para entregar' => 'Entregado'
+        );
+        if (!isset($siguientes[$pedido['estado']])) return null;
+        $siguiente = $siguientes[$pedido['estado']];
+        if (!$this->repositorio->cambiarEstadoCocina($idPedido, $pedido['estado'], $siguiente)) return null;
 
         return $siguiente;
     }
@@ -172,29 +187,49 @@ class PedidoService
             if ($autorizacionCliente !== null && $idUsuario !== $autorizacionCliente['id_usuario']) {
                 throw new \RuntimeException('La cuenta no coincide con la sesion actual.');
             }
+            $cuentaAbierta = null;
+            if ($autorizacionCliente !== null) {
+                $cuentaAbierta = $this->repositorio->buscarCuentaAbiertaCliente($autorizacionCliente['id_usuario']);
+                if ($cuentaAbierta && $cuentaAbierta['solicitud_cobro'] !== null) {
+                    throw new \RuntimeException('Ya solicitaste el cobro de esta cuenta. Espera a Caja antes de agregar productos.');
+                }
+            }
             $idMesa = $this->repositorio->buscarMesaPorNumeroParaActualizar($numeroMesa);
             if (!$idMesa) throw new \RuntimeException('La mesa ' . $numeroMesa . ' no existe. Selecciona una mesa valida.');
+            if ($cuentaAbierta && (int) $cuentaAbierta['id_mesa'] !== $idMesa) {
+                throw new \RuntimeException('Termina el pago de tu cuenta abierta antes de cambiar de mesa.');
+            }
             if ($autorizacionCliente !== null) {
                 $estadoMesa = $this->repositorio->obtenerEstadoMesa($idMesa);
                 if ($estadoMesa !== 'Libre') {
-                    if (!in_array($estadoMesa, array('Reservada', 'Ocupada'), true)) {
+                    if ($estadoMesa === 'Ocupada' && $cuentaAbierta && (int) $cuentaAbierta['id_mesa'] === $idMesa) {
+                        // The customer's own open account keeps the table occupied.
+                    } elseif (!in_array($estadoMesa, array('Reservada', 'Ocupada'), true)) {
                         throw new \RuntimeException('La mesa ' . $numeroMesa . ' no esta disponible para pedidos.');
-                    }
-                    $reservas = new ReservaRepository($connection);
-                    if (!$reservas->bloquearReservaActivaDelCliente(
-                        $idMesa,
-                        $autorizacionCliente['id_usuario']
-                    )) {
-                        throw new \RuntimeException('La mesa ' . $numeroMesa . ' esta reservada para otra cuenta.');
+                    } else {
+                        $reservas = new ReservaRepository($connection);
+                        if (!$reservas->bloquearReservaActivaDelCliente(
+                            $idMesa,
+                            $autorizacionCliente['id_usuario']
+                        )) {
+                            throw new \RuntimeException('La mesa ' . $numeroMesa . ' esta reservada para otra cuenta.');
+                        }
                     }
                 }
             }
-            $idPedido = $this->repositorio->crearPedidoMozo($idMesa, $idUsuario, substr($observaciones, 0, 500));
-            if ($idPedido <= 0 || !$this->repositorio->ocuparMesa($idMesa)) {
-                throw new \RuntimeException('No se pudo asignar el pedido a la mesa ' . $numeroMesa . '.');
+            if ($autorizacionCliente !== null && $cuentaAbierta) {
+                $idPedido = (int) $cuentaAbierta['id_pedido'];
+                if (!$this->repositorio->prepararPedidoParaAdicion($idPedido)
+                    || !$this->repositorio->anexarObservaciones($idPedido, substr($observaciones, 0, 500))) {
+                    throw new \RuntimeException('No se pudo actualizar la cuenta abierta.');
+                }
+            } else {
+                $idPedido = $this->repositorio->crearPedidoMozo($idMesa, $idUsuario, substr($observaciones, 0, 500));
+                if ($idPedido <= 0 || !$this->repositorio->ocuparMesa($idMesa)) {
+                    throw new \RuntimeException('No se pudo asignar el pedido a la mesa ' . $numeroMesa . '.');
+                }
             }
 
-            $total = 0.0;
             foreach ($items as $item) {
                 $idProducto = (int) ($item['IDProducto'] ?? 0);
                 $cantidad = (int) ($item['quantity'] ?? 0);
@@ -216,10 +251,9 @@ class PedidoService
                     || !$this->repositorio->agregarDetallePersonalizado($idPedido, $idProducto, $cantidad, $precio, $subtotal, $sin, $extra)) {
                     throw new \RuntimeException('No se pudo reservar el stock de ' . $producto['nombre'] . '. Vuelve a revisar su disponibilidad.');
                 }
-                $total += $subtotal;
             }
 
-            if (!$this->repositorio->actualizarTotal($idPedido, $total)) {
+            if (!$this->repositorio->sumarTotalDetalle($idPedido)) {
                 throw new \RuntimeException('No se pudo calcular el total del pedido.');
             }
             mysqli_commit($connection);

@@ -17,7 +17,8 @@ agregan controles nuevos de forma no destructiva.
   `mesas.php`, `CAJA.php`, `Cocina2.php`, `InterfazObtenerPedidos.php`,
   `crear.php`/`Actualizar.php` → `InterfazE.php` (alta/edición de empleados),
   `MVCsix1.0/create.php`/`update.php` → `InterfazProducto.php` (alta/edición de productos)
-  y el enlace de borrado `MVCsix1.0/delete.php` (token como parámetro `_csrf`).
+  y los formularios POST de borrado de funcionarios y productos (`Eliminar.php` y
+  `MVCsix1.0/delete.php`).
 
 ### 2. SQL Injection
 - Corregido en la sesión anterior: `CambiarEstado.php`, `EliminarPedido.php`,

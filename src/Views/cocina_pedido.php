@@ -1,11 +1,12 @@
 <?php
 $idPedido = (int) $pedido['id_pedido'];
 $estado = (string) $pedido['estado'];
-$clase = strtolower($estado);
+$clase = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', $estado));
 $minutos = max(0, (int) floor((time() - strtotime($pedido['fecha'])) / 60));
 $acciones = array(
     'Pendiente' => array('Preparando', 'Comenzar preparacion'),
-    'Preparando' => array('Entregado', 'Marcar entregado'),
+    'Preparando' => array('Pronto para entregar', 'Pronto para entregar'),
+    'Pronto para entregar' => array('Entregado', 'Marcar entregado'),
     'Entregado' => array('Pendiente', 'Volver a pendientes')
 );
 ?>
@@ -16,7 +17,8 @@ $acciones = array(
         <span class="<?php echo $minutos >= 20 && $estado !== 'Entregado' ? 'waiting' : ''; ?>">Hace <?php echo $minutos; ?> min · desde la creacion</span></p>
     <ul class="products">
     <?php foreach ($pedido['productos'] as $producto) { ?>
-        <li><div><strong class="quantity"><?php echo (int) $producto['cantidad']; ?> x</strong> <?php echo h($producto['nombre']); ?></div>
+        <li><div><strong class="quantity"><?php echo (int) $producto['cantidad']; ?> x</strong> <?php echo h($producto['nombre']); ?>
+            <span class="badge <?php echo h(strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', $producto['estado_cocina']))); ?>"><?php echo h($producto['estado_cocina']); ?></span></div>
             <?php if (!empty($producto['sin_ingredientes'])) { ?><p class="customization">Sin: <?php echo h($producto['sin_ingredientes']); ?></p><?php } ?>
             <?php if (!empty($producto['extra_ingredientes'])) { ?><p class="customization">Agregar: <?php echo h($producto['extra_ingredientes']); ?></p><?php } ?>
         </li>

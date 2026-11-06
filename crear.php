@@ -223,17 +223,17 @@ select{
                 <?php echo csrf_field(); ?>
                 <div class="field-row">
                     <div><label class="field-label" for="CI">CI</label><input type="number" name="CI" id="CI" placeholder="CI" min="1" max="2147483647" required></div>
-                    <div><label class="field-label" for="Nombre">Nombre</label><input type="text" name="Nombre" id="Nombre" placeholder="Nombre" maxlength="100" pattern="[\p{L}\p{M} .'-]+" title="Usa letras, espacios, apostrofes o guiones." required></div>
+                    <div><label class="field-label" for="Nombre">Nombre</label><input type="text" name="Nombre" id="Nombre" placeholder="Nombre" maxlength="100" pattern="[\p{L}\p{M} .'\-]+" title="Usa letras, espacios, apostrofes o guiones." required></div>
                 </div>
 
                 <div class="field-row">
-                    <div><label class="field-label" for="Apellido">Apellido</label><input type="text" name="Apellido" id="Apellido" placeholder="Apellido" maxlength="100" pattern="[\p{L}\p{M} .'-]+" title="Usa letras, espacios, apostrofes o guiones." required></div>
+                    <div><label class="field-label" for="Apellido">Apellido</label><input type="text" name="Apellido" id="Apellido" placeholder="Apellido" maxlength="100" pattern="[\p{L}\p{M} .'\-]+" title="Usa letras, espacios, apostrofes o guiones." required></div>
                     <div><label class="field-label" for="Direccion">Direccion</label><input type="text" name="Direccion" id="Direccion" placeholder="Direccion" maxlength="100" required></div>
                 </div>
 
                 <div class="field-row">
                     <div><label class="field-label" for="Rol">Rol</label><select name="Rol" id="Rol" required><option value="">Selecciona un rol</option><option>Administrador</option><option>Caja</option><option>Mozo</option><option>Cocina</option></select></div>
-                    <div><label class="field-label" for="Usuario">Usuario</label><input type="text" name="Usuario" id="Usuario" placeholder="Usuario" minlength="3" maxlength="50" pattern="[A-Za-z0-9._-]{3,50}" required></div>
+                    <div><label class="field-label" for="Usuario">Usuario</label><input type="text" name="Usuario" id="Usuario" placeholder="Usuario" minlength="3" maxlength="50" pattern="[A-Za-z0-9._\-]{3,50}" required></div>
                 </div>
 
                 <?php OpenStreetMap::renderEmployeeLocation(); ?>

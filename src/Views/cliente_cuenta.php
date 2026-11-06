@@ -8,9 +8,7 @@
         <?php } ?>
     </ul>
     <strong>Total: $<?php echo number_format((float) $pedido['total'], 2, ',', '.'); ?></strong>
-    <?php if ($pedido['pagado']) { ?>
-        <p>Pagado - <?php echo htmlspecialchars($pedido['pago_metodo'], ENT_QUOTES, 'UTF-8'); ?>. Confirmado por Caja.</p>
-    <?php } elseif (in_array($pedido['estado'], array('Entregado', 'ArchivadoCocina'), true)) { ?>
+    <?php if (in_array($pedido['estado'], array('Entregado', 'ArchivadoCocina'), true)) { ?>
         <?php if ($pedido['cobro_metodo']) { ?>
         <p>Cobro solicitado: <?php echo htmlspecialchars($pedido['cobro_metodo'], ENT_QUOTES, 'UTF-8'); ?>.
             Pendiente de confirmacion de Caja. Todavia no esta pagado.</p>
@@ -30,8 +28,6 @@
                 <?php echo $pedido['cobro_metodo'] ? 'Actualizar solicitud' : 'Solicitar cobro'; ?>
             </button>
         </form>
-    <?php } elseif ($pedido['estado'] === 'Cancelado') { ?>
-        <p>Pedido cancelado. No disponible para cobro.</p>
     <?php } else { ?>
         <p>Podras solicitar el cobro cuando el pedido este entregado.</p>
     <?php } ?>

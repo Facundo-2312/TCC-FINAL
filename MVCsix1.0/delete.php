@@ -1,20 +1,17 @@
 <?php
-
-session_start();
-
 require_once __DIR__ . '/../app_bootstrap.php';
 app_require_login('../Login.php', ['1']);
 
-if (!App\Support\Csrf::verify($_GET['_csrf'] ?? '')) {
-    App\Support\SecurityLog::log('csrf_rechazado', array('uri' => $_SERVER['REQUEST_URI'] ?? ''));
-    header('Location: index.php');
-    exit();
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    app_redirect('MVCsix1.0/index.php');
 }
 
-$IDProducto = filter_input(INPUT_GET, 'ID', FILTER_VALIDATE_INT);
+csrf_verify_or_die('MVCsix1.0/index.php');
+
+$IDProducto = filter_input(INPUT_POST, 'ID', FILTER_VALIDATE_INT, array('options' => array('min_range' => 1)));
 if (!$IDProducto) {
-    header('Location: index.php');
-    exit();
+    app_set_flash('error', 'Selecciona un producto valido.');
+    app_redirect('MVCsix1.0/index.php');
 }
 
 $resultado = (new App\Controllers\ProductoController())->eliminar($IDProducto);

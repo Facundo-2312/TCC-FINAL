@@ -30,6 +30,9 @@ jobs:
         with:
           php-version: "8.4"
           extensions: mysqli, mbstring, fileinfo
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
       - name: Install database client
         run: sudo apt-get update -qq && sudo apt-get install -y -qq mariadb-client
       - name: Upgrade synthetic legacy database and exercise all five roles
@@ -40,6 +43,7 @@ jobs:
           mariadb -h127.0.0.1 -uroot ci_test < database/tests/infinityfree_legacy_fixture.sql
           mariadb -h127.0.0.1 -uroot ci_test < SQL/upgrade_infinityfree_legacy.sql
           mariadb -h127.0.0.1 -uroot ci_test < SQL/migrations/015_ubicacion_empleados.sql
+          mariadb -h127.0.0.1 -uroot ci_test < SQL/migrations/016_adiciones_pedido_estado_cocina.sql
           export FLOW_TEST_PASSWORD="$(openssl rand -hex 24)"
           php database/tests/role_flows_seed.php
           php -S 127.0.0.1:8080 -t . >/tmp/role-flow-server.log 2>&1 &
@@ -49,5 +53,6 @@ jobs:
             if curl -fsS http://127.0.0.1:8080/Login.php >/dev/null; then break; fi
             sleep 1
           done
+          node database/tests/empleado_form_patterns_test.js
           python3 database/tests/role_flows_http.py
           php database/tests/order_flow.php
